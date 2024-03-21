@@ -1,0 +1,9 @@
+example/download
+*/__pycache__
+fundrive/base/__pycache__
+fundrive/baidu/__pycache__
+fundrive/lanzou/__pycache__
+*.pyc
+*.egg-info
+build
+dist
