@@ -1,0 +1,16 @@
+[build-system]
+requires = [ "poetry-core",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "fundrive"
+version = "1.0.1"
+description = ""
+authors = [ "farfun <1007530194@qq.com>",]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+funget = "^1.0.4"
+funsecret = "^1.3.3"
+funfile = "^1.0.2"
