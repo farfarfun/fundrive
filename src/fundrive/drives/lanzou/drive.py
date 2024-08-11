@@ -25,7 +25,13 @@ class ProgressWrap:
 
     def init(self, file_name, total_size):
         if self.callback is None:
-            self.callback = tqdm(unit="B", unit_scale=True, unit_divisor=1024, desc=file_name, total=total_size)
+            self.callback = tqdm(
+                unit="B",
+                unit_scale=True,
+                unit_divisor=1024,
+                desc=file_name,
+                total=total_size,
+            )
 
     def update(self, now_size):
         self.callback.update(now_size - self.last_size)
@@ -47,15 +53,19 @@ class LanZouDrive(DriveSystem):
         try:
             from lanzou.api import LanZouCloud
         except Exception as e:
-            subprocess.check_call(["pip", "install", "git+https://github.com/Leon406/lanzou-gui.git", "--no-deps"])
+            subprocess.check_call(["pip", "install", "fundrive-lanzou"])
             from lanzou.api import LanZouCloud
         self.drive = LanZouCloud()
 
-    def login(self, cookie=None, ylogin=None, phpdisk_info=None, *args, **kwargs) -> bool:
+    def login(
+        self, cookie=None, ylogin=None, phpdisk_info=None, *args, **kwargs
+    ) -> bool:
         self.instance()
         if cookie is None:
             ylogin = ylogin or read_secret("fundrive", "drives", "funlanzou", "ylogin")
-            phpdisk_info = phpdisk_info or read_secret("fundrive", "drives", "funlanzou", "phpdisk_info")
+            phpdisk_info = phpdisk_info or read_secret(
+                "fundrive", "drives", "funlanzou", "phpdisk_info"
+            )
             cookie = {
                 "ylogin": ylogin,
                 "phpdisk_info": phpdisk_info,
@@ -68,13 +78,17 @@ class LanZouDrive(DriveSystem):
     def delete(self, fid=None, *args, **kwargs) -> bool:
         return self.drive.delete(fid, *args, **kwargs) == 0
 
-    def get_dir_list(self, fid=None, url=None, pwd=None, *args, **kwargs) -> List[Dict[str, Any]]:
+    def get_dir_list(
+        self, fid=None, url=None, pwd=None, *args, **kwargs
+    ) -> List[Dict[str, Any]]:
         result = []
         for item in self.drive.get_dir_list(folder_id=fid)[0]:
             result.append({"fid": item.id, "name": item.name, "desc": item.desc})
         return result
 
-    def get_file_list(self, fid=None, url=None, pwd=None, *args, **kwargs) -> List[Dict[str, Any]]:
+    def get_file_list(
+        self, fid=None, url=None, pwd=None, *args, **kwargs
+    ) -> List[Dict[str, Any]]:
         from lanzou.api.utils import convert_file_size_to_int
 
         result = []
@@ -105,7 +119,9 @@ class LanZouDrive(DriveSystem):
                 )
         return result
 
-    def get_file_info(self, fid=None, url=None, pwd=None, *args, **kwargs) -> Dict[str, Any]:
+    def get_file_info(
+        self, fid=None, url=None, pwd=None, *args, **kwargs
+    ) -> Dict[str, Any]:
         from lanzou.api.utils import convert_file_size_to_int
 
         data = None
@@ -127,7 +143,9 @@ class LanZouDrive(DriveSystem):
             }
         return {}
 
-    def get_dir_info(self, fid=None, url=None, pwd=None, *args, **kwargs) -> Dict[str, Any]:
+    def get_dir_info(
+        self, fid=None, url=None, pwd=None, *args, **kwargs
+    ) -> Dict[str, Any]:
         data = None
         if fid is not None:
             data = self.drive.get_folder_info_by_id(fid)
@@ -145,7 +163,16 @@ class LanZouDrive(DriveSystem):
             }
         return {}
 
-    def download_file(self, dir_path="./cache", overwrite=False, fid=None, url=None, pwd=None, *args, **kwargs) -> bool:
+    def download_file(
+        self,
+        dir_path="./cache",
+        overwrite=False,
+        fid=None,
+        url=None,
+        pwd=None,
+        *args,
+        **kwargs,
+    ) -> bool:
         file_info = self.get_file_info(fid=fid, url=url, pwd=pwd)
         task = Task(url=file_info["url"], pwd=file_info["pwd"], path=dir_path)
         if not os.path.exists(dir_path):
@@ -156,18 +183,39 @@ class LanZouDrive(DriveSystem):
         def clb():
             wrap.update(task.now_size)
 
-        return self.drive.down_file_by_url(share_url=file_info["url"], task=task, callback=clb) == 0
+        return (
+            self.drive.down_file_by_url(
+                share_url=file_info["url"], task=task, callback=clb
+            )
+            == 0
+        )
 
-    def download_dir(self, dir_path="./cache", fid=None, url=None, pwd=None, overwrite=False, *args, **kwargs):
+    def download_dir(
+        self,
+        dir_path="./cache",
+        fid=None,
+        url=None,
+        pwd=None,
+        overwrite=False,
+        *args,
+        **kwargs,
+    ):
         dir_info = self.get_dir_info(fid=fid, url=url, pwd=pwd)
         task = Task(url=dir_info["url"], pwd=dir_info["pwd"], path=dir_path)
 
         def clb():
             pass
 
-        return self.drive.down_file_by_url(share_url=dir_info["url"], task=task, callback=clb) == 0
+        return (
+            self.drive.down_file_by_url(
+                share_url=dir_info["url"], task=task, callback=clb
+            )
+            == 0
+        )
 
-    def upload_file(self, file_path="./cache", fid=None, overwrite=False, *args, **kwargs) -> bool:
+    def upload_file(
+        self, file_path="./cache", fid=None, overwrite=False, *args, **kwargs
+    ) -> bool:
         task = Task(url=file_path, pwd="", path=file_path, folder_id=fid)
         wrap = ProgressWrap()
         wrap.init(os.path.basename(file_path), os.stat(file_path).st_size)
@@ -177,13 +225,23 @@ class LanZouDrive(DriveSystem):
 
         return (
             self.drive.upload_file(
-                task=task, file_path=file_path, folder_id=fid, callback=clb, allow_big_file=self.allow_big_file
+                task=task,
+                file_path=file_path,
+                folder_id=fid,
+                callback=clb,
+                allow_big_file=self.allow_big_file,
             )[0]
             == 0
         )
 
     def upload_dir(
-        self, file_path="./cache", fid=None, only_directory=False, overwrite=False, filter_fun=None, remove_local=False
+        self,
+        file_path="./cache",
+        fid=None,
+        only_directory=False,
+        overwrite=False,
+        filter_fun=None,
+        remove_local=False,
     ) -> dict:
         """
         将本地的文件同步到云端，单向同步
@@ -277,7 +335,9 @@ class LanZouSnapshot(DriveSnapshot):
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         datas = sorted(datas, key=lambda x: x["name"], reverse=True)
-        self.drive.download_file(dir_path=dir_path, url=datas[0]["url"], pwd=datas[0]["pwd"], overwrite=True)
+        self.drive.download_file(
+            dir_path=dir_path, url=datas[0]["url"], pwd=datas[0]["pwd"], overwrite=True
+        )
         tar_path = f"{dir_path}/{datas[0]['name']}"
         tarfile.file_detar(tar_path)
         os.remove(tar_path)
