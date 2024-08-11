@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 
 import requests
 from fundrive.core import DriveSystem
-from fundrive.download import split_download
+from fundrive.download import simple_download
 from funsecret import read_secret
 
 
@@ -14,12 +14,25 @@ class OpenDataLabDrive(DriveSystem):
         self.cookies = {}
         self.headers = {}
 
-    def login(self, ak=None, sk=None, opendatalab_session=None, ssouid=None, *args, **kwargs) -> bool:
+    def login(
+        self, ak=None, sk=None, opendatalab_session=None, ssouid=None, *args, **kwargs
+    ) -> bool:
         self.cookies.update(
             {
                 "opendatalab_session": opendatalab_session
-                or read_secret(cate1="fundrive", cate2="opendatalab", cate3="cookies", cate4="opendatalab_session"),
-                "ssouid": ssouid or read_secret(cate1="fundrive", cate2="opendatalab", cate3="cookies", cate4="ssouid"),
+                or read_secret(
+                    cate1="fundrive",
+                    cate2="opendatalab",
+                    cate3="cookies",
+                    cate4="opendatalab_session",
+                ),
+                "ssouid": ssouid
+                or read_secret(
+                    cate1="fundrive",
+                    cate2="opendatalab",
+                    cate3="cookies",
+                    cate4="ssouid",
+                ),
             }
         )
         self.headers.update({"accept": "application/json"})
@@ -41,7 +54,9 @@ class OpenDataLabDrive(DriveSystem):
         }
         return result
 
-    def get_file_list(self, dataset_name, payload=None, *args, **kwargs) -> List[Dict[str, Any]]:
+    def get_file_list(
+        self, dataset_name, payload=None, *args, **kwargs
+    ) -> List[Dict[str, Any]]:
         dataset_name = dataset_name.replace("/", ",")
         data = {"recursive": True}
         if payload:
@@ -56,14 +71,24 @@ class OpenDataLabDrive(DriveSystem):
         return result_dict
 
     def download_file(
-        self, dir_path="./cache", dataset_id=None, file_path=None, overwrite=False, *args, **kwargs
+        self,
+        dir_path="./cache",
+        dataset_id=None,
+        file_path=None,
+        overwrite=False,
+        *args,
+        **kwargs,
     ) -> bool:
         try:
             file_info = self.get_file_info(dataset_id=dataset_id, file_path=file_path)
             filepath = os.path.join(dir_path, file_info["path"])
-            if os.path.exists(filepath) and not overwrite and file_info["size"] == os.path.getsize(filepath):
+            if (
+                os.path.exists(filepath)
+                and not overwrite
+                and file_info["size"] == os.path.getsize(filepath)
+            ):
                 return False
-            return split_download(
+            return simple_download(
                 url=file_info["url"],
                 filepath=os.path.join(dir_path, file_info["path"]),
                 overwrite=overwrite,
@@ -73,13 +98,19 @@ class OpenDataLabDrive(DriveSystem):
         except Exception as e:
             return False
 
-    def download_dir(self, dir_path="./cache", dataset_name=None, overwrite=False, *args, **kwargs) -> bool:
+    def download_dir(
+        self, dir_path="./cache", dataset_name=None, overwrite=False, *args, **kwargs
+    ) -> bool:
         if dataset_name is None:
             return False
         file_list = self.get_file_list(dataset_name=dataset_name)
         for i, file in enumerate(file_list):
             filepath = os.path.join(dir_path, file["path"])
-            if os.path.exists(filepath) and not overwrite and file["size"] == os.path.getsize(filepath):
+            if (
+                os.path.exists(filepath)
+                and not overwrite
+                and file["size"] == os.path.getsize(filepath)
+            ):
                 return False
             try:
                 self.download_file(

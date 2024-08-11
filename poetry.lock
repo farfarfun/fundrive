@@ -13,13 +13,13 @@ files = [
 
 [[package]]
 name = "funfile"
-version = "1.0.4"
+version = "1.0.5"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "funfile-1.0.4-py3-none-any.whl", hash = "sha256:8974cd96018c3d5713d09f33cea07faccf7cd8c56027addf25763e1d33c1622f"},
-    {file = "funfile-1.0.4.tar.gz", hash = "sha256:a4c3515243ccbbc2a4620f78de8b6ba39bf552dbef9cc3441d701da23cd70cf1"},
+    {file = "funfile-1.0.5-py3-none-any.whl", hash = "sha256:5a11791728e045721cf5cd51de816bcd10160c1ecb9625f5386654117fad49b5"},
+    {file = "funfile-1.0.5.tar.gz", hash = "sha256:34e207af2164df5b77733d9220de9972e004d5393a943c174c44e7f86dff7366"},
 ]
 
 [package.dependencies]
@@ -27,13 +27,13 @@ tqdm = ">=4.66.5,<5.0.0"
 
 [[package]]
 name = "funget"
-version = "1.0.5"
+version = "1.0.7"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "funget-1.0.5-py3-none-any.whl", hash = "sha256:884304566c608dbb6c8e9aa285ec26dc6ce2bd887f83333e2de5b204e6c4fc04"},
-    {file = "funget-1.0.5.tar.gz", hash = "sha256:9f07e4e3e0bda33f857b92f92240fbdeda839c0b1cbc9f625e43636b1b86abcd"},
+    {file = "funget-1.0.7-py3-none-any.whl", hash = "sha256:f4e4f0e5cd8dba7290ca0262d74350be79945704e7bb5237f9b01746679bcec8"},
+    {file = "funget-1.0.7.tar.gz", hash = "sha256:c6ff4afe777f24049b9a1cc988d1c055ada78da42b338436e8ffd32e6a4f4cb9"},
 ]
 
 [package.dependencies]
