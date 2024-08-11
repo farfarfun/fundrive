@@ -15,6 +15,3 @@ include = "*"
 [tool.poetry.dependencies]
 python = "^3.9"
 fundrive = "^1.0.5"
-
-[tool.poetry.dependencies.lanzou-gui]
-git = "https://github.com/farfarfun/lanzou-gui.git"
