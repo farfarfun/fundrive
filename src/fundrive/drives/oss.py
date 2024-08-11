@@ -30,7 +30,7 @@ class OSSDrive(DriveSystem):
         try:
             import oss2
         except Exception as e:
-            subprocess.check_call(["pip", "install", "oss2"])
+            subprocess.check_call(["pip", "install", "fundrive-oss"])
             import oss2
 
         if access_key is None:
