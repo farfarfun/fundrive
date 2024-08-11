@@ -3,8 +3,8 @@ requires = [ "poetry-core",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "fundrive[lanzou]"
-version = "1.0.5"
+name = "fundrive-lanzou"
+version = "1.0.6"
 description = ""
 authors = [ "farfun <1007530194@qq.com>",]
 readme = "README.md"
