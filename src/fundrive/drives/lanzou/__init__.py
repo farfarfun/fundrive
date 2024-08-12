@@ -1,2 +1,2 @@
-from .drive import LanZouDrive, download,LanZouSnapshot
+from .drive import LanZouDrive, LanZouSnapshot
 
