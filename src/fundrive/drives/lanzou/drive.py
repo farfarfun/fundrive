@@ -202,9 +202,8 @@ class LanZouDrive(BaseDrive):
         if not os.path.exists(local_path):
             os.makedirs(local_path, exist_ok=True)
         for file in self.get_file_list(drive_path):
-            _local_path = os.path.join(local_path, file["name"])
             self.download_file(
-                local_path=_local_path,
+                local_path=local_path,
                 drive_path=file["fid"],
                 overwrite=overwrite,
                 *args,
