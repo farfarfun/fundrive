@@ -76,8 +76,8 @@ class LanZouDrive(BaseDrive):
         fid = None
         url = None
         pwd = None
-        if "," in path:
-            fid = path.split(",")[0]
+        if "," not in path:
+            fid = path
         else:
             url, pwd = path.split(",")
         return fid, url, pwd
