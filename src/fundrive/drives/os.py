@@ -19,6 +19,8 @@ class OSDrive(BaseDrive):
     def upload_file(
         self, local_path, drive_path, recursion=True, overwrite=False, *args, **kwargs
     ) -> bool:
+        if not os.path.exists(local_path):
+            return False
         print(local_path, drive_path)
         shutil.copyfile(local_path, drive_path)
         return True
@@ -26,6 +28,8 @@ class OSDrive(BaseDrive):
     def download_file(
         self, local_path, drive_path, overwrite=False, *args, **kwargs
     ) -> bool:
+        if not os.path.exists(drive_path):
+            return False
         print(local_path, drive_path)
         shutil.copyfile(drive_path, local_path)
         return True

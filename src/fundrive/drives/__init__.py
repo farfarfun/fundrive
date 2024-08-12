@@ -6,3 +6,4 @@ from .opendatalab import OpenDataLabDrive
 from .lanzou import LanZouDrive, LanZouSnapshot
 from .wenshushu import WSSDrive
 from .alipan import ALiDrive
+from .os import OSDrive
