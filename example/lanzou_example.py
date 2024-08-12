@@ -18,7 +18,7 @@ def example3():
     # download("https://wwe.lanzoui.com/ig56tpia6rg", dir_pwd="./download/lanzou")
     # download('https://wws.lanzous.com/b01hh63kf', dir_pwd='./download/lanzou')
     # downer.download_file(fid=133463386)
-    downer.download_dir(drive_path == "6073427", local_path="ca")
+    downer.download_dir(drive_path="6073427", local_path="cache")
 
 
 def example4():
@@ -31,11 +31,11 @@ def example4():
 
 
 def example5():
-    print(downer.get_file_list(fid=6073427))
+    print(downer.get_file_list(path=6073427))
 
 
 # example1()
 # example2()
-# example3()
+example3()
 # example4()
-example5()
+# example5()

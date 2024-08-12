@@ -82,6 +82,9 @@ class LanZouDrive(BaseDrive):
             url, pwd = path.split(",")
         return fid, url, pwd
 
+    def exist(self, path, *args, **kwargs) -> bool:
+        return True
+
     def mkdir(self, path, *args, **kwargs) -> bool:
         fid, url, pwd = self.parse_fid_url_pwd(path)
         return self.drive.mkdir(url, pwd, *args, **kwargs) == 0
