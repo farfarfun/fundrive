@@ -2,8 +2,8 @@ import os
 import subprocess
 from typing import Any, List, Dict
 
+from fundrive.core import BaseDrive
 from fundrive.core import DriveSnapshot
-from fundrive.core import DriveSystem
 from funfile.compress import tarfile
 from funsecret import read_secret
 from tqdm import tqdm
@@ -38,7 +38,7 @@ class ProgressWrap:
         self.last_size = now_size
 
 
-class LanZouDrive(DriveSystem):
+class LanZouDrive(BaseDrive):
     def __init__(self, *args, **kwargs):
         super(LanZouDrive, self).__init__(*args, **kwargs)
         self.allow_big_file = False
@@ -78,16 +78,14 @@ class LanZouDrive(DriveSystem):
     def delete(self, fid=None, *args, **kwargs) -> bool:
         return self.drive.delete(fid, *args, **kwargs) == 0
 
-    def get_dir_list(
-        self, fid=None, url=None, pwd=None, *args, **kwargs
-    ) -> List[Dict[str, Any]]:
+    def get_dir_list(self, fid, *args, **kwargs) -> List[Dict[str, Any]]:
         result = []
         for item in self.drive.get_dir_list(folder_id=fid)[0]:
             result.append({"fid": item.id, "name": item.name, "desc": item.desc})
         return result
 
     def get_file_list(
-        self, fid=None, url=None, pwd=None, *args, **kwargs
+        self, fid, url=None, pwd=None, *args, **kwargs
     ) -> List[Dict[str, Any]]:
         from lanzou.api.utils import convert_file_size_to_int
 
@@ -192,7 +190,7 @@ class LanZouDrive(DriveSystem):
 
     def download_dir(
         self,
-        dir_path="./cache",
+        local_path="./cache",
         fid=None,
         url=None,
         pwd=None,
@@ -201,7 +199,7 @@ class LanZouDrive(DriveSystem):
         **kwargs,
     ):
         dir_info = self.get_dir_info(fid=fid, url=url, pwd=pwd)
-        task = Task(url=dir_info["url"], pwd=dir_info["pwd"], path=dir_path)
+        task = Task(url=dir_info["url"], pwd=dir_info["pwd"], path=local_path)
 
         def clb():
             pass
@@ -214,11 +212,11 @@ class LanZouDrive(DriveSystem):
         )
 
     def upload_file(
-        self, file_path="./cache", fid=None, overwrite=False, *args, **kwargs
+        self, local_path="./cache", fid=None, overwrite=False, *args, **kwargs
     ) -> bool:
-        task = Task(url=file_path, pwd="", path=file_path, folder_id=fid)
+        task = Task(url=local_path, pwd="", path=local_path, folder_id=fid)
         wrap = ProgressWrap()
-        wrap.init(os.path.basename(file_path), os.stat(file_path).st_size)
+        wrap.init(os.path.basename(local_path), os.stat(local_path).st_size)
 
         def clb():
             wrap.update(task.now_size)
@@ -226,7 +224,7 @@ class LanZouDrive(DriveSystem):
         return (
             self.drive.upload_file(
                 task=task,
-                file_path=file_path,
+                local_path=local_path,
                 folder_id=fid,
                 callback=clb,
                 allow_big_file=self.allow_big_file,
@@ -236,7 +234,7 @@ class LanZouDrive(DriveSystem):
 
     def upload_dir(
         self,
-        file_path="./cache",
+        local_path="./cache",
         fid=None,
         only_directory=False,
         overwrite=False,
@@ -245,7 +243,7 @@ class LanZouDrive(DriveSystem):
     ) -> dict:
         """
         将本地的文件同步到云端，单向同步
-        :param file_path: 本地路径
+        :param local_path: 本地路径
         :param fid: 云端路径
         :param only_directory: 是否只同步文件夹
         :param overwrite: 是否需要覆盖重写
@@ -259,8 +257,8 @@ class LanZouDrive(DriveSystem):
         yun_file_dict = dict([(yun["name"], yun["id"]) for yun in yun_file_list])
 
         file_dict = {}
-        for file in os.listdir(file_path):
-            local_path = os.path.join(file_path, file)
+        for file in os.listdir(local_path):
+            local_path = os.path.join(local_path, file)
             # 根据传入的函数进行过滤，某些文件可以不同步
             if filter_fun is not None and (filter_fun(local_path) or filter_fun(file)):
                 continue
@@ -274,7 +272,7 @@ class LanZouDrive(DriveSystem):
                 file_dict[local_path] = yun_id
                 file_dict.update(
                     self.upload_dir(
-                        file_path=local_path,
+                        local_path=local_path,
                         fid=yun_id,
                         only_directory=only_directory,
                         overwrite=overwrite,
@@ -290,11 +288,11 @@ class LanZouDrive(DriveSystem):
                 if file in yun_file_dict.keys():
                     if overwrite:
                         self.delete(yun_file_dict[file], is_file=True)
-                        yun_id = self.upload_file(file_path=local_path, fid=fid)
+                        yun_id = self.upload_file(local_path=local_path, fid=fid)
                     else:
                         yun_id = yun_file_dict[file]
                 else:
-                    yun_id = self.upload_file(file_path=local_path, fid=fid)
+                    yun_id = self.upload_file(local_path=local_path, fid=fid)
 
                 file_dict[local_path] = yun_id
                 if yun_id > 100 and remove_local:
