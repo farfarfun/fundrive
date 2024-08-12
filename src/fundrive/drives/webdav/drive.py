@@ -2,11 +2,11 @@ import os.path
 import subprocess
 from typing import Any, List, Dict
 
-from fundrive.core import DriveSystem
+from fundrive.core import BaseDrive
 from funsecret import read_secret
 
 
-class WebDavDrive(DriveSystem):
+class WebDavDrive(BaseDrive):
     def __init__(self, *args, **kwargs):
         super(WebDavDrive, self).__init__(*args, **kwargs)
         self.drive = None
@@ -27,13 +27,16 @@ class WebDavDrive(DriveSystem):
         self.drive = Client(server_url, auth=(username, password))
         return True
 
-    def mkdir(self, path, *args, **kwargs) -> bool:
+    def mkdir(self, path, exist_ok=True, *args, **kwargs) -> bool:
         self.drive.mkdir(path=path)
         return True
 
     def delete(self, path, *args, **kwargs) -> bool:
         self.drive.remove(path=path)
         return True
+
+    def exist(self, path, *args, **kwargs) -> bool:
+        return self.drive.exists(path)
 
     def get_file_list(self, path, *args, **kwargs) -> List[Dict[str, Any]]:
         return [file for file in self.drive.ls(path=path) if file["type"] == "file"]
@@ -50,30 +53,21 @@ class WebDavDrive(DriveSystem):
         return self.drive.info(path)
 
     def download_file(
-        self, dir_path="./cache", path=None, overwrite=False, *args, **kwargs
+        self, local_path, drive_path, overwrite=False, *args, **kwargs
     ) -> bool:
-        os.makedirs(dir_path, exist_ok=True)
-        self.drive.download_file(
-            from_path=path, to_path=f"{dir_path}/{os.path.basename(path)}"
-        )
-        return True
-
-    def download_dir(
-        self, dir_path="./cache", path=None, overwrite=False, *args, **kwargs
-    ) -> bool:
-        for file in self.get_file_list(path):
-            self.download_file(dir_path=f"{dir_path}/{file['name']}", path=file["name"])
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+        if os.path.exists(local_path) and not overwrite:
+            return False
+        self.drive.download_file(from_path=drive_path, to_path=local_path)
         return True
 
     def upload_file(
-        self, file_path="./cache", to_path=None, overwrite=False, *args, **kwargs
+        self, local_path, drive_path, recursion=True, overwrite=False, *args, **kwargs
     ) -> bool:
-        self.drive.upload_file(
-            from_path=file_path, to_path=to_path, overwrite=overwrite
-        )
-        return True
+        if self.exist(drive_path) and not overwrite:
+            return False
 
-    def upload_dir(
-        self, file_path="./cache", path=None, overwrite=False, *args, **kwargs
-    ) -> bool:
+        self.drive.upload_file(
+            from_path=local_path, to_path=drive_path, overwrite=overwrite
+        )
         return True
