@@ -11,7 +11,7 @@ class WebDavDrive(BaseDrive):
         super(WebDavDrive, self).__init__(*args, **kwargs)
         self.drive = None
 
-    def login(self, server_url, username, password, *args, **kwargs) -> bool:
+    def login(self, server_url=None, username=None, password=None, *args, **kwargs) -> bool:
         server_url = server_url or read_secret(
             "fundrive", "webdav", "alipan", "server_url"
         )
