@@ -1,9 +1,10 @@
 import os
 import subprocess
-from typing import Any, List, Dict
+from typing import List
 
 from fundrive.core import BaseDrive
 from fundrive.core import DriveSnapshot
+from fundrive.core.base import DriveFile
 from funfile.compress import tarfile
 from funsecret import read_secret
 from tqdm import tqdm
@@ -85,55 +86,53 @@ class LanZouDrive(BaseDrive):
     def exist(self, path, *args, **kwargs) -> bool:
         return True
 
-    def mkdir(self, path, *args, **kwargs) -> bool:
-        fid, url, pwd = self.parse_fid_url_pwd(path)
+    def mkdir(self, fid, url=None, pwd=None, *args, **kwargs) -> bool:
         return self.drive.mkdir(url, pwd, *args, **kwargs) == 0
 
-    def delete(self, path=None, *args, **kwargs) -> bool:
-        fid, url, pwd = self.parse_fid_url_pwd(path)
+    def delete(self, fid=None, *args, **kwargs) -> bool:
         return self.drive.delete(fid, *args, **kwargs) == 0
 
-    def get_dir_list(self, path, *args, **kwargs) -> List[Dict[str, Any]]:
-        fid, url, pwd = self.parse_fid_url_pwd(path)
+    def get_dir_list(self, fid, url=None, pwd=None, *args, **kwargs) -> List[DriveFile]:
         result = []
         for item in self.drive.get_dir_list(folder_id=fid)[0]:
-            result.append({"fid": item.id, "name": item.name, "desc": item.desc})
+            result.append(DriveFile(fid=item.id, name=item.name, desc=item.desc))
         return result
 
-    def get_file_list(self, path, *args, **kwargs) -> List[Dict[str, Any]]:
-        fid, url, pwd = self.parse_fid_url_pwd(path)
+    def get_file_list(
+        self, fid, url=None, pwd=None, *args, **kwargs
+    ) -> List[DriveFile]:
         from lanzou.api.utils import convert_file_size_to_int
 
         result = []
         if fid is not None:
             for item in self.drive.get_file_list(folder_id=fid):
                 result.append(
-                    {
-                        "fid": item.id,
-                        "name": item.name,
-                        "size": item.size,
-                        "type": item.type,
-                        "time": item.time,
-                        "has_pwd": item.has_pwd,
-                    }
+                    DriveFile(
+                        fid=item.id,
+                        name=item.name,
+                        desc=item.desc,
+                        time=item.time,
+                        has_pwd=item.has_pwd,
+                    )
                 )
         if url is not None:
             data = self.drive.get_folder_info_by_url(url, pwd)
             for item in data.files:
                 result.append(
-                    {
-                        "name": item.name,
-                        "size": convert_file_size_to_int(item.size),
-                        "type": item.type,
-                        "time": item.time,
-                        "url": item.url,
-                        "pwd": item.pwd,
-                    }
+                    DriveFile(
+                        fid=item.id,
+                        name=item.name,
+                        desc=item.desc,
+                        time=item.time,
+                        size=convert_file_size_to_int(item.size),
+                        url=item.url,
+                        pwd=item.pwd,
+                        has_pwd=item.has_pwd,
+                    )
                 )
         return result
 
-    def get_file_info(self, path=None, *args, **kwargs) -> Dict[str, Any]:
-        fid, url, pwd = self.parse_fid_url_pwd(path)
+    def get_file_info(self, fid, url=None, pwd=None, *args, **kwargs) -> DriveFile:
         from lanzou.api.utils import convert_file_size_to_int
 
         data = None
@@ -142,21 +141,18 @@ class LanZouDrive(BaseDrive):
         if data is None and url is not None:
             data = self.drive.get_file_info_by_url(url, pwd)
         if data is not None:
-            return {
-                "fid": fid,
-                "name": data.name,
-                "size": convert_file_size_to_int(data.size),
-                "type": data.type,
-                "time": data.time,
-                "desc": data.desc,
-                "pwd": data.pwd,
-                "url": data.url,
-                "durl": data.durl,
-            }
-        return {}
+            return DriveFile(
+                fid=data.id,
+                name=data.name,
+                desc=data.desc,
+                time=data.time,
+                size=convert_file_size_to_int(data.size),
+                url=data.url,
+                pwd=data.pwd,
+                has_pwd=data.has_pwd,
+            )
 
-    def get_dir_info(self, path=None, *args, **kwargs) -> Dict[str, Any]:
-        fid, url, pwd = self.parse_fid_url_pwd(path)
+    def get_dir_info(self, fid, url=None, pwd=None, *args, **kwargs) -> DriveFile:
         data = None
         if fid is not None:
             data = self.drive.get_folder_info_by_id(fid)
@@ -164,23 +160,18 @@ class LanZouDrive(BaseDrive):
             data = self.drive.get_folder_info_by_url(url, pwd)
         if data is not None:
             data = data.folder
-            return {
-                "name": data.name,
-                "fid": data.id,
-                "pwd": data.pwd,
-                "time": data.time,
-                "desc": data.desc,
-                "url": data.url,
-            }
-        return {}
+            return DriveFile(
+                fid=data.id,
+                name=data.name,
+                desc=data.desc,
+                time=data.time,
+                url=data.url,
+            )
 
-    def download_file(
-        self, local_path, drive_path, overwrite=False, *args, **kwargs
-    ) -> bool:
-        file_info = self.get_file_info(path=drive_path)
-        task = Task(url=file_info["url"], pwd=file_info["pwd"], path=local_path)
-        if not os.path.exists(local_path):
-            os.makedirs(local_path, exist_ok=True)
+    def download_file(self, fid, local_dir, overwrite=False, *args, **kwargs) -> bool:
+        file_info = self.get_file_info(fid=fid)
+        task = Task(url=file_info["url"], pwd=file_info["pwd"], path=local_dir)
+        os.makedirs(local_dir, exist_ok=True)
         wrap = ProgressWrap()
         wrap.init(file_info["name"], file_info["size"])
 
@@ -195,16 +186,15 @@ class LanZouDrive(BaseDrive):
         )
 
     def download_dir(
-        self, local_path, drive_path, recursion=True, overwrite=False, *args, **kwargs
+        self, fid, local_dir, recursion=True, overwrite=False, *args, **kwargs
     ) -> bool:
-        if not self.exist(drive_path):
+        if not self.exist(fid):
             return False
-        if not os.path.exists(local_path):
-            os.makedirs(local_path, exist_ok=True)
-        for file in self.get_file_list(drive_path):
+        os.makedirs(local_dir, exist_ok=True)
+        for file in self.get_file_list(fid):
             self.download_file(
-                local_path=local_path,
-                drive_path=file["fid"],
+                fid=file["fid"],
+                local_dir=local_dir,
                 overwrite=overwrite,
                 *args,
                 **kwargs,
@@ -212,11 +202,11 @@ class LanZouDrive(BaseDrive):
         if not recursion:
             return True
 
-        for file in self.get_dir_list(drive_path):
-            _local_path = os.path.join(local_path, file["name"])
+        for file in self.get_dir_list(fid):
+            _local_path = os.path.join(local_dir, file["name"])
             self.download_dir(
-                local_path=_local_path,
-                drive_path=file["fid"],
+                fid=file["fid"],
+                local_dir=local_dir,
                 overwrite=overwrite,
                 recursion=recursion,
                 *args,
@@ -224,10 +214,17 @@ class LanZouDrive(BaseDrive):
             )
 
     def upload_file(
-        self, local_path, drive_path, recursion=True, overwrite=False, *args, **kwargs
+        self,
+        local_path,
+        fid,
+        url=None,
+        pwd=None,
+        recursion=True,
+        overwrite=False,
+        *args,
+        **kwargs,
     ) -> bool:
-        fid, url, pwd = self.parse_fid_url_pwd(drive_path)
-        task = Task(url=url, pwd=pwd, path=local_path, folder_id=drive_path)
+        task = Task(url=url, pwd=pwd, path=local_path, folder_id=fid)
         wrap = ProgressWrap()
         wrap.init(os.path.basename(local_path), os.stat(local_path).st_size)
 
@@ -238,7 +235,7 @@ class LanZouDrive(BaseDrive):
             self.drive.upload_file(
                 task=task,
                 local_path=local_path,
-                folder_id=drive_path,
+                folder_id=fid,
                 callback=clb,
                 allow_big_file=self.allow_big_file,
             )[0]
