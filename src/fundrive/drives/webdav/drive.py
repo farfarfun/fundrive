@@ -11,7 +11,9 @@ class WebDavDrive(BaseDrive):
         super(WebDavDrive, self).__init__(*args, **kwargs)
         self.drive = None
 
-    def login(self, server_url=None, username=None, password=None, *args, **kwargs) -> bool:
+    def login(
+        self, server_url=None, username=None, password=None, *args, **kwargs
+    ) -> bool:
         server_url = server_url or read_secret(
             "fundrive", "webdav", "alipan", "server_url"
         )
@@ -39,12 +41,20 @@ class WebDavDrive(BaseDrive):
         return self.drive.exists(path)
 
     def get_file_list(self, path, *args, **kwargs) -> List[Dict[str, Any]]:
-        return [file for file in self.drive.ls(path=path) if file["type"] == "file"]
+        result = []
+        for file in self.drive.ls(path=path):
+            if file["type"] == "file":
+                file["path"] = file["name"]
+                result.append(file)
+        return result
 
     def get_dir_list(self, path, *args, **kwargs) -> List[Dict[str, Any]]:
-        return [
-            file for file in self.drive.ls(path=path) if file["type"] == "directory"
-        ]
+        result = []
+        for file in self.drive.ls(path=path):
+            if file["type"] == "directory":
+                file["path"] = file["name"]
+                result.append(file)
+        return result
 
     def get_file_info(self, path, *args, **kwargs) -> Dict[str, Any]:
         return self.drive.info(path)
