@@ -58,6 +58,8 @@ class WebDavDrive(BaseDrive):
         os.makedirs(os.path.dirname(local_path), exist_ok=True)
         if os.path.exists(local_path) and not overwrite:
             return False
+        if not self.exist(drive_path):
+            return False
         self.drive.download_file(from_path=drive_path, to_path=local_path)
         return True
 
