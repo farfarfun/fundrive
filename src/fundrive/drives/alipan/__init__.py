@@ -1,3 +1,3 @@
-from .drive import ALiDrive
+from .drive import AlipanDrive
 
-__all__ = ["ALiDrive"]
+__all__ = ["AlipanDrive"]

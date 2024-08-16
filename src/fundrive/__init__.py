@@ -6,3 +6,4 @@ from .drives import OpenDataLabDrive
 from .fungit import GithubDrive
 from .drives import LanZouSnapshot
 from .fungit import GiteeDrive
+from .drives import AlipanDrive
