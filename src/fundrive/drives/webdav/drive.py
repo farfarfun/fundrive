@@ -1,8 +1,9 @@
 import os.path
 import subprocess
-from typing import Any, List, Dict
+from typing import List
 
 from fundrive.core import BaseDrive
+from fundrive.core.base import DriveFile
 from funsecret import read_secret
 
 
@@ -29,55 +30,80 @@ class WebDavDrive(BaseDrive):
         self.drive = Client(server_url, auth=(username, password))
         return True
 
-    def mkdir(self, path, exist_ok=True, *args, **kwargs) -> bool:
+    def mkdir(self, fid, name, return_if_exist=True, *args, **kwargs) -> str:
+        path = str(os.path.join(fid, name))
         self.drive.mkdir(path=path)
+        return path
+
+    def delete(self, fid, *args, **kwargs) -> bool:
+        self.drive.remove(path=fid)
         return True
 
-    def delete(self, path, *args, **kwargs) -> bool:
-        self.drive.remove(path=path)
-        return True
+    def exist(self, fid, *args, **kwargs) -> bool:
+        return self.drive.exists(fid)
 
-    def exist(self, path, *args, **kwargs) -> bool:
-        return self.drive.exists(path)
-
-    def get_file_list(self, path, *args, **kwargs) -> List[Dict[str, Any]]:
+    def get_file_list(self, fid, *args, **kwargs) -> List[DriveFile]:
         result = []
-        for file in self.drive.ls(path=path):
+        for file in self.drive.ls(path=fid):
             if file["type"] == "file":
-                result.append({"path": file["name"], "size": file["content_length"]})
+                result.append(
+                    DriveFile(
+                        fid=file["name"],
+                        name=os.path.basename(file["name"]),
+                        size=file["content_length"],
+                    )
+                )
+
         return result
 
-    def get_dir_list(self, path, *args, **kwargs) -> List[Dict[str, Any]]:
+    def get_dir_list(self, fid, *args, **kwargs) -> List[DriveFile]:
         result = []
-        for file in self.drive.ls(path=path):
+        for file in self.drive.ls(path=fid):
             if file["type"] == "directory":
-                result.append({"path": file["name"], "size": file["content_length"]})
+                result.append(
+                    DriveFile(
+                        fid=file["name"],
+                        name=os.path.basename(file["name"]),
+                        size=file["content_length"],
+                    )
+                )
+
         return result
 
-    def get_file_info(self, path, *args, **kwargs) -> Dict[str, Any]:
-        return self.drive.info(path)
+    def get_file_info(self, fid, *args, **kwargs) -> DriveFile:
+        res = self.drive.info(fid)
+        return DriveFile(
+            fid=res["name"],
+            name=os.path.basename(res["name"]),
+            size=res["content_length"],
+        )
 
-    def get_dir_info(self, path, *args, **kwargs) -> Dict[str, Any]:
-        return self.drive.info(path)
+    def get_dir_info(self, fid, *args, **kwargs) -> DriveFile:
+        res = self.drive.info(fid)
+        return DriveFile(
+            fid=res["name"],
+            name=os.path.basename(res["name"]),
+            size=res["content_length"],
+        )
 
-    def download_file(
-        self, local_path, drive_path, overwrite=False, *args, **kwargs
-    ) -> bool:
-        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+    def download_file(self, fid, local_dir, overwrite=False, *args, **kwargs) -> bool:
+        local_path = os.path.join(local_dir, os.path.basename(fid))
+        os.makedirs(local_dir, exist_ok=True)
         if os.path.exists(local_path) and not overwrite:
             return False
-        if not self.exist(drive_path):
+        if not self.exist(fid):
             return False
-        self.drive.download_file(from_path=drive_path, to_path=local_path)
+        self.drive.download_file(from_path=fid, to_path=local_path)
         return True
 
     def upload_file(
-        self, local_path, drive_path, recursion=True, overwrite=False, *args, **kwargs
+        self, local_path, fid, recursion=True, overwrite=False, *args, **kwargs
     ) -> bool:
-        if self.exist(drive_path) and not overwrite:
+        if self.exist(fid) and not overwrite:
             return False
-
         self.drive.upload_file(
-            from_path=local_path, to_path=drive_path, overwrite=overwrite
+            from_path=local_path,
+            to_path=os.path.join(fid, os.path.basename(local_path)),
+            overwrite=overwrite,
         )
         return True
