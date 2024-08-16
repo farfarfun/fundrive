@@ -44,16 +44,14 @@ class WebDavDrive(BaseDrive):
         result = []
         for file in self.drive.ls(path=path):
             if file["type"] == "file":
-                file["path"] = file["name"]
-                result.append(file)
+                result.append({"path": file["href"], "size": file["content_length"]})
         return result
 
     def get_dir_list(self, path, *args, **kwargs) -> List[Dict[str, Any]]:
         result = []
         for file in self.drive.ls(path=path):
             if file["type"] == "directory":
-                file["path"] = file["name"]
-                result.append(file)
+                result.append({"path": file["href"], "size": file["content_length"]})
         return result
 
     def get_file_info(self, path, *args, **kwargs) -> Dict[str, Any]:
