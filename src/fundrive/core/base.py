@@ -4,34 +4,11 @@ from typing import List
 
 class DriveFile(dict):
     def __init__(self, fid, name, *args, **kwargs):
+        kwargs.update({"fid": fid, "name": name})
         super().__init__(*args, **kwargs)
         self.fid = fid
         self.name = name
         self.data = {"fid": fid, "name": name}
-
-    def __getitem__(self, key):
-        return self.data[key]
-
-    def __setitem__(self, key, value):
-        self.data[key] = value
-
-    def __delitem__(self, key):
-        del self.data[key]
-
-    def __contains__(self, key):
-        return key in self.data
-
-    def keys(self):
-        return list(self.data.keys())
-
-    def values(self):
-        return list(self.data.values())
-
-    def items(self):
-        return list(self.data.items())
-
-    def clear(self):
-        self.data.clear()
 
     @property
     def size(self):
