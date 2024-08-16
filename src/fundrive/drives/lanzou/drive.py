@@ -140,7 +140,7 @@ class LanZouDrive(BaseDrive):
             data = self.drive.get_file_info_by_url(url, pwd)
         if data is not None:
             return DriveFile(
-                fid=data.id,
+                fid=data.durl,
                 name=data.name,
                 desc=data.desc,
                 time=data.time,
