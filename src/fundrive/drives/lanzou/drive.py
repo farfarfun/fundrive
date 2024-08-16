@@ -86,8 +86,8 @@ class LanZouDrive(BaseDrive):
     def exist(self, path, *args, **kwargs) -> bool:
         return True
 
-    def mkdir(self, fid, url=None, pwd=None, *args, **kwargs) -> bool:
-        return self.drive.mkdir(url, pwd, *args, **kwargs) == 0
+    def mkdir(self, fid, name, url=None, pwd=None, *args, **kwargs) -> bool:
+        return self.drive.mkdir(fid, name, *args, **kwargs) == 0
 
     def delete(self, fid=None, *args, **kwargs) -> bool:
         return self.drive.delete(fid, *args, **kwargs) == 0
@@ -234,7 +234,7 @@ class LanZouDrive(BaseDrive):
         return (
             self.drive.upload_file(
                 task=task,
-                local_path=local_path,
+                file_path=local_path,
                 folder_id=fid,
                 callback=clb,
                 allow_big_file=self.allow_big_file,
