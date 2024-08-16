@@ -1,8 +1,9 @@
 import json
+import logging
 import os.path
 
+from fundrive import LanZouDrive
 from fundrive.core import BaseDrive
-from fundrive.drives.alipan.drive import AlipanDrive
 
 
 class DriveTable:
@@ -26,6 +27,8 @@ class DriveTable:
         for file in self.drive.get_file_list(self._fid_meta):
             if file["name"] == "partition.json":
                 self._fid_meta_partition_json = file["fid"]
+        print(f"partition_size={len(self._fid_par_dict)}")
+        print(f" _meta_partition_json={self._fid_meta_partition_json}")
 
     @property
     def meta_path(self):
@@ -38,6 +41,7 @@ class DriveTable:
         if partition in self._fid_par_dict.keys():
             fid = self._fid_par_dict[partition]
         else:
+            logging.info(f" partition={partition} not exists,create it.")
             fid = self.drive.mkdir(fid=self.table_fid, name=partition)
             self.cache_partition()
         self.drive.upload_file(fid=fid, local_path=file)
@@ -47,6 +51,7 @@ class DriveTable:
 
     def update_partition_meta(self, refresh=False, *args, **kwargs):
         tmp = "./partition.json"
+        print("download partition.json")
         if self._fid_meta_partition_json is not None:
             self.drive.download_file(fid=self._fid_meta_partition_json, local_dir="./")
         partition_meta = []
@@ -69,9 +74,19 @@ class DriveTable:
 
     def partition_meta(self):
         tmp = "./partition.json"
+        if os.path.exists(tmp):
+            os.remove(tmp)
         if self._fid_meta_partition_json is not None:
             self.drive.download_file(local_dir="./", fid=self._fid_meta_partition_json)
         if not os.path.exists(tmp):
             return None
         with open(tmp, "r") as f:
             return json.load(f)
+
+
+drive = LanZouDrive()
+drive.login()
+table = DriveTable(table_fid="10677308", drive=drive)
+table.cache_partition()
+table.update_partition_meta()
+print(table.partition_meta())

@@ -110,7 +110,6 @@ class LanZouDrive(BaseDrive):
                     DriveFile(
                         fid=item.id,
                         name=item.name,
-                        desc=item.desc,
                         time=item.time,
                         has_pwd=item.has_pwd,
                     )
@@ -122,7 +121,6 @@ class LanZouDrive(BaseDrive):
                     DriveFile(
                         fid=item.id,
                         name=item.name,
-                        desc=item.desc,
                         time=item.time,
                         size=convert_file_size_to_int(item.size),
                         url=item.url,
