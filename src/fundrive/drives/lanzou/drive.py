@@ -111,7 +111,6 @@ class LanZouDrive(BaseDrive):
                         fid=item.id,
                         name=item.name,
                         time=item.time,
-                        has_pwd=item.has_pwd,
                     )
                 )
         if url is not None:
@@ -125,7 +124,6 @@ class LanZouDrive(BaseDrive):
                         size=convert_file_size_to_int(item.size),
                         url=item.url,
                         pwd=item.pwd,
-                        has_pwd=item.has_pwd,
                     )
                 )
         return result
@@ -147,7 +145,6 @@ class LanZouDrive(BaseDrive):
                 size=convert_file_size_to_int(data.size),
                 url=data.url,
                 pwd=data.pwd,
-                has_pwd=data.has_pwd,
             )
 
     def get_dir_info(self, fid, url=None, pwd=None, *args, **kwargs) -> DriveFile:
