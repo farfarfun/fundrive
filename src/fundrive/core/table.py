@@ -84,11 +84,3 @@ class DriveTable:
             return {}
         with open(tmp, "r") as f:
             return json.load(f)
-
-
-drive = LanZouDrive()
-drive.login()
-table = DriveTable(table_fid="10677308", drive=drive)
-table.cache_partition()
-table.update_partition_meta()
-print(table.partition_meta())
