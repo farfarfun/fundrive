@@ -237,6 +237,9 @@ class LanZouDrive(BaseDrive):
             == 0
         )
 
+    def move_file(self, file_id, folder_id):
+        self.drive.move_file(file_id, folder_id)
+
 
 class LanZouSnapshot(DriveSnapshot):
     def __init__(self, fid=None, url=None, pwd="", *args, **kwargs):
