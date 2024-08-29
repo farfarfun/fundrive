@@ -19,7 +19,6 @@ def start_serve(dht_server, torrent_cache_folder=None, debug=False, apikey=None,
         stdio_handler = logging.StreamHandler()
         stdio_handler.setLevel(logging.INFO)
         logger = logging.getLogger("aiohttp.access")
-        logger.setLevel(logging.INFO)
         logger.addHandler(stdio_handler)
 
     settings.SERVE_APIKEY = apikey

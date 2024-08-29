@@ -17,8 +17,6 @@ logging.basicConfig(
 
 def log(name=None, level=logging.DEBUG):
     logger = logging.getLogger("fundrive")
-    logger.setLevel(level)
-
     return logger
 
 

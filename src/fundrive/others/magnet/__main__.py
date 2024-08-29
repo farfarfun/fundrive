@@ -79,7 +79,6 @@ def main():
             stdio_handler = logging.StreamHandler()
             stdio_handler.setLevel(logging.INFO)
             logger = logging.getLogger("aiohttp.access")
-            logger.setLevel(logging.INFO)
             logger.addHandler(stdio_handler)
 
         settings.SERVE_APIKEY = args.apikey
