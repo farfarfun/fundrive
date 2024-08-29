@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "fundrive"
-version = "1.0.50"
+version = "1.0.51"
 description = ""
 authors = [ "farfun <1007530194@qq.com>",]
 readme = "README.md"

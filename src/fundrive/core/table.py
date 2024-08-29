@@ -14,7 +14,7 @@ class DriveTable:
 
         self._fid_par_dict = {}
         self._fid_meta = None
-        self._fid_meta_fid = None
+        self._fid_meta_par = None
 
     @property
     def __local_meta_path(self):
@@ -40,9 +40,10 @@ class DriveTable:
 
         for file in self.drive.get_file_list(self._fid_meta):
             if file["name"] == os.path.basename(self.__local_meta_path):
-                self._fid_meta_fid = file["fid"]
+                self._fid_meta_par = file["fid"]
         logger.info(f"partition_size={len(self._fid_par_dict)}")
-        logger.info(f"fid_meta_fid={self._fid_meta_fid}")
+        logger.info(f"fid_meta_par={self._fid_meta_par}")
+        logger.info(f"fid_meta={self._fid_meta}")
 
     def upload(self, file, partition):
         if partition in self._fid_par_dict.keys():
@@ -57,8 +58,8 @@ class DriveTable:
         local_meta_path = self.__local_meta_path
 
         logger.info(f"download meta from drive to {local_meta_path}.")
-        if self._fid_meta_fid is not None:
-            self.drive.download_file(fid=self._fid_meta_fid, local_dir="./")
+        if self._fid_meta_par is not None:
+            self.drive.download_file(fid=self._fid_meta_par, local_dir="./")
 
         partition_meta = self.partition_meta(refresh=False)
         logger.info(f"exists meta size={len(partition_meta)}")
@@ -74,7 +75,7 @@ class DriveTable:
         logger.info(f"update meta size={len(partition_meta)}")
         logger.info(f"upload meta file")
         json.dump(list(partition_meta.values()), open(local_meta_path, "w"))
-        self.drive.upload_file(local_path=local_meta_path, fid=self._fid_meta_fid)
+        self.drive.upload_file(local_path=local_meta_path, fid=self._fid_meta)
 
         logger.info(f"remove meta file")
         os.remove(local_meta_path)
@@ -86,8 +87,8 @@ class DriveTable:
             if os.path.exists(tmp):
                 os.remove(tmp)
 
-            if self._fid_meta_fid is not None:
-                self.drive.download_file(local_dir="./", fid=self._fid_meta_fid)
+            if self._fid_meta_par is not None:
+                self.drive.download_file(local_dir="./", fid=self._fid_meta_par)
         if os.path.exists(tmp):
             return json.load(open(tmp, "r"))
         else:
