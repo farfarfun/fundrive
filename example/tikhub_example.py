@@ -3,7 +3,7 @@ import logging
 import requests
 from funsecret import read_secret
 
-logger = logging.getLogger("tikhub")
+logger = logging.getLogger("fundrive")
 
 
 class TikHubAPI:
