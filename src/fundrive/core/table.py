@@ -78,6 +78,7 @@ class DriveTable:
         self.drive.upload_file(local_path=local_meta_path, fid=self._fid_meta)
 
         logger.info(f"remove meta file")
+        self.drive.delete(fid=self._fid_meta_par)
         os.remove(local_meta_path)
 
     def partition_meta(self, refresh=False):
