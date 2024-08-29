@@ -18,9 +18,9 @@ class DriveTable:
 
     @property
     def __local_meta_path(self):
-        cache_dir = f"{os.environ['HOME']}/.cache/fundrive/table"
+        cache_dir = f"{os.environ['HOME']}/.cache/fundrive/table/{self.table_fid}"
         os.makedirs(cache_dir, exist_ok=True)
-        return f"{cache_dir}/{self.table_fid}/partition.tar"
+        return f"{cache_dir}/partition.tar"
 
     @property
     def meta_path(self):
