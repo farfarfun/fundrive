@@ -54,8 +54,8 @@ class BaseDrive:
 
 
 class Uploader:
-    def __init__(self, drive: BaseDrive, file_path, chunk_size=2097152, *args, **kwargs):
-        self.drive = drive
+    def __init__(self, file_path, drive: BaseDrive=None, chunk_size=2097152, *args, **kwargs):
+        self.drive = drive or BaseDrive()
         self.session = drive.session
         self.chunk_size = chunk_size
         self.file_path = file_path
@@ -306,8 +306,8 @@ class Uploader:
 
 
 class Downloader:
-    def __init__(self, drive: BaseDrive, share_url, cache_dir='./', *args, **kwargs):
-        self.drive = drive
+    def __init__(self,  share_url,drive: BaseDrive=None, cache_dir='./', *args, **kwargs):
+        self.drive = drive or BaseDrive()
         self.session = drive.session
         self.share_url = share_url
         self.cache_dir = cache_dir
