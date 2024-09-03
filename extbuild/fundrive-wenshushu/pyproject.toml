@@ -1,0 +1,18 @@
+[build-system]
+requires = [ "poetry-core",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "fundrive-wenshushu"
+version = "1.0.10"
+description = ""
+authors = [ "farfun <1007530194@qq.com>",]
+readme = "README.md"
+[[tool.poetry.packages]]
+from = "src"
+include = "*"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+base58 = "^2.1.0"
+pycryptodomex = "^3.20.0"
