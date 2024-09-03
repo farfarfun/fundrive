@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "fundrive-wenshushu"
-version = "1.0.10"
+version = "1.0.11"
 description = ""
 authors = [ "farfun <1007530194@qq.com>",]
 readme = "README.md"
@@ -16,3 +16,4 @@ include = "*"
 python = "^3.9"
 base58 = "^2.1.0"
 pycryptodomex = "^3.20.0"
+fundrive = "^1.0.53"
