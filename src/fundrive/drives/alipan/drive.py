@@ -1,7 +1,7 @@
 import subprocess
 from typing import List
 
-from aligo import Aligo
+
 from fundrive.core import BaseDrive
 from fundrive.core.base import DriveFile
 from funsecret import read_secret
@@ -10,6 +10,7 @@ from funsecret import read_secret
 class AlipanDrive(BaseDrive):
     def __init__(self, *args, **kwargs):
         super(AlipanDrive, self).__init__(*args, **kwargs)
+        from aligo import Aligo
         self.drive = Aligo()
 
     def login(
