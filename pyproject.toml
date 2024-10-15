@@ -1,7 +1,7 @@
 [project]
 name = "fundrive"
-version = "1.0.55"
+version = "1.0.56"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.8"
 dependencies = [ "funget>=1.0.7", "funsecret>=1.4.2", "tqdm>=4.66.5",]
