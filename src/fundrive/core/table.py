@@ -59,7 +59,7 @@ class DriveTable:
 
         logger.info(f"download meta from drive to {local_meta_path}.")
         if self._fid_meta_par is not None:
-            self.drive.download_file(fid=self._fid_meta_par, local_dir="./")
+            self.drive.download_file(fid=self._fid_meta_par, local_dir=os.path.dirname(local_meta_path))
 
         partition_meta = self.partition_meta(refresh=False)
         logger.info(f"exists meta size={len(partition_meta)}")
@@ -73,12 +73,11 @@ class DriveTable:
                 partition_meta[file["name"]] = file
 
         logger.info(f"update meta size={len(partition_meta)}")
-        logger.info(f"upload meta file")
+        logger.info(f"upload meta file to {self._fid_meta}")
         json.dump(list(partition_meta.values()), open(local_meta_path, "w"))
-        self.drive.upload_file(local_path=local_meta_path, fid=self._fid_meta)
+        self.drive.upload_file(local_path=local_meta_path, fid=self._fid_meta, overwrite=True)
 
-        logger.info(f"remove meta file")
-        self.drive.delete(fid=self._fid_meta_par)
+        logger.info("remove meta file")
         os.remove(local_meta_path)
 
     def partition_meta(self, refresh=False):
