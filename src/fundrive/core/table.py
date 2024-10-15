@@ -45,14 +45,14 @@ class DriveTable:
         logger.info(f"fid_meta_par={self._fid_meta_par}")
         logger.info(f"fid_meta={self._fid_meta}")
 
-    def upload(self, file, partition):
+    def upload(self, file, partition, overwrite=False):
         if partition in self._fid_par_dict.keys():
             fid = self._fid_par_dict[partition]
         else:
             logging.info(f" partition={partition} not exists,create it.")
             fid = self.drive.mkdir(fid=self.table_fid, name=partition)
             self.update_partition_dict()
-        self.drive.upload_file(fid=fid, local_path=file)
+        self.drive.upload_file(fid=fid, local_path=file, overwrite=overwrite)
 
     def update_partition_meta(self, *args, **kwargs):
         local_meta_path = self.__local_meta_path
