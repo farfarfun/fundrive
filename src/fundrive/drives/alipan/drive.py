@@ -1,24 +1,21 @@
 import subprocess
 from typing import List
 
+from funsecret import read_secret
 
 from fundrive.core import BaseDrive
 from fundrive.core.base import DriveFile
-from funsecret import read_secret
 
 
 class AlipanDrive(BaseDrive):
     def __init__(self, *args, **kwargs):
         super(AlipanDrive, self).__init__(*args, **kwargs)
         from aligo import Aligo
+
         self.drive = Aligo()
 
-    def login(
-        self, server_url=None, username=None, password=None, *args, **kwargs
-    ) -> bool:
-        refresh_token = username or read_secret(
-            "fundrive", "drives", "alipan", "refresh_token"
-        )
+    def login(self, server_url=None, username=None, password=None, *args, **kwargs) -> bool:
+        refresh_token = username or read_secret("fundrive", "drives", "alipan", "refresh_token")
         try:
             from aligo import Aligo
         except Exception as e:
@@ -41,18 +38,14 @@ class AlipanDrive(BaseDrive):
         result = []
         for file in self.drive.get_file_list(parent_file_id=fid):
             if file.type == "file":
-                result.append(
-                    DriveFile(fid=file.file_id, name=file.name, size=file.size)
-                )
+                result.append(DriveFile(fid=file.file_id, name=file.name, size=file.size))
         return result
 
     def get_dir_list(self, fid="root", *args, **kwargs) -> List[DriveFile]:
         result = []
         for file in self.drive.get_file_list(parent_file_id=fid):
             if file.type == "folder":
-                result.append(
-                    DriveFile(fid=file.file_id, name=file.name, size=file.size)
-                )
+                result.append(DriveFile(fid=file.file_id, name=file.name, size=file.size))
         return result
 
     def get_file_info(self, fid, *args, **kwargs) -> DriveFile:
@@ -67,8 +60,8 @@ class AlipanDrive(BaseDrive):
         self.drive.download_file(file_id=fid, local_folder=local_dir)
         return True
 
-    def upload_file(
-        self, local_path, fid, recursion=True, overwrite=False, *args, **kwargs
-    ) -> bool:
-        self.drive.upload_file(file_path=local_path, parent_file_id=fid)
+    def upload_file(self, local_path, fid, recursion=True, overwrite=False, *args, **kwargs) -> bool:
+        self.drive.upload_file(
+            file_path=local_path, parent_file_id=fid, check_name_mode="overwrite" if overwrite else "refuse"
+        )
         return True
