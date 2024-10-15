@@ -77,9 +77,6 @@ class DriveTable:
         json.dump(list(partition_meta.values()), open(local_meta_path, "w"))
         self.drive.upload_file(local_path=local_meta_path, fid=self._fid_meta, overwrite=True)
 
-        logger.info("remove meta file")
-        os.remove(local_meta_path)
-
     def partition_meta(self, refresh=False):
         tmp = self.__local_meta_path
 
