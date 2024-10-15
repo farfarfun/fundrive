@@ -85,7 +85,7 @@ class DriveTable:
                 os.remove(tmp)
 
             if self._fid_meta_par is not None:
-                self.drive.download_file(local_dir="./", fid=self._fid_meta_par)
+                self.drive.download_file(local_dir=os.path.dirname(tmp), fid=self._fid_meta_par)
         if os.path.exists(tmp):
             return json.load(open(tmp, "r"))
         else:
