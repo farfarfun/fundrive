@@ -1,15 +1,13 @@
 [project]
 name = "fundrive-lanzou"
-version = "1.1.10"
+version = "1.0.69"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = [
-    "fundrive",
-]
+dependencies = [ "fundrive",]
 [[project.authors]]
 name = "farfun"
 email = "farfarfun@qq.com"
 
-[tool.uv.sources]
-fundrive = { workspace = true }
+[tool.uv.sources.fundrive]
+workspace = true
