@@ -1,17 +1,15 @@
-[build-system]
-requires = [ "poetry-core",]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry]
+[project]
 name = "fundrive-lanzou"
 version = "1.0.10"
-description = ""
-authors = [ "farfun <1007530194@qq.com>",]
+description = "Add your description here"
 readme = "README.md"
-[[tool.poetry.packages]]
-from = "src"
-include = "*"
+requires-python = ">=3.8"
+dependencies = [
+    "fundrive",
+]
+[[project.authors]]
+name = "farfun"
+email = "farfarfun@qq.com"
 
-[tool.poetry.dependencies]
-python = "^3.9"
-fundrive = "^1.0.5"
+[tool.uv.sources]
+fundrive = { workspace = true }

@@ -1,17 +1,17 @@
-[build-system]
-requires = [ "poetry-core",]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry]
+[project]
 name = "fundrive-alipan"
 version = "1.0.9"
-description = ""
-authors = [ "farfun <1007530194@qq.com>",]
+description = "Add your description here"
 readme = "README.md"
-[[tool.poetry.packages]]
-from = "src"
-include = "*"
+requires-python = ">=3.8"
+dependencies = [
+    "aligo>=6.2.4",
+    "fundrive",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-aligo = "^6.2.4"
+[[project.authors]]
+name = "farfun"
+email = "farfarfun@qq.com"
+
+[tool.uv.sources]
+fundrive = { workspace = true }

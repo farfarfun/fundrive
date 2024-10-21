@@ -1,17 +1,17 @@
-[build-system]
-requires = [ "poetry-core",]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry]
+[project]
 name = "fundrive-oss"
 version = "1.0.8"
-description = ""
-authors = [ "farfun <1007530194@qq.com>",]
+description = "Add your description here"
 readme = "README.md"
-[[tool.poetry.packages]]
-from = "src"
-include = "*"
+requires-python = ">=3.8"
+dependencies = [
+    "fundrive",
+    "oss2>=2.19.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-oss2 = "^2.18.6"
+[tool.uv.sources]
+fundrive = { workspace = true }
+
+[[project.authors]]
+name = "farfun"
+email = "farfarfun@qq.com"

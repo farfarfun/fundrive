@@ -1,19 +1,17 @@
-[build-system]
-requires = [ "poetry-core",]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry]
+[project]
 name = "fundrive-wenshushu"
 version = "1.0.11"
-description = ""
-authors = [ "farfun <1007530194@qq.com>",]
+description = "Add your description here"
 readme = "README.md"
-[[tool.poetry.packages]]
-from = "src"
-include = "*"
+requires-python = ">=3.8"
+dependencies = [
+    "base58>=2.1.1",
+    "fundrive",
+    "pycryptodomex>=3.21.0",
+]
+[[project.authors]]
+name = "farfun"
+email = "farfarfun@qq.com"
 
-[tool.poetry.dependencies]
-python = "^3.9"
-base58 = "^2.1.0"
-pycryptodomex = "^3.20.0"
-fundrive = "^1.0.53"
+[tool.uv.sources]
+fundrive = { workspace = true }
