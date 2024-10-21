@@ -1,6 +1,6 @@
 [project]
 name = "fundrive-alipan"
-version = "1.0.69"
+version = "1.1.11"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.8"
