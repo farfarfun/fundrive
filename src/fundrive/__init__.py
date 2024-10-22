@@ -4,8 +4,13 @@ from .drives import AlipanDrive, LanZouDrive, LanZouSnapshot, OpenDataLabDrive, 
 from .fungit import GiteeDrive, GithubDrive
 
 logger = logging.getLogger("fundrive")
+
+
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+logger.addHandler(handler)
 logger.setLevel(level=logging.INFO)
-logger.addHandler(logging.StreamHandler())
+
 
 __all__ = [
     "LanZouDrive",
