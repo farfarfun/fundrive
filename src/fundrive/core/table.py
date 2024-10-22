@@ -55,6 +55,8 @@ class DriveTable:
         self.drive.upload_file(fid=fid, local_path=file, overwrite=overwrite)
 
     def update_partition_meta(self, *args, **kwargs):
+        if self._fid_meta is None:
+            self.update_partition_dict()
         local_meta_path = self.__local_meta_path
 
         logger.info(f"download meta from drive to {local_meta_path}.")
