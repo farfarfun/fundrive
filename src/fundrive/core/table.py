@@ -54,16 +54,12 @@ class DriveTable:
             self.update_partition_dict()
         self.drive.upload_file(fid=fid, local_path=file, overwrite=overwrite)
 
-    def update_partition_meta(self, *args, **kwargs):
+    def update_partition_meta(self, refresh=False, *args, **kwargs):
         if self._fid_meta is None:
             self.update_partition_dict()
         local_meta_path = self.__local_meta_path
 
-        logger.info(f"download meta from drive to {local_meta_path}.")
-        if self._fid_meta_par is not None:
-            self.drive.download_file(fid=self._fid_meta_par, local_dir=os.path.dirname(local_meta_path))
-
-        partition_meta = self.partition_meta(refresh=False)
+        partition_meta = [] if refresh else self.partition_meta(refresh=True)
         logger.info(f"exists meta size={len(partition_meta)}")
 
         partition_meta = dict([file["name"], file] for file in partition_meta)
