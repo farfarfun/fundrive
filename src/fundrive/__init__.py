@@ -1,9 +1,19 @@
-from .drives import LanZouDrive
-from .drives import OSSDrive
-from .drives import TianChiDrive
-from .drives import TSingHuaDrive
-from .drives import OpenDataLabDrive
-from .fungit import GithubDrive
-from .drives import LanZouSnapshot
-from .fungit import GiteeDrive
-from .drives import AlipanDrive
+import logging
+
+from .drives import AlipanDrive, LanZouDrive, LanZouSnapshot, OpenDataLabDrive, OSSDrive, TianChiDrive, TSingHuaDrive
+from .fungit import GiteeDrive, GithubDrive
+
+logger = logging.getLogger("fundrive")
+logger.setLevel(level=logging.INFO)
+__all__ = [
+    "LanZouDrive",
+    "OSSDrive",
+    "TianChiDrive",
+    "TSingHuaDrive",
+    "OpenDataLabDrive",
+    "GithubDrive",
+    "LanZouDrive",
+    "LanZouSnapshot",
+    "GiteeDrive",
+    "AlipanDrive",
+]
