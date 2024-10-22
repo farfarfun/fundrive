@@ -5,6 +5,8 @@ from .fungit import GiteeDrive, GithubDrive
 
 logger = logging.getLogger("fundrive")
 logger.setLevel(level=logging.INFO)
+logger.addHandler(logging.StreamHandler())
+
 __all__ = [
     "LanZouDrive",
     "OSSDrive",
