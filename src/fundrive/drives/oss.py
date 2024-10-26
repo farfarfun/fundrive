@@ -101,7 +101,6 @@ class OSSDrive(BaseDrive):
     def get_dir_list(self, fid, *args, **kwargs) -> List[DriveFile]:
         result = []
         for file in self.__get_file_list(fid):
-            print(file)
             if not file["isfile"]:
                 result.append(file)
         return result
