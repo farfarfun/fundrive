@@ -52,13 +52,14 @@ class OSSDrive(BaseDrive):
                 continue
             # 文件夹
             if len(paths) == len(oss_path.split("/")) + 1 and paths[-2] not in dir_name:
+                path = os.sep.join(paths[:-1])
                 dir_name.append(paths[-2])
                 result.append(
                     DriveFile(
                         isfile=False,
-                        fid=file.key,
+                        fid=path,
                         name=paths[-2],
-                        path=file.key,
+                        path=path,
                         size=file.size,
                     )
                 )
