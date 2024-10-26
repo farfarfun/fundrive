@@ -47,29 +47,30 @@ class OSSDrive(BaseDrive):
         result = []
         dir_name = []
         for file in self.bucket.list_objects(oss_path, max_keys=1000).object_list:
-            paths = file.key.split("/")
-            if len(paths) > len(oss_path.split("/")) + 1:
-                continue
-            # 文件夹
-            if len(paths) == len(oss_path.split("/")) + 1 and paths[-2] not in dir_name:
-                path = os.sep.join(paths[:-1])
-                dir_name.append(paths[-2])
-                result.append(
-                    DriveFile(
-                        isfile=False,
-                        fid=path,
-                        name=paths[-2],
-                        path=path,
-                        size=file.size,
-                    )
-                )
-            if len(paths) == len(oss_path.split("/")) and len(paths[-1]) > 0:
+            solve_path = file.key.replace(oss_path, "").strip("/")
+            paths = solve_path.split("/")
+
+            solve_size = len(solve_path.split("/"))
+            solve_name = paths[0]
+
+            if not file.key.endswith("/") and solve_size == 1:
                 result.append(
                     DriveFile(
                         isfile=True,
                         fid=file.key,
                         name=os.path.basename(file.key),
                         path=file.key,
+                        size=file.size,
+                    )
+                )
+            if solve_name not in dir_name:
+                dir_name.append(solve_name)
+                result.append(
+                    DriveFile(
+                        isfile=False,
+                        fid=os.path.join(oss_path, solve_name),
+                        name=solve_name,
+                        path=os.path.join(oss_path, solve_name),
                         size=file.size,
                     )
                 )
@@ -84,9 +85,14 @@ class OSSDrive(BaseDrive):
         return True
 
     def get_file_info(self, fid, *args, **kwargs) -> DriveFile:
-        files = self.__get_file_list(oss_path=fid)
-        if len(files) == 1:
-            return files[0]
+        for file in self.bucket.list_objects(fid, max_keys=10).object_list:
+            return DriveFile(
+                isfile=False,
+                fid=file.key,
+                name=os.path.basename(file.key),
+                path=file.key,
+                size=file.size,
+            )
 
     def get_dir_info(self, fid, *args, **kwargs) -> DriveFile:
         files = self.__get_file_list(oss_path=fid)
@@ -104,7 +110,7 @@ class OSSDrive(BaseDrive):
     def get_dir_list(self, fid, *args, **kwargs) -> List[DriveFile]:
         result = []
         for file in self.__get_file_list(fid):
-            if not file["isfile"]:
+            if not file["isfile"] and len(file["name"]) > 0:
                 result.append(file)
         return result
 
