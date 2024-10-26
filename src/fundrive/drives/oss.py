@@ -45,12 +45,14 @@ class OSSDrive(BaseDrive):
 
     def __get_file_list(self, oss_path) -> List[DriveFile]:
         result = []
+        dir_name = []
         for file in self.bucket.list_objects(oss_path, max_keys=1000).object_list:
             paths = file.key.split("/")
             if len(paths) > len(oss_path.split("/")) + 1:
                 continue
             # 文件夹
-            if len(paths) == len(oss_path.split("/")) + 1 and len(paths[-1]) == 0:
+            if len(paths) == len(oss_path.split("/")) + 1 and paths[-2] not in dir_name:
+                dir_name.append(paths[-2])
                 result.append(
                     DriveFile(
                         isfile=False,
