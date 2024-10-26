@@ -1,18 +1,18 @@
 import os
-import subprocess
-from typing import Any, List, Dict
+from typing import List
 
-from fundrive.core import DriveSystem
+from funsecret import read_secret
 from tqdm import tqdm
 
+from fundrive.core import BaseDrive
+from fundrive.core.base import DriveFile
 
-def public_oss_url(
-    bucket_name="nm-algo", endpoint="oss-cn-hangzhou.aliyuncs.com", path=""
-):
+
+def public_oss_url(bucket_name="nm-algo", endpoint="oss-cn-hangzhou.aliyuncs.com", path=""):
     return f"https://{bucket_name}.{endpoint}/{path}"
 
 
-class OSSDrive(DriveSystem):
+class OSSDrive(BaseDrive):
     def __init__(self, *args, **kwargs):
         super(OSSDrive, self).__init__(*args, **kwargs)
         self.bucket = None
@@ -27,23 +27,12 @@ class OSSDrive(DriveSystem):
         *args,
         **kwargs,
     ) -> bool:
-        try:
-            import oss2
-        except Exception as e:
-            subprocess.check_call(["pip", "install", "fundrive-oss"])
-            import oss2
+        import oss2
 
-        if access_key is None:
-            from funsecret import read_secret
-
-            access_key = read_secret(cate1="fundrive", cate2="oss", cate3="access_key")
-            access_secret = read_secret(
-                cate1="fundrive", cate2="oss", cate3="access_secret"
-            )
-            bucket_name = read_secret(
-                cate1="fundrive", cate2="oss", cate3="bucket_name"
-            )
-            endpoint = read_secret(cate1="fundrive", cate2="oss", cate3="endpoint")
+        access_key = access_key or read_secret(cate1="fundrive", cate2="oss", cate3="access_key")
+        access_secret = access_secret or read_secret(cate1="fundrive", cate2="oss", cate3="access_secret")
+        bucket_name = bucket_name or read_secret(cate1="fundrive", cate2="oss", cate3="bucket_name")
+        endpoint = endpoint or read_secret(cate1="fundrive", cate2="oss", cate3="endpoint")
         self.bucket = oss2.Bucket(
             oss2.Auth(access_key, access_secret),
             endpoint,
@@ -54,55 +43,47 @@ class OSSDrive(DriveSystem):
         )
         return True
 
-    def __get_file_list(self, oss_path) -> List[Dict[str, Any]]:
+    def __get_file_list(self, oss_path) -> List[DriveFile]:
         result = []
         for file in self.bucket.list_objects(oss_path).object_list:
             result.append(
-                {
-                    "name": os.path.basename(file.key),
-                    "path": file.key,
-                    "size": file.size,
-                }
+                DriveFile(
+                    fid=file.key,
+                    name=os.path.basename(file.key),
+                    path=file.key,
+                    size=file.size,
+                )
             )
         return result
 
-    def get_file_info(self, oss_path, *args, **kwargs) -> Dict[str, Any]:
-        result = {}
-        files = self.__get_file_list(oss_path=oss_path)
+    def delete(self, fid, *args, **kwargs) -> bool:
+        self.bucket.delete_object(key=fid)
+        return True
+
+    def get_file_info(self, fid, *args, **kwargs) -> DriveFile:
+        files = self.__get_file_list(oss_path=fid)
         if len(files) == 1:
             return files[0]
-        return result
 
-    def get_dir_info(self, oss_path, *args, **kwargs) -> Dict[str, Any]:
-        result = {}
-        files = self.__get_file_list(oss_path=oss_path)
+    def get_dir_info(self, fid, *args, **kwargs) -> DriveFile:
+        files = self.__get_file_list(oss_path=fid)
         for file in files:
-            if file["path"] == oss_path:
+            if file["path"] == fid:
                 return file
-        return result
 
-    def get_file_list(
-        self, oss_path, recursion=True, *args, **kwargs
-    ) -> List[Dict[str, Any]]:
+    def get_file_list(self, fid, recursion=True, *args, **kwargs) -> List[DriveFile]:
         result = []
-        for file in self.__get_file_list(oss_path):
+        for file in self.__get_file_list(fid):
             if not file["path"].endswith("/"):
-                if recursion or len(file["path"].split("/")) == len(
-                    oss_path.split("/")
-                ):
+                if recursion or len(file["path"].split("/")) == len(fid.split("/")):
                     result.append(file)
         return result
 
-    def get_dir_list(
-        self, oss_path, recursion=True, *args, **kwargs
-    ) -> List[Dict[str, Any]]:
+    def get_dir_list(self, fid, recursion=True, *args, **kwargs) -> List[DriveFile]:
         result = []
-        for file in self.__get_file_list(oss_path):
+        for file in self.__get_file_list(fid):
             if file["path"].endswith("/"):
-                if (
-                    recursion
-                    or len(file["path"].split("/")) == len(oss_path.split("/")) + 1
-                ):
+                if recursion or len(file["path"].split("/")) == len(fid.split("/")) + 1:
                     result.append(file)
         return result
 
@@ -121,11 +102,7 @@ class OSSDrive(DriveSystem):
         filename = os.path.basename(oss_path)
 
         file_path = os.path.join(dir_path, os.path.basename(oss_path))
-        if (
-            not overwrite
-            and os.path.exists(file_path)
-            and size == os.path.getsize(file_path)
-        ):
+        if not overwrite and os.path.exists(file_path) and size == os.path.getsize(file_path):
             return False
 
         bar = tqdm(
@@ -141,50 +118,24 @@ class OSSDrive(DriveSystem):
             bar.update(consumed_bytes - bar.n)
 
         if not os.path.exists(file_path):
-            self.bucket.get_object_to_file(
-                oss_path, file_path, progress_callback=progress_callback
-            )
+            self.bucket.get_object_to_file(oss_path, file_path, progress_callback=progress_callback)
         return True
 
-    def download_file(
-        self, dir_path="./cache", oss_path=None, overwrite=False, *args, **kwargs
-    ) -> bool:
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
-        file_info = self.get_file_info(oss_path=oss_path)
+    def download_file(self, fid, local_dir, overwrite=False, *args, **kwargs) -> bool:
+        if not os.path.exists(local_dir):
+            os.makedirs(local_dir)
+        file_info = self.get_file_info(fid=fid)
         return self.__download_file(
-            dir_path=dir_path,
-            oss_path=oss_path,
+            dir_path=local_dir,
+            oss_path=fid,
             size=file_info["size"],
             overwrite=overwrite,
         )
 
-    def download_dir(
-        self, dir_path="./cache", oss_dir=None, overwrite=False, *args, **kwargs
-    ) -> bool:
-        if oss_dir is None:
-            return False
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
-
-        for file in self.get_file_list(oss_dir):
-            file_path = os.path.join(
-                dir_path, os.path.dirname(file["path"].replace(oss_dir, ""))
-            )
-            self.__download_file(
-                dir_path=file_path,
-                oss_path=file["path"],
-                size=file["size"],
-                overwrite=overwrite,
-            )
-        return True
-
-    def upload_file(
-        self, file_path="./cache", oss_dir=None, overwrite=False, *args, **kwargs
-    ) -> bool:
-        filename = os.path.basename(file_path)
-        oss_path = os.path.join(oss_dir, filename)
-        size = os.path.getsize(file_path)
+    def upload_file(self, local_path, fid, recursion=True, overwrite=False, *args, **kwargs) -> bool:
+        filename = os.path.basename(local_path)
+        oss_path = os.path.join(fid, filename)
+        size = os.path.getsize(local_path)
         file_info = self.get_file_info(oss_path)
         if not overwrite and "size" in file_info.keys() and size == file_info["size"]:
             return False
@@ -200,18 +151,16 @@ class OSSDrive(DriveSystem):
         def progress_callback(consumed_bytes, total_bytes):
             bar.update(consumed_bytes - bar.n)
 
-        with open(file_path, "rb") as f:
+        with open(local_path, "rb") as f:
             self.bucket.put_object(oss_path, f, progress_callback=progress_callback)
 
         return True
 
-    def upload_dir(
-        self, dir_path="./cache", oss_dir=None, overwrite=False, *args, **kwargs
-    ) -> bool:
-        for file in os.listdir(dir_path):
-            file_path = os.path.join(dir_path, file)
+    def upload_dir(self, local_path, fid, recursion=True, overwrite=False, *args, **kwargs) -> bool:
+        for file in os.listdir(local_path):
+            file_path = os.path.join(local_path, file)
             if os.path.isfile(file_path):
-                self.upload_file(file_path, oss_dir, overwrite=overwrite)
+                self.upload_file(file_path, fid, overwrite=overwrite)
             elif os.path.isdir(file_path):
-                self.upload_dir(file_path, os.path.join(oss_dir, file))
+                self.upload_dir(file_path, os.path.join(fid, file))
         return True
