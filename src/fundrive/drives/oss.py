@@ -45,15 +45,32 @@ class OSSDrive(BaseDrive):
 
     def __get_file_list(self, oss_path) -> List[DriveFile]:
         result = []
-        for file in self.bucket.list_objects(oss_path).object_list:
-            result.append(
-                DriveFile(
-                    fid=file.key,
-                    name=os.path.basename(file.key),
-                    path=file.key,
-                    size=file.size,
+        for file in self.bucket.list_objects(oss_path, max_keys=1000).object_list:
+            paths = file.key.split("/")
+            if len(paths) > len(oss_path.split("/")) + 1:
+                continue
+            # 文件夹
+            if len(paths) == len(oss_path.split("/")) + 1 and len(paths[-1]) == 0:
+                result.append(
+                    DriveFile(
+                        isfile=False,
+                        fid=file.key,
+                        name=paths[-2],
+                        path=file.key,
+                        size=file.size,
+                    )
                 )
-            )
+            if len(paths) == len(oss_path.split("/")) and len(paths[-1]) > 0:
+                result.append(
+                    DriveFile(
+                        isfile=True,
+                        fid=file.key,
+                        name=os.path.basename(file.key),
+                        path=file.key,
+                        size=file.size,
+                    )
+                )
+
         return result
 
     def mkdir(self, fid, name, return_if_exist=True, *args, **kwargs) -> str:
@@ -74,20 +91,19 @@ class OSSDrive(BaseDrive):
             if file["path"] == fid:
                 return file
 
-    def get_file_list(self, fid, recursion=True, *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid, *args, **kwargs) -> List[DriveFile]:
         result = []
         for file in self.__get_file_list(fid):
-            if not file["path"].endswith("/"):
-                if recursion or len(file["path"].split("/")) == len(fid.split("/")):
-                    result.append(file)
+            if file["isfile"]:
+                result.append(file)
         return result
 
-    def get_dir_list(self, fid, recursion=True, *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid, *args, **kwargs) -> List[DriveFile]:
         result = []
         for file in self.__get_file_list(fid):
-            if file["path"].endswith("/"):
-                if recursion or len(file["path"].split("/")) == len(fid.split("/")) + 1:
-                    result.append(file)
+            print(file)
+            if not file["isfile"]:
+                result.append(file)
         return result
 
     def __download_file(
