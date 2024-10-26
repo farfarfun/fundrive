@@ -56,6 +56,9 @@ class OSSDrive(BaseDrive):
             )
         return result
 
+    def mkdir(self, fid, name, return_if_exist=True, *args, **kwargs) -> str:
+        pass
+
     def delete(self, fid, *args, **kwargs) -> bool:
         self.bucket.delete_object(key=fid)
         return True
