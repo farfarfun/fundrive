@@ -2,7 +2,7 @@ import base64
 import getpass
 import http.client
 import itertools
-import json
+import orjson
 import logging
 import math
 import os
@@ -561,11 +561,11 @@ class Aria2JsonRpc(object):
         if self.setup_function:
             self.setup_function()
             self.setup_function = None
-        LOGGER.debug(json.dumps(req_obj, indent='  ', sort_keys=True))
-        req = json.dumps(req_obj).encode('UTF-8')
+        LOGGER.debug(orjson.dumps(req_obj, indent='  ', sort_keys=True))
+        req = orjson.dumps(req_obj).encode('UTF-8')
         try:
             with self.opener.open(self.uri, req) as handle:
-                obj = json.loads(handle.read().decode())
+                obj = orjson.loads(handle.read().decode())
                 try:
                     return obj['result']
                 except KeyError:

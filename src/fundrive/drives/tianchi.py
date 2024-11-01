@@ -1,4 +1,4 @@
-import json
+import orjson
 import os.path
 
 import requests
@@ -38,7 +38,7 @@ class TianChiDrive(DriveSystem):
         return simple_download(url=self.__get_dataset_url(fid), filepath=os.path.join(dir_path, filename))
 
     def download_dir(self, dir_path="./cache", data_id=75730, overwrite=False, *args, **kwargs) -> bool:
-        data = json.dumps({"dataId": data_id})
+        data = orjson.dumps({"dataId": data_id})
 
         response = requests.post(
             url="https://tianchi.aliyun.com/api/notebook/dataDetail",

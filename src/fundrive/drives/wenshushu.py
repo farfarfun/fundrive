@@ -1,7 +1,7 @@
 import base64
 import concurrent.futures
 import hashlib
-import json
+import orjson
 import os
 import subprocess
 import time
@@ -222,7 +222,7 @@ class Uploader:
             import base58
 
         # cipherMethod: DES/CBC/PKCS7Padding
-        json_dumps = json.dumps(data, ensure_ascii=False)
+        json_dumps = orjson.dumps(data, ensure_ascii=False)
         md5_hash_code = hashlib.md5((json_dumps + token).encode()).hexdigest()
         base58_hash_code = base58.b58encode(md5_hash_code)
         # 时间戳逆序取5位并作为时间戳字串索引再次取值，最后拼接"000"

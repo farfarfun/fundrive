@@ -2,7 +2,7 @@
 https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28
 """
 import base64
-import json
+import orjson
 from typing import Any, List, Dict
 
 import requests
@@ -99,7 +99,7 @@ class GithubDrive(DriveSystem):
         if content is None:
             content = open(file_path, "r").read()
         if not isinstance(content, str):
-            content = json.dumps(content)
+            content = orjson.dumps(content)
 
         data = {"message": message, "content": base64.b64encode(content.encode("utf-8")).decode(), "branch": branch}
         exist_info = self.get_file_info(git_path)
