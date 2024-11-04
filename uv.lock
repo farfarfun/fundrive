@@ -318,7 +318,7 @@ wheels = [
 
 [[package]]
 name = "fundrive"
-version = "1.2.23"
+version = "1.2.24"
 source = { virtual = "." }
 dependencies = [
     { name = "funget" },
@@ -329,7 +329,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "funget", specifier = ">=1.0.7" },
+    { name = "funget", specifier = ">=1.0.20" },
     { name = "funsecret", specifier = ">=1.4.2" },
     { name = "orjson", specifier = ">=3.10.10" },
     { name = "tqdm", specifier = ">=4.66.5" },
@@ -337,7 +337,7 @@ requires-dist = [
 
 [[package]]
 name = "fundrive-alipan"
-version = "1.2.23"
+version = "1.2.24"
 source = { virtual = "extbuild/fundrive-alipan" }
 dependencies = [
     { name = "aligo" },
@@ -352,7 +352,7 @@ requires-dist = [
 
 [[package]]
 name = "fundrive-lanzou"
-version = "1.2.23"
+version = "1.2.24"
 source = { virtual = "extbuild/fundrive-lanzou" }
 dependencies = [
     { name = "fundrive" },
@@ -363,7 +363,7 @@ requires-dist = [{ name = "fundrive", virtual = "." }]
 
 [[package]]
 name = "fundrive-oss"
-version = "1.2.23"
+version = "1.2.24"
 source = { virtual = "extbuild/fundrive-oss" }
 dependencies = [
     { name = "fundrive" },
@@ -378,7 +378,7 @@ requires-dist = [
 
 [[package]]
 name = "fundrive-wenshushu"
-version = "1.2.23"
+version = "1.2.24"
 source = { virtual = "extbuild/fundrive-wenshushu" }
 dependencies = [
     { name = "base58" },
@@ -395,26 +395,27 @@ requires-dist = [
 
 [[package]]
 name = "funfile"
-version = "1.0.5"
+version = "1.0.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "funutil" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/11/b1/8caf35243bcb1719a17aa9c90beed60ef755040062976d04f210ea7440cb/funfile-1.0.5.tar.gz", hash = "sha256:34e207af2164df5b77733d9220de9972e004d5393a943c174c44e7f86dff7366", size = 8163 }
+sdist = { url = "https://files.pythonhosted.org/packages/cc/39/ee49c726e9d192c87bafe8b7a2341c8b01d25184fb56b365b7179b87c3b4/funfile-1.0.11.tar.gz", hash = "sha256:cc41e48b076976611dc063bf76ca1c454cd3f944e57e4b9cb401081ab9f27931", size = 8932 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/29/3e/36b65f9a1e19bdca8ce0709e5e7a6be1a731319159afc90f31162905aeac/funfile-1.0.5-py3-none-any.whl", hash = "sha256:5a11791728e045721cf5cd51de816bcd10160c1ecb9625f5386654117fad49b5", size = 10400 },
+    { url = "https://files.pythonhosted.org/packages/40/60/144e7f758b74650f5ff36857b862d896a4ac55d28735b2198a4745aa80fe/funfile-1.0.11-py3-none-any.whl", hash = "sha256:d22da4e3eead2aa75e89986c3806e276d372e5e0f3b48fa14be3329ed299b139", size = 10723 },
 ]
 
 [[package]]
 name = "funget"
-version = "1.0.7"
+version = "1.0.20"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "funfile" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7c/0d/43bb0c18a7c5f1b191df508398f9fc3df0307b1c5728de5f98d54e216544/funget-1.0.7.tar.gz", hash = "sha256:c6ff4afe777f24049b9a1cc988d1c055ada78da42b338436e8ffd32e6a4f4cb9", size = 7915 }
+sdist = { url = "https://files.pythonhosted.org/packages/e5/6c/40cee8bdd5036c6eb644aaa9bca546b56484393306a1b97970e9e431dea4/funget-1.0.20.tar.gz", hash = "sha256:c9e96614f45c491265bb01255b8f841ba7bb1eddd7279bf1e724aaae08c9d6e3", size = 8832 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/47/94/35c156c1f5bacb30d9f2922fe79ccd9569eef25bb33d305689aedd598451/funget-1.0.7-py3-none-any.whl", hash = "sha256:f4e4f0e5cd8dba7290ca0262d74350be79945704e7bb5237f9b01746679bcec8", size = 10359 },
+    { url = "https://files.pythonhosted.org/packages/7b/00/5f1b7d752ea26ccb61afc19d3e02e8ed7202eeb3e60132f6071ababaa528/funget-1.0.20-py3-none-any.whl", hash = "sha256:abc7fc15b62a79bf851bb2639f021e9fb390a678ac46d4b1de7c9768e6ffa1cd", size = 10631 },
 ]
 
 [[package]]
@@ -427,6 +428,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/d5/fc/2bbc3546bd2126c1c78f19a7c5b2d8f18332bda29307b6814844511b6bc8/funsecret-1.4.2.tar.gz", hash = "sha256:74ab7f1d0e812ee682be0224ea8cd45227d51fa13b39bb865b1abfc982eb2a86", size = 8283 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/28/c3/aaf0dfa8bc211bd0134c49c6dc269489092be83ed513e4d0d56b3f12eacf/funsecret-1.4.2-py3-none-any.whl", hash = "sha256:96cfb19a48d6480ae6c9231c1a00ca73671dd472f948273b07c93802398393ff", size = 9150 },
+]
+
+[[package]]
+name = "funutil"
+version = "1.0.15"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f4/ee/ae8cc721a7f6c3ce19f74707b40adabe8921bd4e22ed017d758d303e035f/funutil-1.0.15.tar.gz", hash = "sha256:8bdc280f33ae09429a111d8cbe9ee54317cc487f683b0651378de29e42d724d8", size = 17678 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d8/27/488dd0c1179ad679abe4efc51ab1e86e852a46b7b9f95369ec3896ed10b6/funutil-1.0.15-py3-none-any.whl", hash = "sha256:0a72749740d3c0487760dad1e923c365a03afb446193953dae0fb6a5b69f6e9a", size = 21883 },
 ]
 
 [[package]]
