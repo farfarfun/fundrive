@@ -79,7 +79,8 @@ class LoginWindow(QDialog):
                 if self._gui:
                     try:
                         print(";".join([f'{k}={v}' for k, v in cookie.items()]), end='')
-                    except:
+                    except Exception as e:
+                        
                         pass
                 else:
                     self.cookie.emit(cookie)

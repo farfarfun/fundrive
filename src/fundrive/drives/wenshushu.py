@@ -11,7 +11,7 @@ import requests
 from funget import simple_download
 from tqdm import tqdm
 
-from fundrive.core import DriveSystem
+from fundrive.core import BaseDrive as BaseDrive2
 
 
 class BaseDrive:
@@ -334,7 +334,7 @@ class Downloader:
             simple_download(url, filepath=f"{self.cache_dir}/{filename}")
 
 
-class WSSDrive(DriveSystem):
+class WSSDrive(BaseDrive2):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.drive = BaseDrive()

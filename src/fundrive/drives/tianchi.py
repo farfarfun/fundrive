@@ -5,10 +5,10 @@ import requests
 from funget import simple_download
 from funsecret import read_secret
 
-from fundrive.core import DriveSystem
+from fundrive.core import BaseDrive
 
 
-class TianChiDrive(DriveSystem):
+class TianChiDrive(BaseDrive):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.cookies = {}

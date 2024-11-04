@@ -3,9 +3,12 @@ import subprocess
 from typing import List
 
 from funsecret import read_secret
+from funutil import getLogger
 from tqdm import tqdm
 
 from fundrive.core import BaseDrive, DriveFile
+
+logger = getLogger("fundrive")
 
 
 class Task:
@@ -52,6 +55,7 @@ class LanZouDrive(BaseDrive):
         try:
             from lanzou.api import LanZouCloud
         except Exception as e:
+            logger.error(e)
             subprocess.check_call(["pip", "install", "fundrive-lanzou"])
             from lanzou.api import LanZouCloud
         self.drive = LanZouCloud()

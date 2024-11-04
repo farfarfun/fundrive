@@ -4,11 +4,14 @@ from typing import Any, Dict, List
 import requests
 from funget import simple_download
 from funsecret import read_secret
+from funutil import getLogger
 
-from fundrive.core import DriveSystem
+from fundrive.core import BaseDrive
+
+logger = getLogger("fundrive")
 
 
-class OpenDataLabDrive(DriveSystem):
+class OpenDataLabDrive(BaseDrive):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.host = "https://openxlab.org.cn"
@@ -89,6 +92,7 @@ class OpenDataLabDrive(DriveSystem):
                 **kwargs,
             )
         except Exception as e:
+            logger.error(e)
             return False
 
     def download_dir(self, dir_path="./cache", dataset_name=None, overwrite=False, *args, **kwargs) -> bool:

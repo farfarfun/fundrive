@@ -3,8 +3,11 @@ import subprocess
 from typing import List
 
 from funsecret import read_secret
+from funutil import getLogger
 
 from fundrive.core import BaseDrive, DriveFile
+
+logger = getLogger("fundrive")
 
 
 class WebDavDrive(BaseDrive):
@@ -21,6 +24,7 @@ class WebDavDrive(BaseDrive):
         try:
             from webdav4.client import Client
         except Exception as e:
+            logger.error(e)
             subprocess.check_call(["pip", "install", "fundrive-webdav"])
             from webdav4.client import Client
         self.drive = Client(server_url, auth=(username, password))

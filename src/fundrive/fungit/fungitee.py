@@ -1,13 +1,14 @@
 import base64
-import orjson
-from typing import Any, List, Dict
+from typing import Any, Dict, List
 
+import orjson
 import requests
-from fundrive.core import DriveSystem
 from funsecret import read_secret
 
+from fundrive.core import BaseDrive
 
-class GiteeDrive(DriveSystem):
+
+class GiteeDrive(BaseDrive):
     def __init__(self, *args, **kwargs):
         super(GiteeDrive, self).__init__(*args, **kwargs)
         self.base_url = "https://gitee.com/api/v5"
@@ -100,5 +101,7 @@ class GiteeDrive(DriveSystem):
         else:
             data["sha"] = info["sha"]
             res = requests.put(f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", json=data)
+        if res is None:
+            return True
 
         return True

@@ -1,16 +1,18 @@
 """
 https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28
 """
-import base64
-import orjson
-from typing import Any, List, Dict
 
+import base64
+from typing import Any, Dict, List
+
+import orjson
 import requests
-from fundrive.core import DriveSystem
 from funsecret import read_secret
 
+from fundrive.core import BaseDrive
 
-class GithubDrive(DriveSystem):
+
+class GithubDrive(BaseDrive):
     def __init__(self, *args, **kwargs):
         super(GithubDrive, self).__init__(*args, **kwargs)
         self.base_url = "https://api.github.com"
@@ -45,7 +47,7 @@ class GithubDrive(DriveSystem):
             "name": data["name"],
             "path": data["path"],
             "size": data["size"],
-            "sha": data["sha"]
+            "sha": data["sha"],
             # "time": datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z").strftime("%Y-%m-%d %H:%M:%S"),
         }
 
@@ -59,7 +61,7 @@ class GithubDrive(DriveSystem):
                         "name": data["name"],
                         "path": data["path"],
                         "size": data["size"],
-                        "sha": data["sha"]
+                        "sha": data["sha"],
                         # "time": datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z").strftime("%Y-%m-%d %H:%M:%S"),
                     }
                 )
@@ -104,9 +106,9 @@ class GithubDrive(DriveSystem):
         data = {"message": message, "content": base64.b64encode(content.encode("utf-8")).decode(), "branch": branch}
         exist_info = self.get_file_info(git_path)
         if "sha" in exist_info:
-            data['sha']=exist_info['sha']
-        
+            data["sha"] = exist_info["sha"]
+
         response = requests.put(uri, headers=self.headers, json=data)
-        if response.status_code not in (200,201):
-            print(response.status_code,response.text)
+        if response.status_code not in (200, 201):
+            print(response.status_code, response.text)
         return True

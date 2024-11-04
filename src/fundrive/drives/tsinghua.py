@@ -3,10 +3,10 @@ from typing import Any, Dict, List
 import requests
 from funget import simple_download
 
-from fundrive.core import DriveSystem
+from fundrive.core import BaseDrive
 
 
-class TSingHuaDrive(DriveSystem):
+class TSingHuaDrive(BaseDrive):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

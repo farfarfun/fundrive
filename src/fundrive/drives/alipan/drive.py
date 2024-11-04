@@ -2,8 +2,11 @@ import subprocess
 from typing import List
 
 from funsecret import read_secret
+from funutil import getLogger
 
 from fundrive.core import BaseDrive, DriveFile
+
+logger = getLogger("fundrive")
 
 
 class AlipanDrive(BaseDrive):
@@ -18,6 +21,7 @@ class AlipanDrive(BaseDrive):
         try:
             from aligo import Aligo
         except Exception as e:
+            logger.error(e)
             subprocess.check_call(["pip", "install", "fundrive-alipan"])
             from aligo import Aligo
         self.drive = Aligo(refresh_token=refresh_token)
