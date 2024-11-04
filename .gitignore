@@ -8,3 +8,4 @@ fundrive/lanzou/__pycache__
 build
 dist
 .cache
+.venv
