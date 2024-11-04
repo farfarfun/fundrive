@@ -3,8 +3,7 @@ from typing import List
 
 from funsecret import read_secret
 
-from fundrive.core import BaseDrive
-from fundrive.core.base import DriveFile
+from fundrive.core import BaseDrive, DriveFile
 
 
 class AlipanDrive(BaseDrive):
