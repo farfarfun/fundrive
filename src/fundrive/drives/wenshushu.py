@@ -1,16 +1,17 @@
 import base64
 import concurrent.futures
 import hashlib
-import orjson
 import os
 import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+import orjson
 import requests
-from fundrive.core import DriveSystem
-from fundrive.download import simple_download
+from funget import simple_download
 from tqdm import tqdm
+
+from fundrive.core import DriveSystem
 
 
 class BaseDrive:
@@ -20,41 +21,31 @@ class BaseDrive:
 
     def login_anonymous(self):
         self.session = requests.Session()
-        r = self.session.post(
-            url='https://www.wenshushu.cn/ap/login/anonymous',
-            json={
-                "dev_info": "{}"
-            }
+        r = self.session.post(url="https://www.wenshushu.cn/ap/login/anonymous", json={"dev_info": "{}"})
+        self.session.headers["X-TOKEN"] = r.json()["data"]["token"]
+        self.session.headers["User-Agent"] = (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:82.0) Gecko/20100101 Firefox/82.0"
         )
-        self.session.headers['X-TOKEN'] = r.json()['data']['token']
-        self.session.headers[
-            'User-Agent'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:82.0) Gecko/20100101 Firefox/82.0"
-        self.session.headers['Accept-Language'] = "en-US, en;q=0.9"
+        self.session.headers["Accept-Language"] = "en-US, en;q=0.9"
 
     def storage(self):
-        r = self.session.post(
-            url='https://www.wenshushu.cn/ap/user/storage',
-            json={}
-        )
+        r = self.session.post(url="https://www.wenshushu.cn/ap/user/storage", json={})
         rsp = r.json()
-        rest_space = int(rsp['data']['rest_space'])
-        send_space = int(rsp['data']['send_space'])
+        rest_space = int(rsp["data"]["rest_space"])
+        send_space = int(rsp["data"]["send_space"])
         storage_space = rest_space + send_space
-        print('当前已用空间:{}GB,剩余空间:{}GB,总空间:{}GB'.format(
-            round(send_space / 1024 ** 3, 2),
-            round(rest_space / 1024 ** 3, 2),
-            round(storage_space / 1024 ** 3, 2)
-        ))
+        print(
+            "当前已用空间:{}GB,剩余空间:{}GB,总空间:{}GB".format(
+                round(send_space / 1024**3, 2), round(rest_space / 1024**3, 2), round(storage_space / 1024**3, 2)
+            )
+        )
 
     def userinfo(self):
-        self.session.post(
-            url='https://www.wenshushu.cn/ap/user/userinfo',
-            json={"plat": "pcweb"}
-        )
+        self.session.post(url="https://www.wenshushu.cn/ap/user/userinfo", json={"plat": "pcweb"})
 
 
 class Uploader:
-    def __init__(self, file_path, drive: BaseDrive=None, chunk_size=2097152, *args, **kwargs):
+    def __init__(self, file_path, drive: BaseDrive = None, chunk_size=2097152, *args, **kwargs):
         self.drive = drive or BaseDrive()
         self.session = drive.session
         self.chunk_size = chunk_size
@@ -64,11 +55,8 @@ class Uploader:
 
     def get_epoch_time(self):
         r = self.session.get(
-            url='https://www.wenshushu.cn/ag/time',
-            headers={
-                "Prod": "com.wenshushu.web.pc",
-                "Referer": "https://www.wenshushu.cn/"
-            }
+            url="https://www.wenshushu.cn/ag/time",
+            headers={"Prod": "com.wenshushu.web.pc", "Referer": "https://www.wenshushu.cn/"},
         )
         rsp = r.json()
         return rsp["data"]["time"]
@@ -83,8 +71,8 @@ class Uploader:
                 "utype": "sendcopy",
                 "originUpid": "",
                 "length": self.file_size,
-                "count": 1
-            }
+                "count": 1,
+            },
         )
         return r.json()["data"]["upId"]
 
@@ -97,10 +85,7 @@ class Uploader:
         }
         if self.is_part:
             payload["partnu"] = part_num
-        r = self.session.post(
-            url="https://www.wenshushu.cn/ap/uploadv2/psurl",
-            json=payload
-        )
+        r = self.session.post(url="https://www.wenshushu.cn/ap/uploadv2/psurl", json=payload)
         rsp = r.json()
         url = rsp["data"]["url"]
         if pbar:
@@ -114,12 +99,7 @@ class Uploader:
 
     def get_process(self, up_id: str):
         while True:
-            r = self.session.post(
-                url="https://www.wenshushu.cn/ap/ufile/getprocess",
-                json={
-                    "processId": up_id
-                }
-            )
+            r = self.session.post(url="https://www.wenshushu.cn/ap/ufile/getprocess", json={"processId": up_id})
             if r.json()["data"]["rst"] == "success":
                 return True
             time.sleep(1)
@@ -127,15 +107,7 @@ class Uploader:
     def complete(self, is_part, fname, upId, tid, boxid, preid):
         self.session.post(
             url="https://www.wenshushu.cn/ap/uploadv2/complete",
-            json={
-                "ispart": is_part,
-                "fname": fname,
-                "upId": upId,
-                "location": {
-                    "boxid": boxid,
-                    "preid": preid
-                }
-            }
+            json={"ispart": is_part, "fname": fname, "upId": upId, "location": {"boxid": boxid, "preid": preid}},
         )
         self.copysend(boxid, tid, preid)
 
@@ -156,20 +128,20 @@ class Uploader:
             "expire": "1",
             "recvs": ["social", "public"],
             "file_size": self.file_size,
-            "file_count": 1
+            "file_count": 1,
         }
         # POST的内容在服务端会以字串形式接受然后直接拼接X-TOKEN，不会先反序列化JSON字串再拼接
         # 加密函数中的JSON序列化与此处的JSON序列化的字串形式两者必须完全一致，否则校验失败
         r = self.session.post(
-            url='https://www.wenshushu.cn/ap/task/addsend',
+            url="https://www.wenshushu.cn/ap/task/addsend",
             json=req_data,
             headers={
-                "A-code": self.get_cipherheader(epochtime, self.session.headers['X-TOKEN'], req_data),
+                "A-code": self.get_cipherheader(epochtime, self.session.headers["X-TOKEN"], req_data),
                 "Prod": "com.wenshushu.web.pc",
                 "Referer": "https://www.wenshushu.cn/",
                 "Origin": "https://www.wenshushu.cn",
                 "Req-Time": epochtime,
-            }
+            },
         )
         rsp = r.json()
         if rsp["code"] == 1021:
@@ -183,12 +155,7 @@ class Uploader:
 
     def copysend(self, boxid, taskid, preid):
         r = self.session.post(
-            url='https://www.wenshushu.cn/ap/task/copysend',
-            json={
-                'bid': boxid,
-                'tid': taskid,
-                'ufileid': preid
-            }
+            url="https://www.wenshushu.cn/ap/task/copysend", json={"bid": boxid, "tid": taskid, "ufileid": preid}
         )
         rsp = r.json()
         print(f"个人管理链接：{rsp['data']['mgr_url']}")
@@ -201,7 +168,7 @@ class Uploader:
     def calc_file_hash(self, hash_type, block=None):
         read_size = self.chunk_size if self.is_part else None
         if not block:
-            with open(self.file_path, 'rb') as f:
+            with open(self.file_path, "rb") as f:
                 block = f.read(read_size)
         if hash_type == "MD5":
             hash_code = hashlib.md5(block).hexdigest()
@@ -211,15 +178,15 @@ class Uploader:
 
     def get_cipherheader(self, epochtime, token, data):
         try:
+            import base58
             from Cryptodome.Cipher import DES
             from Cryptodome.Util import Padding
-            import base58
         except Exception as e:
             print(e)
             subprocess.check_call(["pip", "install", "pycryptodomex"])
+            import base58
             from Cryptodome.Cipher import DES
             from Cryptodome.Util import Padding
-            import base58
 
         # cipherMethod: DES/CBC/PKCS7Padding
         json_dumps = orjson.dumps(data, ensure_ascii=False)
@@ -228,9 +195,7 @@ class Uploader:
         # 时间戳逆序取5位并作为时间戳字串索引再次取值，最后拼接"000"
         key_iv = ("".join([epochtime[int(i)] for i in epochtime[::-1][:5]]) + "000").encode()
         cipher = DES.new(key_iv, DES.MODE_CBC, key_iv)
-        cipherText = cipher.encrypt(
-            Padding.pad(base58_hash_code, DES.block_size, style="pkcs7")
-        )
+        cipherText = cipher.encrypt(Padding.pad(base58_hash_code, DES.block_size, style="pkcs7"))
         return base64.b64encode(cipherText)
 
     def read_file(self):
@@ -255,31 +220,24 @@ class Uploader:
                 "cm1": cm1,  # MD5
                 "cs1": cs1,  # SHA1
             },
-            "uf": {
-                "name": name,
-                "boxid": boxid,
-                "preid": preid
-            },
-            "upId": upId
+            "uf": {"name": name, "boxid": boxid, "preid": preid},
+            "upId": upId,
         }
 
         if not self.is_part:
-            payload['hash']['cm'] = cm  # 把MD5用SHA1加密
+            payload["hash"]["cm"] = cm  # 把MD5用SHA1加密
         for _ in range(2):
-            r = self.session.post(
-                url='https://www.wenshushu.cn/ap/uploadv2/fast',
-                json=payload
-            )
+            r = self.session.post(url="https://www.wenshushu.cn/ap/uploadv2/fast", json=payload)
             rsp = r.json()
             can_fast = rsp["data"]["status"]
-            ufile = rsp['data']['ufile']
+            ufile = rsp["data"]["ufile"]
             if can_fast and not ufile:
-                hash_codes = ''
+                hash_codes = ""
                 for block, _ in self.read_file():
                     hash_codes += self.calc_file_hash("MD5", block)
-                payload['hash']['cm'] = self.sha1_str(hash_codes)
+                payload["hash"]["cm"] = self.sha1_str(hash_codes)
             elif can_fast and ufile:
-                print(f'文件{name}可以被秒传！')
+                print(f"文件{name}可以被秒传！")
                 self.get_process(upId)
                 self.copysend(boxid, taskid, preid)
 
@@ -292,11 +250,20 @@ class Uploader:
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 future_list = []
                 for i in range((self.file_size + self.chunk_size - 1) // self.chunk_size):
-                    ul_size = self.chunk_size if self.chunk_size * (i + 1) <= self.file_size \
+                    ul_size = (
+                        self.chunk_size
+                        if self.chunk_size * (i + 1) <= self.file_size
                         else self.file_size % self.chunk_size
-                    future_list.append(executor.submit(
-                        self.file_put, [fname, upId, ul_size, i + 1, pbar],
-                        self.file_path, self.chunk_size * i, ul_size))
+                    )
+                    future_list.append(
+                        executor.submit(
+                            self.file_put,
+                            [fname, upId, ul_size, i + 1, pbar],
+                            self.file_path,
+                            self.chunk_size * i,
+                            ul_size,
+                        )
+                    )
                 concurrent.futures.as_completed(future_list)
         else:
             self.file_put([fname, upId, self.file_size, pbar], self.file_path, 0, self.file_size)
@@ -306,7 +273,7 @@ class Uploader:
 
 
 class Downloader:
-    def __init__(self,  share_url,drive: BaseDrive=None, cache_dir='./', *args, **kwargs):
+    def __init__(self, share_url, drive: BaseDrive = None, cache_dir="./", *args, **kwargs):
         self.drive = drive or BaseDrive()
         self.session = drive.session
         self.share_url = share_url
@@ -314,77 +281,57 @@ class Downloader:
         super().__init__(*args, **kwargs)
 
     def get_tid(self, token):
-        r = self.session.post(
-            url='https://www.wenshushu.cn/ap/task/token',
-            json={
-                'token': token
-            }
-        )
-        return r.json()['data']['tid']
+        r = self.session.post(url="https://www.wenshushu.cn/ap/task/token", json={"token": token})
+        return r.json()["data"]["tid"]
 
     def mgrtask(self, tid):
-        r = self.session.post(
-            url='https://www.wenshushu.cn/ap/task/mgrtask',
-            json={
-                'tid': tid,
-                'password': ''
-            }
-        )
+        r = self.session.post(url="https://www.wenshushu.cn/ap/task/mgrtask", json={"tid": tid, "password": ""})
         rsp = r.json()
-        expire = rsp['data']['expire']
+        expire = rsp["data"]["expire"]
         days, remainder = divmod(int(float(expire)), 3600 * 24)
         hours, remainder = divmod(remainder, 3600)
         minutes, seconds = divmod(remainder, 60)
-        print(f'文件过期时间:{days}天{hours}时{minutes}分{seconds}秒')
+        print(f"文件过期时间:{days}天{hours}时{minutes}分{seconds}秒")
 
-        file_size = rsp['data']['file_size']
-        print(f'文件大小:{round(int(file_size) / 1024 ** 2, 2)}MB')
-        return rsp['data']['boxid'], rsp['data']['ufileid']  # pid
+        file_size = rsp["data"]["file_size"]
+        print(f"文件大小:{round(int(file_size) / 1024 ** 2, 2)}MB")
+        return rsp["data"]["boxid"], rsp["data"]["ufileid"]  # pid
 
     def sign_url(self, fid):
         r = self.session.post(
-            url='https://www.wenshushu.cn/ap/dl/sign',
-            json={
-                'consumeCode': 0,
-                'type': 1,
-                'ufileid': fid
-            }
+            url="https://www.wenshushu.cn/ap/dl/sign", json={"consumeCode": 0, "type": 1, "ufileid": fid}
         )
-        if r.json()['data']['url'] == "" and r.json()['data']['ttNeed'] != 0:
+        if r.json()["data"]["url"] == "" and r.json()["data"]["ttNeed"] != 0:
             raise Exception("对方的分享流量不足")
-        return r.json()['data']['url']
+        return r.json()["data"]["url"]
 
     def download(self):
         url = self.share_url
-        if len(url.split('/')[-1]) == 16:
-            token = url.split('/')[-1]
+        if len(url.split("/")[-1]) == 16:
+            token = url.split("/")[-1]
             tid = self.get_tid(token)
-        elif len(url.split('/')[-1]) == 11:
-            tid = url.split('/')[-1]
+        elif len(url.split("/")[-1]) == 11:
+            tid = url.split("/")[-1]
         else:
-            raise Exception('链接错误')
+            raise Exception("链接错误")
         bid, pid = self.mgrtask(tid)
         r = self.session.post(
-            url='https://www.wenshushu.cn/ap/ufile/list',
+            url="https://www.wenshushu.cn/ap/ufile/list",
             json={
                 "start": 0,
-                "sort": {
-                    "name": "asc"
-                },
+                "sort": {"name": "asc"},
                 "bid": bid,
                 "pid": pid,
                 "type": 1,
-                "options": {
-                    "uploader": "true"
-                },
-                "size": 50
-            }
+                "options": {"uploader": "true"},
+                "size": 50,
+            },
         )
         rsp = r.json()
-        for file in rsp['data']['fileList']:
-            filename = file['fname']
-            url = self.sign_url(file['fid'])
-            simple_download(url, filepath=f'{self.cache_dir}/{filename}')
+        for file in rsp["data"]["fileList"]:
+            filename = file["fname"]
+            url = self.sign_url(file["fid"])
+            simple_download(url, filepath=f"{self.cache_dir}/{filename}")
 
 
 class WSSDrive(DriveSystem):

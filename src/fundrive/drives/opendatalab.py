@@ -2,9 +2,10 @@ import os
 from typing import Any, Dict, List
 
 import requests
-from fundrive.core import DriveSystem
-from fundrive.download import simple_download
+from funget import simple_download
 from funsecret import read_secret
+
+from fundrive.core import DriveSystem
 
 
 class OpenDataLabDrive(DriveSystem):
@@ -14,9 +15,7 @@ class OpenDataLabDrive(DriveSystem):
         self.cookies = {}
         self.headers = {}
 
-    def login(
-        self, ak=None, sk=None, opendatalab_session=None, ssouid=None, *args, **kwargs
-    ) -> bool:
+    def login(self, ak=None, sk=None, opendatalab_session=None, ssouid=None, *args, **kwargs) -> bool:
         self.cookies.update(
             {
                 "opendatalab_session": opendatalab_session
@@ -54,9 +53,7 @@ class OpenDataLabDrive(DriveSystem):
         }
         return result
 
-    def get_file_list(
-        self, dataset_name, payload=None, *args, **kwargs
-    ) -> List[Dict[str, Any]]:
+    def get_file_list(self, dataset_name, payload=None, *args, **kwargs) -> List[Dict[str, Any]]:
         dataset_name = dataset_name.replace("/", ",")
         data = {"recursive": True}
         if payload:
@@ -82,11 +79,7 @@ class OpenDataLabDrive(DriveSystem):
         try:
             file_info = self.get_file_info(dataset_id=dataset_id, file_path=file_path)
             filepath = os.path.join(dir_path, file_info["path"])
-            if (
-                os.path.exists(filepath)
-                and not overwrite
-                and file_info["size"] == os.path.getsize(filepath)
-            ):
+            if os.path.exists(filepath) and not overwrite and file_info["size"] == os.path.getsize(filepath):
                 return False
             return simple_download(
                 url=file_info["url"],
@@ -98,19 +91,13 @@ class OpenDataLabDrive(DriveSystem):
         except Exception as e:
             return False
 
-    def download_dir(
-        self, dir_path="./cache", dataset_name=None, overwrite=False, *args, **kwargs
-    ) -> bool:
+    def download_dir(self, dir_path="./cache", dataset_name=None, overwrite=False, *args, **kwargs) -> bool:
         if dataset_name is None:
             return False
         file_list = self.get_file_list(dataset_name=dataset_name)
         for i, file in enumerate(file_list):
             filepath = os.path.join(dir_path, file["path"])
-            if (
-                os.path.exists(filepath)
-                and not overwrite
-                and file["size"] == os.path.getsize(filepath)
-            ):
+            if os.path.exists(filepath) and not overwrite and file["size"] == os.path.getsize(filepath):
                 return False
             try:
                 self.download_file(

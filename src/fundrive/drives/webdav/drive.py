@@ -2,9 +2,9 @@ import os.path
 import subprocess
 from typing import List
 
-from fundrive.core import BaseDrive
-from fundrive.core.base import DriveFile
 from funsecret import read_secret
+
+from fundrive.core import BaseDrive, DriveFile
 
 
 class WebDavDrive(BaseDrive):
@@ -12,12 +12,8 @@ class WebDavDrive(BaseDrive):
         super(WebDavDrive, self).__init__(*args, **kwargs)
         self.drive = None
 
-    def login(
-        self, server_url=None, username=None, password=None, *args, **kwargs
-    ) -> bool:
-        server_url = server_url or read_secret(
-            "fundrive", "webdav", "alipan", "server_url"
-        )
+    def login(self, server_url=None, username=None, password=None, *args, **kwargs) -> bool:
+        server_url = server_url or read_secret("fundrive", "webdav", "alipan", "server_url")
         username = username or read_secret("fundrive", "webdav", "alipan", "username")
         password = password or read_secret("fundrive", "webdav", "alipan", "password")
         if not server_url or not username or not password:
@@ -96,9 +92,7 @@ class WebDavDrive(BaseDrive):
         self.drive.download_file(from_path=fid, to_path=local_path)
         return True
 
-    def upload_file(
-        self, local_path, fid, recursion=True, overwrite=False, *args, **kwargs
-    ) -> bool:
+    def upload_file(self, local_path, fid, recursion=True, overwrite=False, *args, **kwargs) -> bool:
         if self.exist(fid) and not overwrite:
             return False
         self.drive.upload_file(

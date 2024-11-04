@@ -5,13 +5,13 @@ from threading import Lock, Thread, current_thread
 from urllib import parse
 
 import numpy as np
-from funutil.util.log import get_logger
+from funutil import getLogger
 from requests import Session
 from tqdm import tqdm
 
 from fundrive.download import split_download
 
-logger = get_logger("fundrive")
+logger = getLogger("fundrive")
 
 
 def log(name=None):

@@ -4,8 +4,7 @@ from typing import List
 from funsecret import read_secret
 from tqdm import tqdm
 
-from fundrive.core import BaseDrive
-from fundrive.core.base import DriveFile
+from fundrive.core import BaseDrive, DriveFile
 
 
 def public_oss_url(bucket_name="nm-algo", endpoint="oss-cn-hangzhou.aliyuncs.com", path=""):

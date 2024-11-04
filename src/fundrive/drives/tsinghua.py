@@ -1,8 +1,9 @@
-from typing import Any, List, Dict
+from typing import Any, Dict, List
 
 import requests
+from funget import simple_download
+
 from fundrive.core import DriveSystem
-from fundrive.download import simple_download
 
 
 class TSingHuaDrive(DriveSystem):

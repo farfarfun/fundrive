@@ -1,10 +1,11 @@
-import orjson
 import os.path
 
+import orjson
 import requests
-from fundrive.core import DriveSystem
-from fundrive.download import simple_download
+from funget import simple_download
 from funsecret import read_secret
+
+from fundrive.core import DriveSystem
 
 
 class TianChiDrive(DriveSystem):

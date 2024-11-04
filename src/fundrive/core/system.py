@@ -1,6 +1,7 @@
-from typing import Any, List, Dict
+from typing import Any, Dict, List
 
 
+@DeprecationWarning
 class DriveSystem:
     def __init__(self, *args, **kwargs):
         pass

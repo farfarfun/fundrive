@@ -2,12 +2,10 @@ import os
 import subprocess
 from typing import List
 
-from fundrive.core import BaseDrive
-from fundrive.core import DriveSnapshot
-from fundrive.core.base import DriveFile
-from funfile.compress import tarfile
 from funsecret import read_secret
 from tqdm import tqdm
+
+from fundrive.core import BaseDrive, DriveFile
 
 
 class Task:
@@ -58,15 +56,11 @@ class LanZouDrive(BaseDrive):
             from lanzou.api import LanZouCloud
         self.drive = LanZouCloud()
 
-    def login(
-        self, cookie=None, ylogin=None, phpdisk_info=None, *args, **kwargs
-    ) -> bool:
+    def login(self, cookie=None, ylogin=None, phpdisk_info=None, *args, **kwargs) -> bool:
         self.instance()
         if cookie is None:
             ylogin = ylogin or read_secret("fundrive", "drives", "funlanzou", "ylogin")
-            phpdisk_info = phpdisk_info or read_secret(
-                "fundrive", "drives", "funlanzou", "phpdisk_info"
-            )
+            phpdisk_info = phpdisk_info or read_secret("fundrive", "drives", "funlanzou", "phpdisk_info")
             cookie = {
                 "ylogin": ylogin,
                 "phpdisk_info": phpdisk_info,
@@ -98,9 +92,7 @@ class LanZouDrive(BaseDrive):
             result.append(DriveFile(fid=item.id, name=item.name, desc=item.desc))
         return result
 
-    def get_file_list(
-        self, fid, url=None, pwd=None, *args, **kwargs
-    ) -> List[DriveFile]:
+    def get_file_list(self, fid, url=None, pwd=None, *args, **kwargs) -> List[DriveFile]:
         from lanzou.api.utils import convert_file_size_to_int
 
         result = []
@@ -173,16 +165,9 @@ class LanZouDrive(BaseDrive):
         def clb():
             wrap.update(task.now_size)
 
-        return (
-            self.drive.down_file_by_url(
-                share_url=file_info["url"], task=task, callback=clb
-            )
-            == 0
-        )
+        return self.drive.down_file_by_url(share_url=file_info["url"], task=task, callback=clb) == 0
 
-    def download_dir(
-        self, fid, local_dir, recursion=True, overwrite=False, *args, **kwargs
-    ) -> bool:
+    def download_dir(self, fid, local_dir, recursion=True, overwrite=False, *args, **kwargs) -> bool:
         if not self.exist(fid):
             return False
         os.makedirs(local_dir, exist_ok=True)
@@ -239,45 +224,3 @@ class LanZouDrive(BaseDrive):
 
     def move_file(self, file_id, folder_id):
         self.drive.move_file(file_id, folder_id)
-
-
-class LanZouSnapshot(DriveSnapshot):
-    def __init__(self, fid=None, url=None, pwd="", *args, **kwargs):
-        super(LanZouSnapshot, self).__init__(*args, **kwargs)
-        self.drive = LanZouDrive()
-        self.fid = fid
-        self.url = url
-        self.pwd = pwd
-
-    def delete_outed_version(self):
-        datas = self.drive.get_file_list(path=self.fid)
-        datas = sorted(datas, key=lambda x: x["name"], reverse=True)
-        if len(datas) > self.version_num:
-            for i in range(self.version_num, len(datas)):
-                self.drive.delete(datas[i]["fid"], is_file=True)
-
-    def update(self, file_path, *args, **kwargs):
-        gz_path = self._tar_path(file_path)
-        tarfile.file_entar(file_path, gz_path)
-        self.drive.login()
-        self.drive.upload_file(gz_path, drive_path=self.fid)
-        os.remove(gz_path)
-        self.delete_outed_version()
-
-    def download(self, dir_path, *args, **kwargs):
-        self.drive.instance()
-        datas = self.drive.get_file_list(url=self.url, pwd=self.pwd)
-        if len(datas) == 0:
-            print("没有快照文件")
-            return
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
-        datas = sorted(datas, key=lambda x: x["name"], reverse=True)
-        self.drive.download_file(
-            dir_path=dir_path,
-            url=datas[0]["url"] + "," + datas[0]["pwd"],
-            overwrite=True,
-        )
-        tar_path = f"{dir_path}/{datas[0]['name']}"
-        tarfile.file_detar(tar_path)
-        os.remove(tar_path)
