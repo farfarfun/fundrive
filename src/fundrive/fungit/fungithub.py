@@ -101,7 +101,7 @@ class GithubDrive(BaseDrive):
         if content is None:
             content = open(file_path, "r").read()
         if not isinstance(content, str):
-            content = orjson.dumps(content)
+            content = orjson.dumps(content).decode("utf-8")
 
         data = {"message": message, "content": base64.b64encode(content.encode("utf-8")).decode(), "branch": branch}
         exist_info = self.get_file_info(git_path)

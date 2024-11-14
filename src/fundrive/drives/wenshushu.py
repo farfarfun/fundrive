@@ -189,7 +189,7 @@ class Uploader:
             from Cryptodome.Util import Padding
 
         # cipherMethod: DES/CBC/PKCS7Padding
-        json_dumps = orjson.dumps(data, ensure_ascii=False)
+        json_dumps = orjson.dumps(data, ensure_ascii=False).decode("utf-8")
         md5_hash_code = hashlib.md5((json_dumps + token).encode()).hexdigest()
         base58_hash_code = base58.b58encode(md5_hash_code)
         # 时间戳逆序取5位并作为时间戳字串索引再次取值，最后拼接"000"

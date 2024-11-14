@@ -1,6 +1,6 @@
 [project]
 name = "fundrive-oss"
-version = "1.2.26"
+version = "1.2.27"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.8"

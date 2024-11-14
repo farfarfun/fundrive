@@ -39,7 +39,7 @@ class TianChiDrive(BaseDrive):
         return simple_download(url=self.__get_dataset_url(fid), filepath=os.path.join(dir_path, filename))
 
     def download_dir(self, dir_path="./cache", data_id=75730, overwrite=False, *args, **kwargs) -> bool:
-        data = orjson.dumps({"dataId": data_id})
+        data = orjson.dumps({"dataId": data_id}).decode("utf-8")
 
         response = requests.post(
             url="https://tianchi.aliyun.com/api/notebook/dataDetail",
