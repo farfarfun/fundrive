@@ -16,9 +16,9 @@ class WebDavDrive(BaseDrive):
         self.drive = None
 
     def login(self, server_url=None, username=None, password=None, *args, **kwargs) -> bool:
-        server_url = server_url or read_secret("fundrive", "webdav", "alipan", "server_url")
-        username = username or read_secret("fundrive", "webdav", "alipan", "username")
-        password = password or read_secret("fundrive", "webdav", "alipan", "password")
+        server_url = server_url or read_secret("fundrive", "webdav", "server_url")
+        username = username or read_secret("fundrive", "webdav", "username")
+        password = password or read_secret("fundrive", "webdav", "password")
         if not server_url or not username or not password:
             raise Exception("server_url, username, password is None")
         try:
@@ -98,7 +98,9 @@ class WebDavDrive(BaseDrive):
 
     def upload_file(self, local_path, fid, recursion=True, overwrite=False, *args, **kwargs) -> bool:
         if self.exist(fid) and not overwrite:
+            logger.warning(f"File {fid} already exists, skipping upload")
             return False
+        logger.info(f"Uploading {local_path} to {fid}")
         self.drive.upload_file(
             from_path=local_path,
             to_path=os.path.join(fid, os.path.basename(local_path)),
