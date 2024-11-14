@@ -1,10 +1,10 @@
 [project]
-name = "fundrive-alipan"
+name = "fundrive-webdav"
 version = "1.2.25"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = [ "aligo>=6.2.4", "fundrive",]
+dependencies = [ "webdav4>=0.10.0",]
 [[project.authors]]
 name = "farfun"
 email = "farfarfun@qq.com"
