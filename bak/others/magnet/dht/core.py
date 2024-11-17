@@ -12,7 +12,13 @@ from fundrive.magnet.dht.utils import digest
 
 serve = Server()
 
-protocol = KRPCProtocol(serve.node, serve.peer_storage, serve.token_storage, serve.ksize, buckets=serve.buckets, )
+protocol = KRPCProtocol(
+    serve.node,
+    serve.peer_storage,
+    serve.token_storage,
+    serve.ksize,
+    buckets=serve.buckets,
+)
 
 BOOTSTRAP_NODES = (
     ("router.bittorrent.com", 6881),
@@ -23,7 +29,6 @@ BOOTSTRAP_NODES = (
     ("dht.transmissionbt.com", 6881),
     ("router.bitcomet.com", 6881),
     ("dht.aelitis.com", 6881),
-
 )
 
 
@@ -43,15 +48,15 @@ loop = asyncio.get_event_loop()
 loop.set_debug(True)
 
 # Start local UDP server to be able to handle responses
-listen = loop.create_datagram_endpoint(KRPCProtocol, local_addr=('127.0.0.1', 4567))
+listen = loop.create_datagram_endpoint(KRPCProtocol, local_addr=("127.0.0.1", 4567))
 transport, protocol = loop.run_until_complete(listen)
 
 # Call remote UDP server to say hi
 # func = sayhi(protocol, ('127.0.0.1', 1234))
-func = sayhi(protocol, ('127.0.0.1', 1234))
+func = sayhi(protocol, ("127.0.0.1", 1234))
 loop.run_until_complete(func)
 
-print('done')
+print("done")
 # try:
 #     loop.run_forever()
 # except KeyboardInterrupt:

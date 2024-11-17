@@ -22,7 +22,15 @@ class Server:
 
     protocol_class = KRPCProtocol
 
-    def __init__(self, ksize=8, alpha=100, node_id=None, peer_storage=None, token_storage=None, buckets=None, ):
+    def __init__(
+        self,
+        ksize=8,
+        alpha=100,
+        node_id=None,
+        peer_storage=None,
+        token_storage=None,
+        buckets=None,
+    ):
         """
         Create a server instance.  This will start listening on the given port.
 
@@ -55,7 +63,13 @@ class Server:
             self.save_state_loop.cancel()
 
     def _create_protocol(self):
-        return self.protocol_class(self.node, self.peer_storage, self.token_storage, self.ksize, buckets=self.buckets, )
+        return self.protocol_class(
+            self.node,
+            self.peer_storage,
+            self.token_storage,
+            self.ksize,
+            buckets=self.buckets,
+        )
 
     async def listen(self, port, interface="0.0.0.0"):
         """
@@ -116,7 +130,9 @@ class Server:
             addrs: A `list` of (ip, port) `tuple` pairs.  Note that only IP
                    addresses are acceptable - hostnames will cause an error.
         """
-        logger.debug("Attempting to bootstrap node with %i initial contacts", len(addrs))
+        logger.debug(
+            "Attempting to bootstrap node with %i initial contacts", len(addrs)
+        )
         cos = list(map(self.bootstrap_node, addrs))
         gathered = await asyncio.gather(*cos)
         nodes = [node for node in gathered if node is not None]
@@ -140,7 +156,9 @@ class Server:
             return future
 
         spider_queue = asyncio.Queue()
-        spider = PeerSpiderCrawl(self.protocol, node, nearest, self.ksize * 4, self.alpha, spider_queue)
+        spider = PeerSpiderCrawl(
+            self.protocol, node, nearest, self.ksize * 4, self.alpha, spider_queue
+        )
         asyncio.create_task(spider.find())
 
         loop = asyncio.get_running_loop()
@@ -226,7 +244,9 @@ class Server:
         """
         self.save_state(fname)
         loop = asyncio.get_event_loop()
-        self.save_state_loop = loop.call_later(frequency, self.save_state_regularly, fname, frequency)
+        self.save_state_loop = loop.call_later(
+            frequency, self.save_state_regularly, fname, frequency
+        )
 
 
 def check_dht_value_type(value):

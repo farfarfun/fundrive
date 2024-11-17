@@ -80,7 +80,9 @@ def get_file_md5(path):
 class SuperDownloaderBak1(object):
     """HTTP下载较大文件的工具"""
 
-    def __init__(self, url, session, save_path, thread_num=45, queue_size=10, chunk=102400):
+    def __init__(
+        self, url, session, save_path, thread_num=45, queue_size=10, chunk=102400
+    ):
         """
         :param url: 资源链接
         :param session: 构造好上下文的session
@@ -124,7 +126,9 @@ class SuperDownloaderBak1(object):
                 interval = (self.position, self.position + self.chunk)
                 self.position += self.chunk + 1
                 self.mutex.release()
-            resp = self.session.get(self.url, headers={"Range": "bytes=%s-%s" % interval})
+            resp = self.session.get(
+                self.url, headers={"Range": "bytes=%s-%s" % interval}
+            )
             if not self.queue.full():
                 self.queue.put((interval, resp.content))
 
@@ -248,7 +252,9 @@ class SuperDownloaderM(object):
                     time = 3
                     while time > 0:
                         try:
-                            resp = self.session.get(url, headers={"Range": "bytes=%s-%s" % interval})
+                            resp = self.session.get(
+                                url, headers={"Range": "bytes=%s-%s" % interval}
+                            )
                             f.write(resp.content)
                             pbar.update(1)
                             break
@@ -298,7 +304,9 @@ class SuperDownloaderM(object):
             time = 3
             while time > 0:
                 try:
-                    resp = self.session.get(meta["url"], headers={"Range": "bytes=%s-%s" % interval})
+                    resp = self.session.get(
+                        meta["url"], headers={"Range": "bytes=%s-%s" % interval}
+                    )
                     if not self.queue.full():
                         self.queue.put((interval, resp.content))
                     break
@@ -329,7 +337,9 @@ class SuperDownloaderM(object):
 
 
 class SecretManage(object):
-    def __init__(self, key, value=None, path="default", secret_dir="~/.secret", save=True):
+    def __init__(
+        self, key, value=None, path="default", secret_dir="~/.secret", save=True
+    ):
         self.key = key
         secret_dir = secret_dir.replace("~", os.environ["HOME"])
         self.secret_path = "{}/{}/.{}".format(secret_dir, path, key)
@@ -385,7 +395,9 @@ class BaiDuDrive(object):
     官方API https://openapi.baidu.com/wiki/index.php?title=docs/pcs/rest/file_data_apis_list
     """
 
-    def __init__(self, bduss=None, session=None, timeout=None, access_token=None, save=True):
+    def __init__(
+        self, bduss=None, session=None, timeout=None, access_token=None, save=True
+    ):
         """
         :param bduss: The value of baidu cookie key `BDUSS`.
         """
@@ -433,7 +445,9 @@ class BaiDuDrive(object):
                 info(yun_path + "the same md5,file has been exist!, pass")
                 return
 
-        res = self.request("POST", "/file", params=params, files=files, base_url=BASE_URL_CPS_NEW)
+        res = self.request(
+            "POST", "/file", params=params, files=files, base_url=BASE_URL_CPS_NEW
+        )
         info("from {} upload to {} done".format(local_path, yun_path))
         return res
 
@@ -480,7 +494,9 @@ class BaiDuDrive(object):
 
         files = {local_path: open(local_path, "rb")}
 
-        return self.request("POST", "/file", params=params, files=files, base_url=BASE_URL_CPS_NEW)
+        return self.request(
+            "POST", "/file", params=params, files=files, base_url=BASE_URL_CPS_NEW
+        )
 
     def upload_superfile(self, block_list, yun_path, ondup=True):
         """分片上传—合并分片文件  :与分片文件上传的upload方法配合使用，可实现超大文件（>2G）上传，同时也可用于断点续传的场景。
@@ -638,7 +654,9 @@ class BaiDuDrive(object):
         res = self.request("POST", "/file", params=params)
         return res.get("list", [])
 
-    def list_deep(self, yun_dir, by="name", order="asc", limit="0-100", depth=0, max_depth=5):
+    def list_deep(
+        self, yun_dir, by="name", order="asc", limit="0-100", depth=0, max_depth=5
+    ):
         paths = []
 
         depth += 1
@@ -896,7 +914,9 @@ class BaiDuDrive(object):
 
     def offline_task_list(self):
         params = {"method": "list_task", "app_id": APP_ID_PAN_WEB}
-        res = self.request("POST", "/services/cloud_dl", params=params, base_url=BASE_URL_RST)
+        res = self.request(
+            "POST", "/services/cloud_dl", params=params, base_url=BASE_URL_RST
+        )
         return res
 
     def offline_task_add(self, source_url, save_path="/local"):
@@ -907,12 +927,16 @@ class BaiDuDrive(object):
             "app_id": APP_ID_PAN_WEB,
         }
 
-        res = self.request("POST", "/services/cloud_dl", params=params, base_url=BASE_URL_RST)
+        res = self.request(
+            "POST", "/services/cloud_dl", params=params, base_url=BASE_URL_RST
+        )
         return res
 
     def offline_task_add_list(self, source_urls, save_path="/local"):
         res = []
         for source_url in source_urls:
-            res.append(self.offline_task_add(source_url=source_url, save_path=save_path))
+            res.append(
+                self.offline_task_add(source_url=source_url, save_path=save_path)
+            )
 
         return res

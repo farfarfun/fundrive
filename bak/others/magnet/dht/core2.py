@@ -15,7 +15,7 @@ from fundrive.magnet.dht.bencode import bencode, bdecode
 BOOTSTRAP_NODES = {
     ("router.bittorrent.com", 6881),
     ("dht.transmissionbt.com", 6881),
-    ("router.utorrent.com", 6881)
+    ("router.utorrent.com", 6881),
 }
 
 # 一些全局变量
@@ -43,9 +43,9 @@ def decode_nodes(nodes):
     if (length % 26) != 0:
         return n
     for i in range(0, length, 26):
-        nid = nodes[i:i + 20]
-        ip = inet_ntoa(nodes[i + 20:i + 24])
-        port = unpack("!H", nodes[i + 24:i + 26])[0]
+        nid = nodes[i : i + 20]
+        ip = inet_ntoa(nodes[i + 20 : i + 24])
+        port = unpack("!H", nodes[i + 24 : i + 26])[0]
         n.append((nid, ip, port))
     return n
 
@@ -61,7 +61,7 @@ def get_neighbor(target, end=10):
 
 
 # 一个node的结构
-class KNode():
+class KNode:
     def __init__(self, nid, ip, port):
         self.nid = nid
         self.ip = ip
@@ -84,7 +84,9 @@ class DHT(Thread):
         self.nid = random_id()
 
         # 创建socket
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.socket = socket.socket(
+            socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP
+        )
         self.socket.bind(("0.0.0.0", port))
 
         # 处理"get_peers"和"announce_peer"请求的函数
@@ -111,7 +113,7 @@ class DHT(Thread):
             "t": tid,
             "y": "q",
             "q": "find_node",
-            "a": {"id": nid, "target": random_id()}
+            "a": {"id": nid, "target": random_id()},
         }
 
         self.send_krpc(msg, address)
@@ -169,8 +171,8 @@ class DHT(Thread):
                 "r": {
                     "id": get_neighbor(infohash, self.nid),
                     "nodes": "",
-                    "token": token
-                }
+                    "token": token,
+                },
             }
             self.send_krpc(msg, address)
         except:
@@ -179,7 +181,7 @@ class DHT(Thread):
     # 发送announce peer的请求，同样在msg参数中包含种子hash信息
     def on_announce_peer_request(self, msg, address):
         try:
-            infohash = msg['a']['info_hash']
+            infohash = msg["a"]["info_hash"]
             self.master.log(infohash, "announce")
         except:
             print("error in on_announce_peer_request")
@@ -192,13 +194,7 @@ class DHT(Thread):
         try:
             tid = msg["t"]
             nid = msg["a"]["id"]
-            msg = {
-                "t": tid,
-                "y": "r",
-                "r": {
-                    "id": get_neighbor(nid, self.nid)
-                }
-            }
+            msg = {"t": tid, "y": "r", "r": {"id": get_neighbor(nid, self.nid)}}
             self.send_krpc(msg, address)
         except:
             print("error in ok")
@@ -224,11 +220,7 @@ class DHT(Thread):
     def play_dead(self, msg, address):
         try:
             tid = msg["t"]
-            msg = {
-                "t": tid,
-                "y": "e",
-                "e": [202, "Server Error"]
-            }
+            msg = {"t": tid, "y": "e", "e": [202, "Server Error"]}
             self.send_krpc(msg, address)
         except:
             pass
@@ -246,7 +238,7 @@ class DHT(Thread):
 
 
 # 用来输出及保存种子hash
-class Master():
+class Master:
     def __init__(self):
         self.mutex = Lock()
 

@@ -77,8 +77,13 @@ class BaseTable:
         :param property_list:
         :return:
         """
-        values = [tuple([properties.get(key, "") for key in self.columns]) for properties in property_list]
-        sql = "insert or ignore into {} values ({})".format(self.table_name, ",".join(["?"] * len(self.columns)))
+        values = [
+            tuple([properties.get(key, "") for key in self.columns])
+            for properties in property_list
+        ]
+        sql = "insert or ignore into {} values ({})".format(
+            self.table_name, ",".join(["?"] * len(self.columns))
+        )
 
         self.cursor.executemany(sql, values)
         self.conn.commit()
@@ -94,7 +99,9 @@ class BaseTable:
         properties = self.encode(properties)
         equal = self._condition2equal(properties)
         equal2 = self._condition2equal(condition)
-        sql = """update  {} set {} where {}""".format(self.table_name, ", ".join(equal), " and ".join(equal2))
+        sql = """update  {} set {} where {}""".format(
+            self.table_name, ", ".join(equal), " and ".join(equal2)
+        )
         return self.execute(sql)
 
     def update_or_insert(self, properties: dict, condition: dict = None):
@@ -141,7 +148,9 @@ class BaseTable:
             if len(value) > 0 and len(key) > 0:
                 values.append("{}='{}'".format(key, value.replace("'", "")))
 
-        sql = """select count(1) from {} where {}""".format(self.table_name, " and ".join(values))
+        sql = """select count(1) from {} where {}""".format(
+            self.table_name, " and ".join(values)
+        )
 
         rows = self.execute(sql)
         for row in rows:
@@ -163,7 +172,9 @@ class BaseTable:
         """
         if sql is None:
             equal2 = self._condition2equal(condition)
-            sql = """select * from {} where {}""".format(self.table_name, " and ".join(equal2))
+            sql = """select * from {} where {}""".format(
+                self.table_name, " and ".join(equal2)
+            )
         else:
             sql = self.sql_format(sql)
 
@@ -229,7 +240,9 @@ class BaseTable:
         elif isinstance(condition, str):
             sql = "delete from {} where {}".format(self.table_name, condition)
         elif isinstance(condition, dict):
-            sql = "delete from {} where {}".format(self.table_name, self._condition2equal(condition))
+            sql = "delete from {} where {}".format(
+                self.table_name, self._condition2equal(condition)
+            )
         else:
             sql = None
         if sql is not None:
@@ -262,7 +275,10 @@ class SqliteTable(BaseTable):
 
         count = len(result)
         path = "{}/{}-{}-{}".format(
-            os.path.dirname(self.db_path), self.table_name, count, datetime.now().strftime("%Y%m%d#%H:%M:%S")
+            os.path.dirname(self.db_path),
+            self.table_name,
+            count,
+            datetime.now().strftime("%Y%m%d#%H:%M:%S"),
         )
         result.to_csv(path)
         self.logger.info("save to csv:{}->{}".format(count, path))
@@ -280,12 +296,16 @@ class SqliteTable(BaseTable):
 
         path = path or (
             "{}/{}-{}".format(
-                os.path.dirname(self.db_path), self.table_name, datetime.now().strftime("%Y%m%d#%H:%M:%S")
+                os.path.dirname(self.db_path),
+                self.table_name,
+                datetime.now().strftime("%Y%m%d#%H:%M:%S"),
             )
         )
         self.logger.info("save to csv -> {}".format(path))
 
-        cmd = 'sqlite3 -header -csv {db_path} "{sql};" > {path}'.format(db_path=self.db_path, path=path, sql=sql)
+        cmd = 'sqlite3 -header -csv {db_path} "{sql};" > {path}'.format(
+            db_path=self.db_path, path=path, sql=sql
+        )
         run_shell(cmd)
         if pop:
             self.delete(condition)
@@ -308,8 +328,13 @@ class SqliteTable(BaseTable):
         :param property_list:
         :return:
         """
-        values = [tuple([properties.get(key, "") for key in self.columns]) for properties in property_list]
-        sql = "insert or ignore into {} values ({})".format(self.table_name, ",".join(["?"] * len(self.columns)))
+        values = [
+            tuple([properties.get(key, "") for key in self.columns])
+            for properties in property_list
+        ]
+        sql = "insert or ignore into {} values ({})".format(
+            self.table_name, ",".join(["?"] * len(self.columns))
+        )
 
         self.cursor.executemany(sql, values)
         self.conn.commit()
@@ -325,7 +350,9 @@ class SqliteTable(BaseTable):
         if len(files) > 0:
             files = sorted(files, key=lambda x: x["id"])
             downer.down_file_by_id(
-                files[-1]["id"], save_path=os.path.dirname(self.db_path), file_name=os.path.basename(self.db_path)
+                files[-1]["id"],
+                save_path=os.path.dirname(self.db_path),
+                file_name=os.path.basename(self.db_path),
             )
 
     def db_save(self):
@@ -336,13 +363,26 @@ class SqliteTable(BaseTable):
         downer.login_by_cookie()
         # file_name = f'{datetime.now().strftime("%Y%m%d%H%M%S")}-{os.path.basename(self.db_path)}'
         file_name = f'db-{datetime.now().strftime("%Y%m%d%H%M%S")}-{os.path.basename(self.db_path)}'
-        return downer.upload_file(file_path=self.db_path, folder_id=self.lanzou_fid, file_name=file_name)
+        return downer.upload_file(
+            file_path=self.db_path, folder_id=self.lanzou_fid, file_name=file_name
+        )
 
 
 class MysqlTable(BaseTable):
-    def __init__(self, cursor=None, host=None, user=None, password=None, database=None, *args, **kwargs):
+    def __init__(
+        self,
+        cursor=None,
+        host=None,
+        user=None,
+        password=None,
+        database=None,
+        *args,
+        **kwargs,
+    ):
         super(MysqlTable, self).__init__(*args, **kwargs)
         import pymysql
 
-        self.conn = cursor or pymysql.connect(host=host, user=user, password=password, database=database)
+        self.conn = cursor or pymysql.connect(
+            host=host, user=user, password=password, database=database
+        )
         self.cursor = self.conn.cursor()

@@ -18,7 +18,9 @@ class OpenDataLabDrive(BaseDrive):
         self.cookies = {}
         self.headers = {}
 
-    def login(self, ak=None, sk=None, opendatalab_session=None, ssouid=None, *args, **kwargs) -> bool:
+    def login(
+        self, ak=None, sk=None, opendatalab_session=None, ssouid=None, *args, **kwargs
+    ) -> bool:
         self.cookies.update(
             {
                 "opendatalab_session": opendatalab_session
@@ -56,7 +58,9 @@ class OpenDataLabDrive(BaseDrive):
         }
         return result
 
-    def get_file_list(self, dataset_name, payload=None, *args, **kwargs) -> List[Dict[str, Any]]:
+    def get_file_list(
+        self, dataset_name, payload=None, *args, **kwargs
+    ) -> List[Dict[str, Any]]:
         dataset_name = dataset_name.replace("/", ",")
         data = {"recursive": True}
         if payload:
@@ -82,7 +86,11 @@ class OpenDataLabDrive(BaseDrive):
         try:
             file_info = self.get_file_info(dataset_id=dataset_id, file_path=file_path)
             filepath = os.path.join(dir_path, file_info["path"])
-            if os.path.exists(filepath) and not overwrite and file_info["size"] == os.path.getsize(filepath):
+            if (
+                os.path.exists(filepath)
+                and not overwrite
+                and file_info["size"] == os.path.getsize(filepath)
+            ):
                 return False
             return simple_download(
                 url=file_info["url"],
@@ -95,13 +103,19 @@ class OpenDataLabDrive(BaseDrive):
             logger.error(e)
             return False
 
-    def download_dir(self, dir_path="./cache", dataset_name=None, overwrite=False, *args, **kwargs) -> bool:
+    def download_dir(
+        self, dir_path="./cache", dataset_name=None, overwrite=False, *args, **kwargs
+    ) -> bool:
         if dataset_name is None:
             return False
         file_list = self.get_file_list(dataset_name=dataset_name)
         for i, file in enumerate(file_list):
             filepath = os.path.join(dir_path, file["path"])
-            if os.path.exists(filepath) and not overwrite and file["size"] == os.path.getsize(filepath):
+            if (
+                os.path.exists(filepath)
+                and not overwrite
+                and file["size"] == os.path.getsize(filepath)
+            ):
                 return False
             try:
                 self.download_file(

@@ -16,20 +16,31 @@ class TikHubAPI:
     def login(self, username=None, password=None, token=None) -> bool:
         if token is not None:
             self.token = token
-            read_secret(cate1="fundrive", cate2="tiktok", cate3="token", value=self.token)
+            read_secret(
+                cate1="fundrive", cate2="tiktok", cate3="token", value=self.token
+            )
         elif username is not None and password is not None:
             token_expiry_minutes: int = 525600
-            url = f"{self.domain}/user/login?token_expiry_minutes={token_expiry_minutes}"
+            url = (
+                f"{self.domain}/user/login?token_expiry_minutes={token_expiry_minutes}"
+            )
 
             payload = {"username": username, "password": password}
             response = requests.request("POST", url, data=payload).json()
             self.token = response.get("access_token")
-            read_secret(cate1="fundrive", cate2="tiktok", cate3="token", value=self.token)
-            logger.info(f"Your token is: {(response.get('access_token', response.get('detail')))}")
+            read_secret(
+                cate1="fundrive", cate2="tiktok", cate3="token", value=self.token
+            )
+            logger.info(
+                f"Your token is: {(response.get('access_token', response.get('detail')))}"
+            )
         else:
             self.token = read_secret(cate1="fundrive", cate2="tiktok", cate3="token")
 
-        self._headers = {"Cookie": f"Authorization={self.token}", "Authorization": f"Bearer {self.token}"}
+        self._headers = {
+            "Cookie": f"Authorization={self.token}",
+            "Authorization": f"Bearer {self.token}",
+        }
         return True
 
     def _get(self, uri, params=None) -> dict:
@@ -51,7 +62,9 @@ class TikHubAPI:
     def promotion_daily_check_in(self):
         return self._get(uri="promotion/daily_check_in")
 
-    def parse_douyin_video(self, url: str = None, video_id: str = None, language="zh") -> dict:
+    def parse_douyin_video(
+        self, url: str = None, video_id: str = None, language="zh"
+    ) -> dict:
         """
         解析抖音视频
         """
@@ -74,7 +87,11 @@ def test1():
     print(tikhub.user_me())
     # print(tikhub.parse_douyin_video("https://www.douyin.com/video/7153585499477757192"))
     print(tikhub.parse_douyin_video(video_id="7153585499477757192"))
-    print(tikhub.parse_tiktok_video("https://www.tiktok.com/@evil0ctal/video/7202594778217844014"))
+    print(
+        tikhub.parse_tiktok_video(
+            "https://www.tiktok.com/@evil0ctal/video/7202594778217844014"
+        )
+    )
 
 
 test1()

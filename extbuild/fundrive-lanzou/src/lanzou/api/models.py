@@ -3,7 +3,7 @@
 元素类型为 namedtuple，至少拥有 name id 两个属性才能放入容器
 """
 
-__all__ = ['FileList', 'FolderList']
+__all__ = ["FileList", "FolderList"]
 
 
 class ItemList:
@@ -26,7 +26,7 @@ class ItemList:
 
     def __lt__(self, other):
         """用于路径 List 之间排序"""
-        return '/'.join(i.name for i in self) < '/'.join(i.name for i in other)
+        return "/".join(i.name for i in self) < "/".join(i.name for i in other)
 
     @property
     def name_id(self):
@@ -92,9 +92,11 @@ class ItemList:
 
 class FileList(ItemList):
     """文件列表类"""
+
     pass
 
 
 class FolderList(ItemList):
     """文件夹列表类"""
+
     pass

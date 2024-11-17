@@ -12,7 +12,9 @@ class MyWebEngineView(QWebEngineView):
         self._user = user
         self._pwd = pwd
         # 绑定cookie被添加的信号槽
-        QWebEngineProfile.defaultProfile().cookieStore().cookieAdded.connect(self.onCookieAdd)
+        QWebEngineProfile.defaultProfile().cookieStore().cookieAdded.connect(
+            self.onCookieAdd
+        )
         self.loadFinished.connect(self._on_load_finished)
         self.urlChanged.connect(self._on_load_finished)
 
@@ -37,14 +39,14 @@ class MyWebEngineView(QWebEngineView):
         #     print("Err:", e)
 
     def onCookieAdd(self, cookie):
-        name = cookie.name().data().decode('utf-8')
-        value = cookie.value().data().decode('utf-8')
+        name = cookie.name().data().decode("utf-8")
+        value = cookie.value().data().decode("utf-8")
         self.cookies[name] = value
 
     def get_cookie(self):
         cookie_dict = {}
         for key, value in self.cookies.items():
-            if key in ('ylogin', 'phpdisk_info'):
+            if key in ("ylogin", "phpdisk_info"):
                 cookie_dict[key] = value
         return cookie_dict
 
@@ -56,13 +58,13 @@ class LoginWindow(QDialog):
         super().__init__()
         self._user = user
         self._pwd = pwd
-        self._base_url = 'https://pc.woozooo.com/'
+        self._base_url = "https://pc.woozooo.com/"
         self._gui = gui
         self.setup()
 
     def setup(self):
-        self.setWindowTitle('滑动滑块，完成登录')
-        url = self._base_url + 'account.php?action=login&ref=/mydisk.php'
+        self.setWindowTitle("滑动滑块，完成登录")
+        url = self._base_url + "account.php?action=login&ref=/mydisk.php"
         QWebEngineProfile.defaultProfile().cookieStore().deleteAllCookies()
         self.web = MyWebEngineView(self._user, self._pwd)
         self.web.urlChanged.connect(self.get_cookie)
@@ -72,15 +74,14 @@ class LoginWindow(QDialog):
         self.box.addWidget(self.web)
 
     def get_cookie(self):
-        home_url = self._base_url + 'mydisk.php'
+        home_url = self._base_url + "mydisk.php"
         if self.web.url().toString() == home_url:
             cookie = self.web.get_cookie()
             if cookie:
                 if self._gui:
                     try:
-                        print(";".join([f'{k}={v}' for k, v in cookie.items()]), end='')
+                        print(";".join([f"{k}={v}" for k, v in cookie.items()]), end="")
                     except Exception as e:
-                        
                         pass
                 else:
                     self.cookie.emit(cookie)

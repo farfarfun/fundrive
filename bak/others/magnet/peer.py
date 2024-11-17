@@ -86,8 +86,8 @@ class BittorrentTCPProtocol(asyncio.Transport):
                 if len(self.buffer) < length + 4:
                     return
 
-                payload = self.buffer[5: length + 4]
-                self.buffer = self.buffer[length + 4:]
+                payload = self.buffer[5 : length + 4]
+                self.buffer = self.buffer[length + 4 :]
 
                 self.handle_action(action, payload)
                 handled_message = True
@@ -107,10 +107,28 @@ class BittorrentTCPProtocol(asyncio.Transport):
 
     def handshake_complete(self):
         logger.debug("{} | Sending extension data".format(self.addr))
-        self.send_message(20, b"\x00" + bencode({b"m": {b"ut_metadata": EXTENDED_ID_METADATA, }}), )
+        self.send_message(
+            20,
+            b"\x00"
+            + bencode(
+                {
+                    b"m": {
+                        b"ut_metadata": EXTENDED_ID_METADATA,
+                    }
+                }
+            ),
+        )
 
     def request_metadata_piece(self, piece):
-        self.send_extended_message(self.ut_metadata, bencode({b"msg_type": 0, b"piece": piece, }))
+        self.send_extended_message(
+            self.ut_metadata,
+            bencode(
+                {
+                    b"msg_type": 0,
+                    b"piece": piece,
+                }
+            ),
+        )
 
     def handle_extended_action(self, action, payload):
         if action == 0:
@@ -122,7 +140,11 @@ class BittorrentTCPProtocol(asyncio.Transport):
             self.expected_torrent_size = self.extended_config.get(b"metadata_size")
             self.ut_metadata = self.extended_config[b"m"][b"ut_metadata"]
 
-            logger.debug("{} | We got torrent size {}".format(self.addr, self.expected_torrent_size))
+            logger.debug(
+                "{} | We got torrent size {}".format(
+                    self.addr, self.expected_torrent_size
+                )
+            )
             self.request_metadata_piece(0)
 
         elif action == EXTENDED_ID_METADATA:
@@ -135,7 +157,10 @@ class BittorrentTCPProtocol(asyncio.Transport):
                 return
             elif payload_msg[b"msg_type"] == 1:
                 self.torrent_data[payload_msg[b"piece"]] = payload_data
-                if sum(len(v) for v in self.torrent_data.values()) < self.expected_torrent_size:
+                if (
+                    sum(len(v) for v in self.torrent_data.values())
+                    < self.expected_torrent_size
+                ):
                     self.request_metadata_piece(payload_msg[b"piece"] + 1)
                 else:
                     self.verify_and_set_result()
@@ -143,7 +168,9 @@ class BittorrentTCPProtocol(asyncio.Transport):
                     return
 
     def handle_action(self, action, payload):
-        logger.debug("{} | Handling {} with payload {}".format(self.addr, action, payload))
+        logger.debug(
+            "{} | Handling {} with payload {}".format(self.addr, action, payload)
+        )
         if action == 20:
             extended_id = payload[0]
             payload = payload[1:]
@@ -159,8 +186,11 @@ class BittorrentTCPProtocol(asyncio.Transport):
         if infohash == self.infohash:
             self.cb.set_result(torrent_data)
         else:
-            logger.warning("Got wrong infohash, got {} expected {}".format(binascii.hexlify(infohash),
-                                                                           binascii.hexlify(self.infohash)))
+            logger.warning(
+                "Got wrong infohash, got {} expected {}".format(
+                    binascii.hexlify(infohash), binascii.hexlify(self.infohash)
+                )
+            )
 
     def kill(self, reason):
         logger.debug("{} | Killing connection because of {}".format(self.addr, reason))
@@ -175,9 +205,15 @@ async def fetch_from_peer(task_registry, ip, port, infohash):
     addr = (ip, port)
     try:
         task = asyncio.ensure_future(
-            loop.create_connection(lambda: BittorrentTCPProtocol(cb, infohash, addr), str(ip), port))
+            loop.create_connection(
+                lambda: BittorrentTCPProtocol(cb, infohash, addr), str(ip), port
+            )
+        )
         task_registry.add(task)
-        transport, protocol = await asyncio.wait_for(task, timeout=7, )
+        transport, protocol = await asyncio.wait_for(
+            task,
+            timeout=7,
+        )
         task_registry.remove(task)
     except (OSError, asyncio.TimeoutError) as e:
         logger.debug("{} | Failed to connect to peer: {}".format(addr, e))

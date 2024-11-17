@@ -24,7 +24,7 @@ class TrackerUDPProtocol(asyncio.DatagramProtocol):
         self.infohash = infohash
 
     def get_transaction_id(self):
-        self.last_transaction_id = random.randint(0, 2 ** 32 - 1)
+        self.last_transaction_id = random.randint(0, 2**32 - 1)
         return self.last_transaction_id
 
     def connection_made(self, transport):
@@ -120,7 +120,7 @@ async def retrieve_peers_http_tracker(task_registry, tracker, infohash):
         tracker=tracker,
         info_hash=quote(infohash),
         peer_id=quote(settings.PEER_ID),
-        port=settings.BITTORRENT_PORT
+        port=settings.BITTORRENT_PORT,
     )
 
     failed = False
@@ -133,7 +133,11 @@ async def retrieve_peers_http_tracker(task_registry, tracker, infohash):
                 if response.status != 200:
                     failed = True
                 task_registry.remove(task)
-        except (aiohttp.ClientConnectorError, asyncio.TimeoutError, asyncio.CancelledError,):
+        except (
+            aiohttp.ClientConnectorError,
+            asyncio.TimeoutError,
+            asyncio.CancelledError,
+        ):
             failed = True
 
     if failed:
@@ -153,10 +157,11 @@ async def retrieve_peers_http_tracker(task_registry, tracker, infohash):
         peers.append((IPv4Address(peer_ip), peer_port))
         peer_data = peer_data[6:]
 
-    return (tracker,
-            {
-                "seeders": result.get(b"complete", 0),
-                "leechers": result.get(b"incomplete", 0),
-                "peers": peers,
-            },
-            )
+    return (
+        tracker,
+        {
+            "seeders": result.get(b"complete", 0),
+            "leechers": result.get(b"incomplete", 0),
+            "peers": peers,
+        },
+    )

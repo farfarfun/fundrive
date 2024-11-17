@@ -41,7 +41,9 @@ class SpiderCrawl:
 
         tasks = set()
         task_mapping = {}
-        while not self.cancel_crawl and (not self.nearest.have_contacted_all() or tasks):
+        while not self.cancel_crawl and (
+            not self.nearest.have_contacted_all() or tasks
+        ):
             count = self.alpha - len(tasks)
             for peer in self.nearest.get_uncontacted()[:count]:
                 self.nearest.mark_contacted(peer)

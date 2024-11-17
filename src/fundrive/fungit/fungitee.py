@@ -17,9 +17,20 @@ class GiteeDrive(BaseDrive):
 
     def login(self, repo_str, access_tokens=None, *args, **kwargs) -> bool:
         if access_tokens:
-            read_secret(cate1="fundrive", cate2="drives", cate3="fungitee", cate4="access_tokens", value=access_tokens)
+            read_secret(
+                cate1="fundrive",
+                cate2="drives",
+                cate3="fungitee",
+                cate4="access_tokens",
+                value=access_tokens,
+            )
         else:
-            access_tokens = read_secret(cate1="fundrive", cate2="drives", cate3="fungitee", cate4="access_tokens")
+            access_tokens = read_secret(
+                cate1="fundrive",
+                cate2="drives",
+                cate3="fungitee",
+                cate4="access_tokens",
+            )
         self.access_tokens = access_tokens
         self.repo_str = repo_str
         return True
@@ -32,16 +43,27 @@ class GiteeDrive(BaseDrive):
 
     def get_file_info(self, git_path, *args, **kwargs) -> Dict[str, Any]:
         data = {"access_token": self.access_tokens}
-        res = requests.get(f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", data=data)
+        res = requests.get(
+            f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", data=data
+        )
         data = res.json()
         if len(data) == 0:
             return {}
-        return {"name": data["name"], "path": data["path"], "size": data["size"], "sha": data["sha"]}
+        return {
+            "name": data["name"],
+            "path": data["path"],
+            "size": data["size"],
+            "sha": data["sha"],
+        }
 
-    def get_file_list(self, git_path, recursive=False, *args, **kwargs) -> List[Dict[str, Any]]:
+    def get_file_list(
+        self, git_path, recursive=False, *args, **kwargs
+    ) -> List[Dict[str, Any]]:
         all_files = []
         data = {"access_token": self.access_tokens}
-        res = requests.get(f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", data=data)
+        res = requests.get(
+            f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", data=data
+        )
         for data in res.json():
             if data["type"] != "dir":
                 all_files.append(
@@ -55,10 +77,14 @@ class GiteeDrive(BaseDrive):
                 all_files.extend(self.get_file_list(data["path"]))
         return all_files
 
-    def get_dir_list(self, git_path, recursive=False, *args, **kwargs) -> List[Dict[str, Any]]:
+    def get_dir_list(
+        self, git_path, recursive=False, *args, **kwargs
+    ) -> List[Dict[str, Any]]:
         all_files = []
         data = {"access_token": self.access_tokens}
-        res = requests.get(f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", data=data)
+        res = requests.get(
+            f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", data=data
+        )
         for data in res.json():
             if data["type"] == "dir":
                 all_files.append(
@@ -97,10 +123,14 @@ class GiteeDrive(BaseDrive):
         }
         info = self.get_file_info(git_path=git_path)
         if len(info) == 0:
-            res = requests.post(f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", json=data)
+            res = requests.post(
+                f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", json=data
+            )
         else:
             data["sha"] = info["sha"]
-            res = requests.put(f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", json=data)
+            res = requests.put(
+                f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", json=data
+            )
         if res is None:
             return True
 

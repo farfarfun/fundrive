@@ -2,7 +2,7 @@ import os.path
 
 import requests
 
-cache_root = os.path.join(os.environ['HOME'], 'notecache')
+cache_root = os.path.join(os.environ["HOME"], "notecache")
 
 
 def url_to_path(url: str):
@@ -33,7 +33,7 @@ def load_url_to_cache(url: str, overwrite=False) -> str:
         else:
             os.remove(file_path)
 
-    with open(file_path, 'wb') as f:
+    with open(file_path, "wb") as f:
         content = requests.get(url).content
         f.write(content)
     return file_path

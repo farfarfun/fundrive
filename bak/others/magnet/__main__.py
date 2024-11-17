@@ -17,27 +17,61 @@ from .utils import FailedToFetchException
 def main():
     parser = argparse.ArgumentParser(description="Turn a magnet link to torrent.")
     parser.add_argument("--debug", help="Enable debug", action="store_true")
-    parser.add_argument("--use-dht", help="Enable DHT", action="store_true", dest="use_dht")
-    parser.add_argument("--dht-state-file", help="Where to save DHT info", dest="dht_state_file", type=str, )
-    parser.add_argument("--dht-port", help="Port to listen for DHT on", dest="dht_port", type=int,
-                        default=settings.DHT_PORT, )
-    parser.add_argument("--dht-ip", help="Host to listen for DHT on", dest="dht_ip", type=ipaddress.ip_address,
-                        default=ipaddress.IPv4Address("0.0.0.0"), )
-    parser.add_argument("--torrent-cache-folder", help="Folder to cache torrent metadata into",
-                        dest="torrent_cache_folder", type=str, )
+    parser.add_argument(
+        "--use-dht", help="Enable DHT", action="store_true", dest="use_dht"
+    )
+    parser.add_argument(
+        "--dht-state-file",
+        help="Where to save DHT info",
+        dest="dht_state_file",
+        type=str,
+    )
+    parser.add_argument(
+        "--dht-port",
+        help="Port to listen for DHT on",
+        dest="dht_port",
+        type=int,
+        default=settings.DHT_PORT,
+    )
+    parser.add_argument(
+        "--dht-ip",
+        help="Host to listen for DHT on",
+        dest="dht_ip",
+        type=ipaddress.ip_address,
+        default=ipaddress.IPv4Address("0.0.0.0"),
+    )
+    parser.add_argument(
+        "--torrent-cache-folder",
+        help="Folder to cache torrent metadata into",
+        dest="torrent_cache_folder",
+        type=str,
+    )
     subparsers = parser.add_subparsers(help="sub-command help", dest="command")
 
     # dht_test_subparser = subparsers.add_parser("dhttest")
 
     serve_subparser = subparsers.add_parser(
-        "serve", help="Run an HTTP server that serves torrents via an API or directly")
-    serve_subparser.add_argument("--ip", type=ipaddress.ip_address, default=ipaddress.IPv4Address("0.0.0.0"),
-                                 help="Host to listen on", )
-    serve_subparser.add_argument("--port", type=int, default=18667, help="Port to listen on")
-    serve_subparser.add_argument("--apikey", type=str, default=None,
-                                 help="Protect the endpoint with a simple apikey, add apikey=<apikey> to the url to access", )
+        "serve", help="Run an HTTP server that serves torrents via an API or directly"
+    )
+    serve_subparser.add_argument(
+        "--ip",
+        type=ipaddress.ip_address,
+        default=ipaddress.IPv4Address("0.0.0.0"),
+        help="Host to listen on",
+    )
+    serve_subparser.add_argument(
+        "--port", type=int, default=18667, help="Port to listen on"
+    )
+    serve_subparser.add_argument(
+        "--apikey",
+        type=str,
+        default=None,
+        help="Protect the endpoint with a simple apikey, add apikey=<apikey> to the url to access",
+    )
 
-    fetch_subparser = subparsers.add_parser("fetch", help="Fetch a torrent and save it locally")
+    fetch_subparser = subparsers.add_parser(
+        "fetch", help="Fetch a torrent and save it locally"
+    )
     fetch_subparser.add_argument("magnet", help="Magnet link")
 
     args = parser.parse_args()
@@ -49,11 +83,16 @@ def main():
             os.makedirs(args.torrent_cache_folder)
 
         if not torrent_cache_folder.is_dir():
-            print("Path {} exists but is not a folder".format(args.torrent_cache_folder))
+            print(
+                "Path {} exists but is not a folder".format(args.torrent_cache_folder)
+            )
             quit(1)
 
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG, format="%(asctime)-15s:%(levelname)s:%(name)s:%(lineno)d:%(message)s")
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format="%(asctime)-15s:%(levelname)s:%(name)s:%(lineno)d:%(message)s",
+        )
 
     if args.use_dht:
         print("Bootstrapping DHT server")
@@ -89,7 +128,11 @@ def main():
         web.run_app(app, host=str(args.ip), port=args.port)
     elif args.command == "fetch":
         loop = asyncio.get_event_loop()
-        m2t = Magnet2Torrent(args.magnet, dht_server=dht_server, torrent_cache_folder=args.torrent_cache_folder, )
+        m2t = Magnet2Torrent(
+            args.magnet,
+            dht_server=dht_server,
+            torrent_cache_folder=args.torrent_cache_folder,
+        )
         try:
             torrent = loop.run_until_complete(m2t.retrieve_torrent())
         except FailedToFetchException:

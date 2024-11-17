@@ -21,15 +21,29 @@ class GithubDrive(BaseDrive):
 
     def login(self, repo_str, access_tokens=None, *args, **kwargs) -> bool:
         if access_tokens:
-            read_secret(cate1="fundrive", cate2="drives", cate3="fungithub", cate4="access_tokens", value=access_tokens)
+            read_secret(
+                cate1="fundrive",
+                cate2="drives",
+                cate3="fungithub",
+                cate4="access_tokens",
+                value=access_tokens,
+            )
         else:
-            access_tokens = read_secret(cate1="fundrive", cate2="drives", cate3="fungithub", cate4="access_tokens")
+            access_tokens = read_secret(
+                cate1="fundrive",
+                cate2="drives",
+                cate3="fungithub",
+                cate4="access_tokens",
+            )
         self.headers = {"Authorization": f"Token {access_tokens}"}
         self.repo_str = repo_str
         return True
 
     def delete(self, git_path, *args, **kwargs) -> bool:
-        requests.get(f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", headers=self.headers)
+        requests.get(
+            f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}",
+            headers=self.headers,
+        )
         return True
 
     def get_dir_info(self, git_path, *args, **kwargs) -> Dict[str, Any]:
@@ -39,7 +53,10 @@ class GithubDrive(BaseDrive):
         return {}
 
     def get_file_info(self, git_path, *args, **kwargs) -> Dict[str, Any]:
-        res = requests.get(f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", headers=self.headers)
+        res = requests.get(
+            f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}",
+            headers=self.headers,
+        )
         data = res.json()
         if len(data) == 0 or "name" not in data:
             return {}
@@ -51,9 +68,14 @@ class GithubDrive(BaseDrive):
             # "time": datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z").strftime("%Y-%m-%d %H:%M:%S"),
         }
 
-    def get_file_list(self, git_path, recursive=False, *args, **kwargs) -> List[Dict[str, Any]]:
+    def get_file_list(
+        self, git_path, recursive=False, *args, **kwargs
+    ) -> List[Dict[str, Any]]:
         all_files = []
-        res = requests.get(f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", headers=self.headers)
+        res = requests.get(
+            f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}",
+            headers=self.headers,
+        )
         for data in res.json():
             if data["type"] != "dir":
                 all_files.append(
@@ -69,9 +91,14 @@ class GithubDrive(BaseDrive):
                 all_files.extend(self.get_file_list(data["path"]))
         return all_files
 
-    def get_dir_list(self, git_path, recursive=False, *args, **kwargs) -> List[Dict[str, Any]]:
+    def get_dir_list(
+        self, git_path, recursive=False, *args, **kwargs
+    ) -> List[Dict[str, Any]]:
         all_files = []
-        res = requests.get(f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}", headers=self.headers)
+        res = requests.get(
+            f"{self.base_url}/repos/{self.repo_str}/contents/{git_path}",
+            headers=self.headers,
+        )
         for data in res.json():
             if data["type"] == "dir":
                 all_files.append(
@@ -103,7 +130,11 @@ class GithubDrive(BaseDrive):
         if not isinstance(content, str):
             content = orjson.dumps(content).decode("utf-8")
 
-        data = {"message": message, "content": base64.b64encode(content.encode("utf-8")).decode(), "branch": branch}
+        data = {
+            "message": message,
+            "content": base64.b64encode(content.encode("utf-8")).decode(),
+            "branch": branch,
+        }
         exist_info = self.get_file_info(git_path)
         if "sha" in exist_info:
             data["sha"] = exist_info["sha"]

@@ -2,14 +2,14 @@ from enum import Enum
 
 
 class FieldType(bytes, Enum):
-    NONE = (0, ['none', 'NONE'])
-    STRING = (10, ['string', 'STRING', 'str', 'STR'])
-    VARCHAR = (11, ['varchar', 'VARCHAR'])
-    FLOAT = (20, ['float', 'FLOAT'])
-    DOUBLE = (30, ['double', 'DOUBLE'])
-    BIGINT = (40, ['bigint', 'BIGINT'])
-    INTEGER = (50, ['integer', 'int', 'INTEGER', 'INT'])
-    TINYINT = (51, ['tinyint', 'TINYINT'])
+    NONE = (0, ["none", "NONE"])
+    STRING = (10, ["string", "STRING", "str", "STR"])
+    VARCHAR = (11, ["varchar", "VARCHAR"])
+    FLOAT = (20, ["float", "FLOAT"])
+    DOUBLE = (30, ["double", "DOUBLE"])
+    BIGINT = (40, ["bigint", "BIGINT"])
+    INTEGER = (50, ["integer", "int", "INTEGER", "INT"])
+    TINYINT = (51, ["tinyint", "TINYINT"])
 
     def __init__(self, value, names):
         self._value_ = value

@@ -6,7 +6,7 @@ METADATA_EXCHANGE = 1 << 20
 
 PEER_ID = b"-MD100A-" + bytes([random.randint(0, 255) for _ in range(12)])
 
-MAX_PACKET_SIZE = 2 ** 15
+MAX_PACKET_SIZE = 2**15
 
 EXTENDED_ID_METADATA = 1
 
@@ -33,8 +33,11 @@ DEFAULT_TRACKERS = [
     "udp://zephir.monocul.us:6969/announce",
 ]
 # DEFAULT_TRACKERS = [line for line in requests.get('https://trackerslist.com/all.txt').text.split('\n') if len(line) > 0 and '[' not in line]
-DEFAULT_TRACKERS = [line for line in requests.get('https://trackerslist.com/best.txt').text.split('\n') if
-                    len(line) > 0 and '[' not in line]
+DEFAULT_TRACKERS = [
+    line
+    for line in requests.get("https://trackerslist.com/best.txt").text.split("\n")
+    if len(line) > 0 and "[" not in line
+]
 
 BITTORRENT_PORT = random.randint(10000, 60000)
 

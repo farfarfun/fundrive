@@ -23,7 +23,7 @@ def decode_string(x, f):
     if six.indexbytes(x, f) == 48 and colon != f + 1:
         raise ValueError
     colon += 1
-    return x[colon: colon + n], colon + n
+    return x[colon : colon + n], colon + n
 
 
 def decode_list(x, f):
@@ -42,11 +42,7 @@ def decode_dict(x, f):
     return r, f + 1
 
 
-decode_func = {
-    108: decode_list,
-    100: decode_dict,
-    105: decode_int
-}
+decode_func = {108: decode_list, 100: decode_dict, 105: decode_int}
 
 for i in range(48, 59):
     decode_func[i] = decode_string
@@ -110,7 +106,7 @@ encode_func = {
     bytes: encode_string,
     list: encode_list,
     tuple: encode_list,
-    dict: encode_dict
+    dict: encode_dict,
 }
 
 try:

@@ -33,7 +33,7 @@ DHT网络的其中一种协议实现(Kademlia)
 """
 
 MIN_ID = 0
-MAX_ID = 2 ** 160
+MAX_ID = 2**160
 
 
 class ForgetfulPeerStorage:
@@ -73,13 +73,15 @@ class ForgetfulTokenStorage:
 class KRPCProtocol(DatagramProtocol):
     logger = log(__name__)
 
-    def __init__(self,
-                 source_node: Node = None,
-                 peer_storage: ForgetfulPeerStorage = None,
-                 token_storage: ForgetfulTokenStorage = None,
-                 ksize: int = 8,
-                 wait_timeout=60,
-                 buckets=None, ):
+    def __init__(
+        self,
+        source_node: Node = None,
+        peer_storage: ForgetfulPeerStorage = None,
+        token_storage: ForgetfulTokenStorage = None,
+        ksize: int = 8,
+        wait_timeout=60,
+        buckets=None,
+    ):
         self.router = RoutingTable(self, ksize, source_node, buckets=buckets)
         self.peer_storage = peer_storage or ForgetfulPeerStorage()
         self.token_storage = token_storage or ForgetfulTokenStorage()
@@ -118,7 +120,9 @@ class KRPCProtocol(DatagramProtocol):
         if query_type == b"q":  # query
             func_name, args = data.get(b"q"), data.get(b"a")
             if func_name and isinstance(args, dict):
-                asyncio.ensure_future(self.handle_request(transaction_id, func_name, args, addr))
+                asyncio.ensure_future(
+                    self.handle_request(transaction_id, func_name, args, addr)
+                )
         elif query_type == b"r":  # response
             args = data.get(b"r")
             if isinstance(args, dict):
@@ -142,10 +146,12 @@ class KRPCProtocol(DatagramProtocol):
         :param addr:
         :return:
         """
-        func = getattr(self, "rpc_{}".format(func_name.decode('utf-8')), None)
+        func = getattr(self, "rpc_{}".format(func_name.decode("utf-8")), None)
         if func is None or not callable(func):
             msg_args = (self.__class__.__name__, func_name)
-            self.logger.info("%s has no callable method " "rpc_%s; ignoring request", *msg_args)
+            self.logger.info(
+                "%s has no callable method " "rpc_%s; ignoring request", *msg_args
+            )
             return
 
         if not asyncio.iscoroutinefunction(func):
@@ -153,8 +159,18 @@ class KRPCProtocol(DatagramProtocol):
         args = {k.decode("utf-8"): v for (k, v) in args.items()}
         response = await func(addr, **args)
         if response is not None:
-            self.logger.debug("sending response %s for msg id %s to %s", response, b64encode(transaction_id), addr, )
-            tx_data = bencode({b"y": b"r", b"r": response, })
+            self.logger.debug(
+                "sending response %s for msg id %s to %s",
+                response,
+                b64encode(transaction_id),
+                addr,
+            )
+            tx_data = bencode(
+                {
+                    b"y": b"r",
+                    b"r": response,
+                }
+            )
             self.transport.sendto(tx_data, addr)
 
     async def handle_response(self, transaction_id, args, addr):
@@ -170,9 +186,13 @@ class KRPCProtocol(DatagramProtocol):
         """
         msg_args = (b64encode(transaction_id), addr)
         if transaction_id not in self._outstanding:
-            self.logger.info("received unknown message %s " "from %s; ignoring", *msg_args)
+            self.logger.info(
+                "received unknown message %s " "from %s; ignoring", *msg_args
+            )
             return
-        self.logger.debug("received response %s for message " "id %s from %s", args, *msg_args)
+        self.logger.debug(
+            "received response %s for message " "id %s from %s", args, *msg_args
+        )
         future, timeout = self._outstanding[transaction_id]
         timeout.cancel()
         if not future.cancelled():
@@ -194,7 +214,9 @@ class KRPCProtocol(DatagramProtocol):
 
     def _timeout(self, transaction_id):
         args = (b64encode(transaction_id), self._wait_timeout)
-        self.logger.info("Did not received reply for msg " "id %s within %i seconds", *args)
+        self.logger.info(
+            "Did not received reply for msg " "id %s within %i seconds", *args
+        )
         future = self._outstanding[transaction_id][0]
         if not future.cancelled():
             future.set_result((False, None))
@@ -221,7 +243,17 @@ class KRPCProtocol(DatagramProtocol):
         self.welcome_if_new(source)
         return {b"id": id}
 
-    def rpc_announce_peer(self, sender, id, info_hash, port, token, name=None, implied_port=None, seed=None, ):
+    def rpc_announce_peer(
+        self,
+        sender,
+        id,
+        info_hash,
+        port,
+        token,
+        name=None,
+        implied_port=None,
+        seed=None,
+    ):
         source = Node(id, sender[0], sender[1])
         if not self.is_valid_node_id(source):
             return
@@ -230,7 +262,11 @@ class KRPCProtocol(DatagramProtocol):
         if self.token_storage.verify_token(sender[0], id, info_hash, token):
             if implied_port:
                 port = sender[1]
-            self.logger.debug("got an announce_peer request from %s, storing '%s'", sender, info_hash.hex(), )
+            self.logger.debug(
+                "got an announce_peer request from %s, storing '%s'",
+                sender,
+                info_hash.hex(),
+            )
             self.peer_storage.insert_peer((sender[0], port))
         else:
             self.logger.debug("Invalid token from %s", sender)
@@ -252,7 +288,9 @@ class KRPCProtocol(DatagramProtocol):
             data[b"token"] = token
         return data
 
-    def rpc_get_peers(self, sender, id, info_hash, want="n4", noseed=0, scrape=0, bs=None):
+    def rpc_get_peers(
+        self, sender, id, info_hash, want="n4", noseed=0, scrape=0, bs=None
+    ):
         source = Node(id, sender[0], sender[1])
         if not self.is_valid_node_id(source):
             return
@@ -300,7 +338,9 @@ class KRPCProtocol(DatagramProtocol):
         :return:
         """
         address = (node_to_ask.ip, node_to_ask.port)
-        result = await self.find_node(address, {b"id": self.source_node.id, b"target": node_to_find.id})
+        result = await self.find_node(
+            address, {b"id": self.source_node.id, b"target": node_to_find.id}
+        )
         return self.handle_call_response(result, node_to_ask)
 
     async def call_get_peers(self, node_to_ask: Node, node_to_find):
@@ -329,7 +369,9 @@ class KRPCProtocol(DatagramProtocol):
         :return:
         """
         address = (node_to_ask.ip, node_to_ask.port)
-        result = await self.get_peers(address, {b"id": self.source_node.id, b"info_hash": node_to_find.id})
+        result = await self.get_peers(
+            address, {b"id": self.source_node.id, b"info_hash": node_to_find.id}
+        )
         return self.handle_call_response(result, node_to_ask)
 
     async def call_announce_peer(self, node_to_ask, key, value):  # TODO
@@ -422,8 +464,20 @@ class KRPCProtocol(DatagramProtocol):
 
         def func(address, args):
             transaction_id = hashlib.sha1(os.urandom(32)).digest()
-            txdata = bencode({b"y": b"q", b"t": transaction_id, b"a": args, b"q": name.encode("utf-8"), })
-            self.logger.debug("calling remote function %s on %s (msgid %s)", name, address, b64encode(transaction_id), )
+            txdata = bencode(
+                {
+                    b"y": b"q",
+                    b"t": transaction_id,
+                    b"a": args,
+                    b"q": name.encode("utf-8"),
+                }
+            )
+            self.logger.debug(
+                "calling remote function %s on %s (msgid %s)",
+                name,
+                address,
+                b64encode(transaction_id),
+            )
             self.transport.sendto(txdata, address)
 
             loop = asyncio.get_event_loop()

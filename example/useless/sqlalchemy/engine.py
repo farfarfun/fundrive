@@ -17,4 +17,6 @@ def create_engine_sqlite(db_path):
 
 
 def create_engine_mysql(host, user, password, db_name="", port=3306):
-    return create_engine(f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}?charset=utf8")
+    return create_engine(
+        f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}?charset=utf8"
+    )

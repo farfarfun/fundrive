@@ -1,4 +1,4 @@
-__all__ = ['api', 'gui', 'USE_WEB_ENG']
+__all__ = ["api", "gui", "USE_WEB_ENG"]
 
 """
   是否开启使用 PyQtWebEngine 辅助获取cookie

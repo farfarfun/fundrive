@@ -7,23 +7,33 @@ client = BaiDuDrive()
 
 def test():
     for path in client.list_deep("/drive/example/api"):
-        print(path['path'])
+        print(path["path"])
 
 
 def test2():
-    client.upload('test.txt', '/drive/example/api/test.txt', overwrite=False)
-    client.download('/temp.txt', 'temp.txt')
+    client.upload("test.txt", "/drive/example/api/test.txt", overwrite=False)
+    client.download("/temp.txt", "temp.txt")
 
-    client.upload_dir('/Users/liangtaoniu/workspace/MyDiary/logs', '/drive/example/api/')
+    client.upload_dir(
+        "/Users/liangtaoniu/workspace/MyDiary/logs", "/drive/example/api/"
+    )
 
 
 def test3():
-    client.download('/drive/example/api/30个免费的信息图源文件.zip', '30个免费的信息图源文件.zip', overwrite=True)
-    client.download('/drive/example/api/dirs2/jupyter-run-2019-09-16.log', 'jupyter-run-2019-09-16.log', overwrite=True)
+    client.download(
+        "/drive/example/api/30个免费的信息图源文件.zip",
+        "30个免费的信息图源文件.zip",
+        overwrite=True,
+    )
+    client.download(
+        "/drive/example/api/dirs2/jupyter-run-2019-09-16.log",
+        "jupyter-run-2019-09-16.log",
+        overwrite=True,
+    )
 
 
 def test4():
-    source_url = 'ed2k://|file|%E8%A1%8C%E5%B0%B8%E8%B5%B0%E8%82%89.The.Walking.Dead.S02E01.%E4%B8%AD%E8%8B%B1%E5%AD%97%E5%B9%95.BDrip.1080P-%E4%BA%BA%E4%BA%BA%E5%BD%B1%E8%A7%86.mp4|910568992|ABFB39A113E173197D4AD2D21E5D2CB8|h=7BLB2TLX3KKQXLGO553D6BFKWKG5PYW7|/'
+    source_url = "ed2k://|file|%E8%A1%8C%E5%B0%B8%E8%B5%B0%E8%82%89.The.Walking.Dead.S02E01.%E4%B8%AD%E8%8B%B1%E5%AD%97%E5%B9%95.BDrip.1080P-%E4%BA%BA%E4%BA%BA%E5%BD%B1%E8%A7%86.mp4|910568992|ABFB39A113E173197D4AD2D21E5D2CB8|h=7BLB2TLX3KKQXLGO553D6BFKWKG5PYW7|/"
     print(client.offline_task_add(source_url=source_url))
 
 
@@ -46,6 +56,6 @@ def test5():
     """.split("\n")
     for url in urls:
         if len(url) > 10:
-            name = urllib.parse.unquote(url.split('|')[2])
-            path = '/apps/temp/' + name
+            name = urllib.parse.unquote(url.split("|")[2])
+            path = "/apps/temp/" + name
             print(client.offline_task_add(save_path=path, source_url=url))

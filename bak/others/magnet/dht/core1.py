@@ -15,7 +15,7 @@ from .bencode import bencode, bdecode
 BOOTSTRAP_NODES = (
     ("router.bittorrent.com", 6881),
     ("dht.transmissionbt.com", 6881),
-    ("router.utorrent.com", 6881)
+    ("router.utorrent.com", 6881),
 )
 TID_LENGTH = 2
 RE_JOIN_DHT_INTERVAL = 3
@@ -40,9 +40,9 @@ def decode_nodes(nodes):
         return n
 
     for i in range(0, length, 26):
-        nid = nodes[i:i + 20]
-        ip = inet_ntoa(nodes[i + 20:i + 24])
-        port = unpack("!H", nodes[i + 24:i + 26])[0]
+        nid = nodes[i : i + 20]
+        ip = inet_ntoa(nodes[i + 20 : i + 24])
+        port = unpack("!H", nodes[i + 24 : i + 26])[0]
         n.append((nid, ip, port))
 
     return n
@@ -53,7 +53,6 @@ def get_neighbor(target, nid, end=10):
 
 
 class KNode(object):
-
     def __init__(self, nid, ip, port):
         self.nid = nid
         self.ip = ip
@@ -62,7 +61,7 @@ class KNode(object):
 
 class DHTServer(DatagramServer):
     def __init__(self, max_node_qsize, bind_ip):
-        s = ':' + str(bind_ip)
+        s = ":" + str(bind_ip)
         self.bind_ip = bind_ip
         DatagramServer.__init__(self, s)
 
@@ -99,10 +98,7 @@ class DHTServer(DatagramServer):
             "t": tid,
             "y": "q",
             "q": "find_node",
-            "a": {
-                "id": nid,
-                "target": random_id()
-            }
+            "a": {"id": nid, "target": random_id()},
         }
         self.send_krpc(msg, address)
 
@@ -111,14 +107,12 @@ class DHTServer(DatagramServer):
             self.send_find_node(address)
 
     def re_join_DHT(self):
-
         while True:
             if len(self.nodes) == 0:
                 self.join_DHT()
             sleep(RE_JOIN_DHT_INTERVAL)
 
     def auto_send_find_node(self):
-
         wait = 1.0 / self.max_node_qsize / 5.0
         while True:
             try:
@@ -133,9 +127,12 @@ class DHTServer(DatagramServer):
         nodes = decode_nodes(msg["r"]["nodes"])
         for node in nodes:
             (nid, ip, port) = node
-            if len(nid) != 20: continue
-            if ip == self.bind_ip: continue
-            if port < 1 or port > 65535: continue
+            if len(nid) != 20:
+                continue
+            if ip == self.bind_ip:
+                continue
+            if port < 1 or port > 65535:
+                continue
             n = KNode(nid, ip, port)
             self.nodes.append(n)
 
@@ -158,17 +155,17 @@ class DHTServer(DatagramServer):
             tid = msg["t"]
             nid = msg["a"]["id"]
             token = infohash[:TOKEN_LENGTH]
-            info = infohash.encode("hex").upper() + '|' + address[0]
+            info = infohash.encode("hex").upper() + "|" + address[0]
             print
-            info + "\n",
+            (info + "\n",)
             msg = {
                 "t": tid,
                 "y": "r",
                 "r": {
                     "id": get_neighbor(infohash, self.nid),
                     "nodes": "",
-                    "token": token
-                }
+                    "token": token,
+                },
             }
             self.send_krpc(msg, address)
         except KeyError:
@@ -187,10 +184,11 @@ class DHTServer(DatagramServer):
                     port = address[1]
                 else:
                     port = msg["a"]["port"]
-                    if port < 1 or port > 65535: return
+                    if port < 1 or port > 65535:
+                        return
                 info = infohash.encode("hex").upper()
                 print
-                info + "\n",
+                (info + "\n",)
         except Exception as e:
             print
             e
@@ -201,38 +199,28 @@ class DHTServer(DatagramServer):
     def play_dead(self, msg, address):
         try:
             tid = msg["t"]
-            msg = {
-                "t": tid,
-                "y": "e",
-                "e": [202, "Server Error"]
-            }
+            msg = {"t": tid, "y": "e", "e": [202, "Server Error"]}
             self.send_krpc(msg, address)
         except KeyError:
             print
-            'error'
+            "error"
             pass
 
     def ok(self, msg, address):
         try:
             tid = msg["t"]
             nid = msg["a"]["id"]
-            msg = {
-                "t": tid,
-                "y": "r",
-                "r": {
-                    "id": get_neighbor(nid, self.nid)
-                }
-            }
+            msg = {"t": tid, "y": "r", "r": {"id": get_neighbor(nid, self.nid)}}
             self.send_krpc(msg, address)
         except KeyError:
             pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sniffer = DHTServer(50, 8080)
     gevent.spawn(sniffer.auto_send_find_node)
     gevent.spawn(sniffer.re_join_DHT)
     gevent.spawn(sniffer.monitor)
 
-    print('Receiving datagrams on :6882')
+    print("Receiving datagrams on :6882")
     sniffer.serve_forever()

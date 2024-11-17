@@ -51,13 +51,15 @@ class Magnet:
             self.name = infohash  # binascii.hexlify(infohash).decode()
 
         # TODO: better stripping
-        self.name = self.name.strip(".").replace("/", "").replace("\\", "").replace(":", "")
+        self.name = (
+            self.name.strip(".").replace("/", "").replace("\\", "").replace(":", "")
+        )
 
 
 class Torrent:
     def __init__(self, magnet: Magnet = None, data=None, cache_folder=None):
         self.length = 0
-        self.name = ''
+        self.name = ""
         self.piece_length = 0
         self.pieces = []
         self.data = data
@@ -73,13 +75,18 @@ class Torrent:
     def _cache_path(self):
         if self._cache_folder and self.magnet is not None:
             filename = binascii.hexlify(self.magnet.infohash).decode("utf-8")
-            return Path(self._cache_folder) / Path(filename[:2]) / Path(filename[2:4]) / Path(filename)
+            return (
+                Path(self._cache_folder)
+                / Path(filename[:2])
+                / Path(filename[2:4])
+                / Path(filename)
+            )
 
     def _parse_data(self):
         try:
-            self.name = quote(self.data[b'info'][b'name'])
-            self.length = self.data[b'info'][b'length']
-            self.piece_length = self.data[b'info'][b'piece length']
+            self.name = quote(self.data[b"info"][b"name"])
+            self.length = self.data[b"info"][b"length"]
+            self.piece_length = self.data[b"info"][b"piece length"]
         except Exception as e:
             logger.error("parse error {}".format(e))
 

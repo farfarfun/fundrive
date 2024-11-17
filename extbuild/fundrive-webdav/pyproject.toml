@@ -1,6 +1,6 @@
 [project]
 name = "fundrive-webdav"
-version = "1.2.27"
+version = "1.2.28"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.8"

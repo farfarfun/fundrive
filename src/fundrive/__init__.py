@@ -1,4 +1,12 @@
-from .drives import AlipanDrive, LanZouDrive, LanZouSnapshot, OpenDataLabDrive, OSSDrive, TianChiDrive, TSingHuaDrive
+from .drives import (
+    AlipanDrive,
+    LanZouDrive,
+    LanZouSnapshot,
+    OpenDataLabDrive,
+    OSSDrive,
+    TianChiDrive,
+    TSingHuaDrive,
+)
 from .fungit import GiteeDrive, GithubDrive
 
 __all__ = [

@@ -21,7 +21,9 @@ class BaseDrive:
 
     def login_anonymous(self):
         self.session = requests.Session()
-        r = self.session.post(url="https://www.wenshushu.cn/ap/login/anonymous", json={"dev_info": "{}"})
+        r = self.session.post(
+            url="https://www.wenshushu.cn/ap/login/anonymous", json={"dev_info": "{}"}
+        )
         self.session.headers["X-TOKEN"] = r.json()["data"]["token"]
         self.session.headers["User-Agent"] = (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:82.0) Gecko/20100101 Firefox/82.0"
@@ -36,16 +38,22 @@ class BaseDrive:
         storage_space = rest_space + send_space
         print(
             "当前已用空间:{}GB,剩余空间:{}GB,总空间:{}GB".format(
-                round(send_space / 1024**3, 2), round(rest_space / 1024**3, 2), round(storage_space / 1024**3, 2)
+                round(send_space / 1024**3, 2),
+                round(rest_space / 1024**3, 2),
+                round(storage_space / 1024**3, 2),
             )
         )
 
     def userinfo(self):
-        self.session.post(url="https://www.wenshushu.cn/ap/user/userinfo", json={"plat": "pcweb"})
+        self.session.post(
+            url="https://www.wenshushu.cn/ap/user/userinfo", json={"plat": "pcweb"}
+        )
 
 
 class Uploader:
-    def __init__(self, file_path, drive: BaseDrive = None, chunk_size=2097152, *args, **kwargs):
+    def __init__(
+        self, file_path, drive: BaseDrive = None, chunk_size=2097152, *args, **kwargs
+    ):
         self.drive = drive or BaseDrive()
         self.session = drive.session
         self.chunk_size = chunk_size
@@ -56,7 +64,10 @@ class Uploader:
     def get_epoch_time(self):
         r = self.session.get(
             url="https://www.wenshushu.cn/ag/time",
-            headers={"Prod": "com.wenshushu.web.pc", "Referer": "https://www.wenshushu.cn/"},
+            headers={
+                "Prod": "com.wenshushu.web.pc",
+                "Referer": "https://www.wenshushu.cn/",
+            },
         )
         rsp = r.json()
         return rsp["data"]["time"]
@@ -85,7 +96,9 @@ class Uploader:
         }
         if self.is_part:
             payload["partnu"] = part_num
-        r = self.session.post(url="https://www.wenshushu.cn/ap/uploadv2/psurl", json=payload)
+        r = self.session.post(
+            url="https://www.wenshushu.cn/ap/uploadv2/psurl", json=payload
+        )
         rsp = r.json()
         url = rsp["data"]["url"]
         if pbar:
@@ -99,7 +112,10 @@ class Uploader:
 
     def get_process(self, up_id: str):
         while True:
-            r = self.session.post(url="https://www.wenshushu.cn/ap/ufile/getprocess", json={"processId": up_id})
+            r = self.session.post(
+                url="https://www.wenshushu.cn/ap/ufile/getprocess",
+                json={"processId": up_id},
+            )
             if r.json()["data"]["rst"] == "success":
                 return True
             time.sleep(1)
@@ -107,7 +123,12 @@ class Uploader:
     def complete(self, is_part, fname, upId, tid, boxid, preid):
         self.session.post(
             url="https://www.wenshushu.cn/ap/uploadv2/complete",
-            json={"ispart": is_part, "fname": fname, "upId": upId, "location": {"boxid": boxid, "preid": preid}},
+            json={
+                "ispart": is_part,
+                "fname": fname,
+                "upId": upId,
+                "location": {"boxid": boxid, "preid": preid},
+            },
         )
         self.copysend(boxid, tid, preid)
 
@@ -136,7 +157,9 @@ class Uploader:
             url="https://www.wenshushu.cn/ap/task/addsend",
             json=req_data,
             headers={
-                "A-code": self.get_cipherheader(epochtime, self.session.headers["X-TOKEN"], req_data),
+                "A-code": self.get_cipherheader(
+                    epochtime, self.session.headers["X-TOKEN"], req_data
+                ),
                 "Prod": "com.wenshushu.web.pc",
                 "Referer": "https://www.wenshushu.cn/",
                 "Origin": "https://www.wenshushu.cn",
@@ -155,7 +178,8 @@ class Uploader:
 
     def copysend(self, boxid, taskid, preid):
         r = self.session.post(
-            url="https://www.wenshushu.cn/ap/task/copysend", json={"bid": boxid, "tid": taskid, "ufileid": preid}
+            url="https://www.wenshushu.cn/ap/task/copysend",
+            json={"bid": boxid, "tid": taskid, "ufileid": preid},
         )
         rsp = r.json()
         print(f"个人管理链接：{rsp['data']['mgr_url']}")
@@ -193,9 +217,13 @@ class Uploader:
         md5_hash_code = hashlib.md5((json_dumps + token).encode()).hexdigest()
         base58_hash_code = base58.b58encode(md5_hash_code)
         # 时间戳逆序取5位并作为时间戳字串索引再次取值，最后拼接"000"
-        key_iv = ("".join([epochtime[int(i)] for i in epochtime[::-1][:5]]) + "000").encode()
+        key_iv = (
+            "".join([epochtime[int(i)] for i in epochtime[::-1][:5]]) + "000"
+        ).encode()
         cipher = DES.new(key_iv, DES.MODE_CBC, key_iv)
-        cipherText = cipher.encrypt(Padding.pad(base58_hash_code, DES.block_size, style="pkcs7"))
+        cipherText = cipher.encrypt(
+            Padding.pad(base58_hash_code, DES.block_size, style="pkcs7")
+        )
         return base64.b64encode(cipherText)
 
     def read_file(self):
@@ -227,7 +255,9 @@ class Uploader:
         if not self.is_part:
             payload["hash"]["cm"] = cm  # 把MD5用SHA1加密
         for _ in range(2):
-            r = self.session.post(url="https://www.wenshushu.cn/ap/uploadv2/fast", json=payload)
+            r = self.session.post(
+                url="https://www.wenshushu.cn/ap/uploadv2/fast", json=payload
+            )
             rsp = r.json()
             can_fast = rsp["data"]["status"]
             ufile = rsp["data"]["ufile"]
@@ -245,11 +275,19 @@ class Uploader:
 
     def upload(self, max_workers=os.cpu_count()):
         fname, tid, boxid, preid, upId = self.fast()
-        pbar = tqdm(desc=f"{max_workers}%{fname}", total=self.file_size, unit="B", unit_scale=True, unit_divisor=1024)
+        pbar = tqdm(
+            desc=f"{max_workers}%{fname}",
+            total=self.file_size,
+            unit="B",
+            unit_scale=True,
+            unit_divisor=1024,
+        )
         if self.is_part:
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 future_list = []
-                for i in range((self.file_size + self.chunk_size - 1) // self.chunk_size):
+                for i in range(
+                    (self.file_size + self.chunk_size - 1) // self.chunk_size
+                ):
                     ul_size = (
                         self.chunk_size
                         if self.chunk_size * (i + 1) <= self.file_size
@@ -266,14 +304,18 @@ class Uploader:
                     )
                 concurrent.futures.as_completed(future_list)
         else:
-            self.file_put([fname, upId, self.file_size, pbar], self.file_path, 0, self.file_size)
+            self.file_put(
+                [fname, upId, self.file_size, pbar], self.file_path, 0, self.file_size
+            )
 
         self.complete(self.is_part, fname, upId, tid, boxid, preid)
         self.get_process(upId)
 
 
 class Downloader:
-    def __init__(self, share_url, drive: BaseDrive = None, cache_dir="./", *args, **kwargs):
+    def __init__(
+        self, share_url, drive: BaseDrive = None, cache_dir="./", *args, **kwargs
+    ):
         self.drive = drive or BaseDrive()
         self.session = drive.session
         self.share_url = share_url
@@ -281,11 +323,16 @@ class Downloader:
         super().__init__(*args, **kwargs)
 
     def get_tid(self, token):
-        r = self.session.post(url="https://www.wenshushu.cn/ap/task/token", json={"token": token})
+        r = self.session.post(
+            url="https://www.wenshushu.cn/ap/task/token", json={"token": token}
+        )
         return r.json()["data"]["tid"]
 
     def mgrtask(self, tid):
-        r = self.session.post(url="https://www.wenshushu.cn/ap/task/mgrtask", json={"tid": tid, "password": ""})
+        r = self.session.post(
+            url="https://www.wenshushu.cn/ap/task/mgrtask",
+            json={"tid": tid, "password": ""},
+        )
         rsp = r.json()
         expire = rsp["data"]["expire"]
         days, remainder = divmod(int(float(expire)), 3600 * 24)
@@ -299,7 +346,8 @@ class Downloader:
 
     def sign_url(self, fid):
         r = self.session.post(
-            url="https://www.wenshushu.cn/ap/dl/sign", json={"consumeCode": 0, "type": 1, "ufileid": fid}
+            url="https://www.wenshushu.cn/ap/dl/sign",
+            json={"consumeCode": 0, "type": 1, "ufileid": fid},
         )
         if r.json()["data"]["url"] == "" and r.json()["data"]["ttNeed"] != 0:
             raise Exception("对方的分享流量不足")
@@ -342,18 +390,26 @@ class WSSDrive(BaseDrive2):
     def upload_dir(self, dir_path="./cache", overwrite=False, *args, **kwargs) -> bool:
         pass
 
-    def download_dir(self, dir_path="./cache", overwrite=False, *args, **kwargs) -> bool:
+    def download_dir(
+        self, dir_path="./cache", overwrite=False, *args, **kwargs
+    ) -> bool:
         pass
 
-    def upload_file(self, file_path="./cache", overwrite=False, *args, **kwargs) -> bool:
+    def upload_file(
+        self, file_path="./cache", overwrite=False, *args, **kwargs
+    ) -> bool:
         uploader = Uploader(drive=self.drive, file_path=file_path)
         try:
             uploader.upload()
         except Exception as e:
             print(e)
 
-    def download_file(self, share_url=None, dir_path="./cache", overwrite=False, *args, **kwargs) -> bool:
-        downloader = Downloader(drive=self.drive, share_url=share_url, cache_dir=dir_path)
+    def download_file(
+        self, share_url=None, dir_path="./cache", overwrite=False, *args, **kwargs
+    ) -> bool:
+        downloader = Downloader(
+            drive=self.drive, share_url=share_url, cache_dir=dir_path
+        )
         try:
             downloader.download()
         except Exception as e:

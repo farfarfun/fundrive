@@ -18,23 +18,24 @@ import urllib.request
 # -------------------------------- Constants --------------------------------- #
 
 DEFAULT_PORT = 6800
-SERVER_URI_FORMAT = '{}://{}:{:d}/jsonrpc'
+SERVER_URI_FORMAT = "{}://{}:{:d}/jsonrpc"
 
 # Status values for unfinished downloads.
-TEMPORARY_STATUS = ('active', 'waiting', 'paused')
+TEMPORARY_STATUS = ("active", "waiting", "paused")
 # Status values for finished downloads.
-FINAL_STATUS = ('complete', 'error')
+FINAL_STATUS = ("complete", "error")
 
-ARIA2_CONTROL_FILE_EXT = '.aria2'
+ARIA2_CONTROL_FILE_EXT = ".aria2"
 
 # Encoding to use when inserting bytes objects into JSON.
-JSON_ENCODING = 'utf-8'
+JSON_ENCODING = "utf-8"
 
 # Module logger.
 LOGGER = logging.getLogger(name=__name__)
 
 
 # -------------------------- Convenience Functions --------------------------- #
+
 
 def to_json_list(objs):
     """
@@ -70,13 +71,13 @@ def get_status(response):
     """
     if response:
         try:
-            return response['status']
+            return response["status"]
         except KeyError:
-            LOGGER.error('no status returned from Aria2 RPC server')
-            return 'error'
+            LOGGER.error("no status returned from Aria2 RPC server")
+            return "error"
     else:
-        LOGGER.error('no response from server')
-        return 'error'
+        LOGGER.error("no response from server")
+        return "error"
 
 
 def random_token(length, valid_chars=None):
@@ -92,14 +93,14 @@ def random_token(length, valid_chars=None):
       will be used.
     """
     if not valid_chars:
-        valid_chars = string.ascii_letters + string.digits + '!@#$%^&*()-_=+'
+        valid_chars = string.ascii_letters + string.digits + "!@#$%^&*()-_=+"
     number_of_chars = len(valid_chars)
     bytes_to_read = math.ceil(math.log(number_of_chars) / math.log(0x100))
-    max_value = 0x100 ** bytes_to_read
+    max_value = 0x100**bytes_to_read
     max_index = number_of_chars - 1
-    token = ''
+    token = ""
     for _ in range(length):
-        value = int.from_bytes(os.urandom(bytes_to_read), byteorder='little')
+        value = int.from_bytes(os.urandom(bytes_to_read), byteorder="little")
         index = round((value * max_index) / max_value)
         token += valid_chars[index]
     return token
@@ -107,39 +108,37 @@ def random_token(length, valid_chars=None):
 
 # ---------------- From python3-aur's ThreadedServers.common ----------------- #
 
+
 def format_bytes(size):
     """
     Convert bytes to a human-friendly units..
     """
     if size < 0x400:
-        return '{:d} B'.format(size)
+        return "{:d} B".format(size)
     size = float(size) / 0x400
-    for prefix in ('KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB'):
+    for prefix in ("KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB"):
         if size < 0x400:
-            return '{:0.02f} {}'.format(size, prefix)
+            return "{:0.02f} {}".format(size, prefix)
         size /= 0x400
-    return '{:0.02f} YiB'.format(size)
+    return "{:0.02f} YiB".format(size)
 
 
 def format_seconds(seconds):
     """
     Convert seconds to hours, minutes and seconds.
     """
-    time_str = ''
-    for base, char in (
-            (60, 's'),
-            (60, 'm'),
-            (24, 'h')
-    ):
+    time_str = ""
+    for base, char in ((60, "s"), (60, "m"), (24, "h")):
         seconds, remainder = divmod(seconds, base)
         if seconds == 0:
-            return '{:d}{}{}'.format(remainder, char, time_str)
+            return "{:d}{}{}".format(remainder, char, time_str)
         if remainder != 0:
-            time_str = '{:02d}{}{}'.format(remainder, char, time_str)
-    return '{:d}d{}'.format(seconds, string)
+            time_str = "{:02d}{}{}".format(remainder, char, time_str)
+    return "{:d}d{}".format(seconds, string)
 
 
 # --------------------------------- FakeLock --------------------------------- #
+
 
 class FakeLock:
     """
@@ -155,6 +154,7 @@ class FakeLock:
 
 # ---------------------------- Aria2JsonRpcError ----------------------------- #
 
+
 class Aria2JsonRpcError(Exception):
     """
     Base exception raised by this module.
@@ -166,10 +166,11 @@ class Aria2JsonRpcError(Exception):
         self.connection_error = connection_error
 
     def __str__(self):
-        return '{}: {}'.format(self.__class__.__name__, self.msg)
+        return "{}: {}".format(self.__class__.__name__, self.msg)
 
 
 # ------------------------------ ServerInstance ------------------------------ #
+
 
 class Aria2RpcServer(object):
     """
@@ -177,8 +178,20 @@ class Aria2RpcServer(object):
     manager.
     """
 
-    def __init__(self, cmd, token, port, identity, a2jr_kwargs=None, timeout=10, scheme='http', host='localhost',
-                 nice=True, lock=None, quiet=True):
+    def __init__(
+        self,
+        cmd,
+        token,
+        port,
+        identity,
+        a2jr_kwargs=None,
+        timeout=10,
+        scheme="http",
+        host="localhost",
+        nice=True,
+        lock=None,
+        quiet=True,
+    ):
         """
         cmd:
           A list representing the aria2c command to be run along with additional
@@ -229,15 +242,15 @@ class Aria2RpcServer(object):
           If True, suppress output from the RPC server if one is launched.
         """
         self.cmd = cmd
-        self.cmd.append('--stop-with-process={:d}'.format(os.getpid()))
+        self.cmd.append("--stop-with-process={:d}".format(os.getpid()))
         self.token = token
         self.port = port
         self.identity = identity
 
         if a2jr_kwargs is None:
             a2jr_kwargs = dict()
-        a2jr_kwargs['token'] = token
-        a2jr_kwargs['setup_function'] = self.launch
+        a2jr_kwargs["token"] = token
+        a2jr_kwargs["setup_function"] = self.launch
 
         self.a2jr_kwargs = a2jr_kwargs
 
@@ -245,11 +258,9 @@ class Aria2RpcServer(object):
         self.scheme = scheme
         self.host = host
 
-        self.cmd.extend((
-            '--enable-rpc',
-            '--rpc-secret', token,
-            '--rpc-listen-port', str(port)
-        ))
+        self.cmd.extend(
+            ("--enable-rpc", "--rpc-secret", token, "--rpc-listen-port", str(port))
+        )
 
         self.process = None
         self.a2jr = None
@@ -282,10 +293,11 @@ class Aria2RpcServer(object):
             return True
 
         with self.lock:
-            LOGGER.debug('{}: attempting to stop PID {:d}'.format(
-                self.__class__.__name__,
-                self.process.pid
-            ))
+            LOGGER.debug(
+                "{}: attempting to stop PID {:d}".format(
+                    self.__class__.__name__, self.process.pid
+                )
+            )
 
             # Try to kill the server with increasing insistence:
             # * RPC shutdown method
@@ -300,13 +312,10 @@ class Aria2RpcServer(object):
                     a2jr.shutdown,
                     a2jr.forceShutdown,
                     self.process.terminate,
-                    self.process.kill
+                    self.process.kill,
                 )
             else:
-                methods = (
-                    self.process.terminate,
-                    self.process.kill
-                )
+                methods = (self.process.terminate, self.process.kill)
             for schwarzenegger in methods:
                 try:
                     schwarzenegger()
@@ -317,18 +326,19 @@ class Aria2RpcServer(object):
                 except subprocess.TimeoutExpired:
                     exit_code = None
                 if exit_code is not None:
-                    LOGGER.debug('{}: PID {:d} exit code: {:d}'.format(
-                        self.__class__.__name__,
-                        self.process.pid,
-                        exit_code
-                    ))
+                    LOGGER.debug(
+                        "{}: PID {:d} exit code: {:d}".format(
+                            self.__class__.__name__, self.process.pid, exit_code
+                        )
+                    )
                     self.process = None
                     return True
 
-        LOGGER.error('{}: failed to kill PID {:d}'.format(
-            self.__class__.__name__,
-            self.process.pid
-        ))
+        LOGGER.error(
+            "{}: failed to kill PID {:d}".format(
+                self.__class__.__name__, self.process.pid
+            )
+        )
         return False
 
     def launch(self):
@@ -351,27 +361,22 @@ class Aria2RpcServer(object):
 
             if launch:
                 LOGGER.debug(
-                    '%s: no response to version request from server: %s',
+                    "%s: no response to version request from server: %s",
                     self.__class__.__name__,
-                    self.cmd
+                    self.cmd,
                 )
                 self.kill()
                 LOGGER.debug(
-                    '%s: attempting to launch Aria2 RPC server: %s',
+                    "%s: attempting to launch Aria2 RPC server: %s",
                     self.__class__.__name__,
-                    self.cmd
+                    self.cmd,
                 )
                 if self.quiet:
                     self.process = subprocess.Popen(
-                        self.cmd,
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL
+                        self.cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
                     )
                 else:
-                    self.process = subprocess.Popen(
-                        self.cmd,
-                        stdout=sys.stderr
-                    )
+                    self.process = subprocess.Popen(self.cmd, stdout=sys.stderr)
             timeout = time.time() + self.timeout
             # Wait for the server to start listening.
             while True:
@@ -403,6 +408,7 @@ class Aria2RpcServer(object):
 
 # ---------------------------- Aria2JsonRpc Class ---------------------------- #
 
+
 class Aria2JsonRpc(object):
     """
     Interface class for interacting with an Aria2 RPC server.
@@ -410,14 +416,20 @@ class Aria2JsonRpc(object):
 
     # TODO: certificate options, etc.
 
-    def __init__(self, identity, uri,
-                 mode='normal',
-                 token=None,
-                 http_user=None, http_passwd=None,
-                 server_cert=None, client_cert=None, client_cert_password=None,
-                 ssl_protocol=None,
-                 setup_function=None
-                 ):
+    def __init__(
+        self,
+        identity,
+        uri,
+        mode="normal",
+        token=None,
+        http_user=None,
+        http_passwd=None,
+        server_cert=None,
+        client_cert=None,
+        client_cert_password=None,
+        ssl_protocol=None,
+        setup_function=None,
+    ):
         """
         identity: the identity to send to the RPC interface
 
@@ -467,7 +479,7 @@ class Aria2JsonRpc(object):
                 server_cert=server_cert,
                 client_cert=client_cert,
                 client_cert_password=client_cert_password,
-                protocol=ssl_protocol
+                protocol=ssl_protocol,
             )
 
         self.update_opener()
@@ -476,7 +488,7 @@ class Aria2JsonRpc(object):
         """
         Iterate over handlers.
         """
-        for name in ('HTTPS', 'HTTPBasicAuth'):
+        for name in ("HTTPS", "HTTPBasicAuth"):
             try:
                 yield self.handlers[name]
             except KeyError:
@@ -505,25 +517,26 @@ class Aria2JsonRpc(object):
         """
         handler = urllib.request.HTTPBasicAuthHandler()
         handler.add_password(
-            realm='aria2',
+            realm="aria2",
             uri=self.uri,
             user=user,
             passwd=passwd,
         )
-        self.handlers['HTTPBasicAuth'] = handler
+        self.handlers["HTTPBasicAuth"] = handler
 
     def remove_HTTPBasicAuthHandler(self):
         """
         Remove the HTTP Basic authentication handler.
         """
-        self.remove_handler('HTTPBasicAuth')
+        self.remove_handler("HTTPBasicAuth")
 
-    def add_HTTPSHandler(self,
-                         server_cert=None,
-                         client_cert=None,
-                         client_cert_password=None,
-                         protocol=None,
-                         ):
+    def add_HTTPSHandler(
+        self,
+        server_cert=None,
+        client_cert=None,
+        client_cert_password=None,
+        protocol=None,
+    ):
         """
         Add a handler for HTTPS connections with optional server and client
         certificates.
@@ -543,16 +556,15 @@ class Aria2JsonRpc(object):
         if client_cert:
             context.load_cert_chain(client_cert, password=client_cert_password)
 
-        self.handlers['HTTPS'] = urllib.request.HTTPSHandler(
-            context=context,
-            check_hostname=False
+        self.handlers["HTTPS"] = urllib.request.HTTPSHandler(
+            context=context, check_hostname=False
         )
 
     def remove_HTTPSHandler(self):
         """
         Remove the HTTPS handler.
         """
-        self.remove_handler('HTTPS')
+        self.remove_handler("HTTPS")
 
     def send_request(self, req_obj):
         """
@@ -561,15 +573,15 @@ class Aria2JsonRpc(object):
         if self.setup_function:
             self.setup_function()
             self.setup_function = None
-        LOGGER.debug(orjson.dumps(req_obj, indent='  ', sort_keys=True))
-        req = orjson.dumps(req_obj).encode('UTF-8')
+        LOGGER.debug(orjson.dumps(req_obj, indent="  ", sort_keys=True))
+        req = orjson.dumps(req_obj).encode("UTF-8")
         try:
             with self.opener.open(self.uri, req) as handle:
                 obj = orjson.loads(handle.read().decode())
                 try:
-                    return obj['result']
+                    return obj["result"]
                 except KeyError:
-                    raise Aria2JsonRpcError('unexpected result: {}'.format(obj))
+                    raise Aria2JsonRpcError("unexpected result: {}".format(obj))
         except (urllib.error.URLError, ConnectionResetError) as err:
             # This should work but URLError does not set the errno attribute:
             # e.errno == errno.ECONNREFUSED
@@ -577,15 +589,17 @@ class Aria2JsonRpc(object):
             raise Aria2JsonRpcError(
                 err_str,
                 connection_error=(
-                        '111' in err_str or isinstance(err, ConnectionResetError)
-                )
+                    "111" in err_str or isinstance(err, ConnectionResetError)
+                ),
             )
         except http.client.BadStatusLine as err:
-            raise Aria2JsonRpcError('{}: BadStatusLine: {} (HTTPS error?)'.format(
-                self.__class__.__name__, err
-            ))
+            raise Aria2JsonRpcError(
+                "{}: BadStatusLine: {} (HTTPS error?)".format(
+                    self.__class__.__name__, err
+                )
+            )
 
-    def jsonrpc(self, method, params=None, prefix='aria2.'):
+    def jsonrpc(self, method, params=None, prefix="aria2."):
         """
         POST a request to the RPC interface.
         """
@@ -593,26 +607,26 @@ class Aria2JsonRpc(object):
             params = []
 
         if self.token is not None:
-            token_str = 'token:{}'.format(self.token)
-            if method == 'multicall':
+            token_str = "token:{}".format(self.token)
+            if method == "multicall":
                 for param in params[0]:
                     try:
-                        param['params'].insert(0, token_str)
+                        param["params"].insert(0, token_str)
                     except KeyError:
-                        param['params'] = [token_str]
+                        param["params"] = [token_str]
             else:
                 params.insert(0, token_str)
 
         req_obj = {
-            'jsonrpc': '2.0',
-            'id': self.identity,
-            'method': prefix + method,
-            'params': params,
+            "jsonrpc": "2.0",
+            "id": self.identity,
+            "method": prefix + method,
+            "params": params,
         }
-        if self.mode == 'batch':
+        if self.mode == "batch":
             self.queue.append(req_obj)
             return None
-        if self.mode == 'format':
+        if self.mode == "format":
             return req_obj
         return self.send_request(req_obj)
 
@@ -640,7 +654,7 @@ class Aria2JsonRpc(object):
         """
         params = [uris]
         params = add_options_and_position(params, options, position)
-        return self.jsonrpc('addUri', params)
+        return self.jsonrpc("addUri", params)
 
     def addTorrent(self, torrent, uris=None, options=None, position=None):
         """
@@ -660,7 +674,7 @@ class Aria2JsonRpc(object):
         if uris:
             params.append(uris)
         params = add_options_and_position(params, options, position)
-        return self.jsonrpc('addTorrent', params)
+        return self.jsonrpc("addTorrent", params)
 
     def addMetalink(self, metalink, options=None, position=None):
         """
@@ -676,7 +690,7 @@ class Aria2JsonRpc(object):
         """
         params = [metalink]
         params = add_options_and_position(params, options, position)
-        return self.jsonrpc('addTorrent', params)
+        return self.jsonrpc("addTorrent", params)
 
     def remove(self, gid):
         """
@@ -685,7 +699,7 @@ class Aria2JsonRpc(object):
         gid: GID to remove
         """
         params = [gid]
-        return self.jsonrpc('remove', params)
+        return self.jsonrpc("remove", params)
 
     def forceRemove(self, gid):
         """
@@ -694,7 +708,7 @@ class Aria2JsonRpc(object):
         gid: GID to remove
         """
         params = [gid]
-        return self.jsonrpc('forceRemove', params)
+        return self.jsonrpc("forceRemove", params)
 
     def pause(self, gid):
         """
@@ -703,13 +717,13 @@ class Aria2JsonRpc(object):
         gid: GID to pause
         """
         params = [gid]
-        return self.jsonrpc('pause', params)
+        return self.jsonrpc("pause", params)
 
     def pauseAll(self):
         """
         aria2.pauseAll method
         """
-        return self.jsonrpc('pauseAll')
+        return self.jsonrpc("pauseAll")
 
     def forcePause(self, gid):
         """
@@ -718,13 +732,13 @@ class Aria2JsonRpc(object):
         gid: GID to pause
         """
         params = [gid]
-        return self.jsonrpc('forcePause', params)
+        return self.jsonrpc("forcePause", params)
 
     def forcePauseAll(self):
         """
         aria2.forcePauseAll method
         """
-        return self.jsonrpc('forcePauseAll')
+        return self.jsonrpc("forcePauseAll")
 
     def unpause(self, gid):
         """
@@ -733,13 +747,13 @@ class Aria2JsonRpc(object):
         gid: GID to unpause
         """
         params = [gid]
-        return self.jsonrpc('unpause', params)
+        return self.jsonrpc("unpause", params)
 
     def unpauseAll(self):
         """
         aria2.unpauseAll method
         """
-        return self.jsonrpc('unpauseAll')
+        return self.jsonrpc("unpauseAll")
 
     def tellStatus(self, gid, keys=None):
         """
@@ -754,7 +768,7 @@ class Aria2JsonRpc(object):
         params = [gid]
         if keys:
             params.append(keys)
-        return self.jsonrpc('tellStatus', params)
+        return self.jsonrpc("tellStatus", params)
 
     def getUris(self, gid):
         """
@@ -765,7 +779,7 @@ class Aria2JsonRpc(object):
         Returns a list of dictionaries.
         """
         params = [gid]
-        return self.jsonrpc('getUris', params)
+        return self.jsonrpc("getUris", params)
 
     def getFiles(self, gid):
         """
@@ -776,7 +790,7 @@ class Aria2JsonRpc(object):
         Returns a list of dictionaries.
         """
         params = [gid]
-        return self.jsonrpc('getFiles', params)
+        return self.jsonrpc("getFiles", params)
 
     def getPeers(self, gid):
         """
@@ -787,7 +801,7 @@ class Aria2JsonRpc(object):
         Returns a list of dictionaries.
         """
         params = [gid]
-        return self.jsonrpc('getPeers', params)
+        return self.jsonrpc("getPeers", params)
 
     def getServers(self, gid):
         """
@@ -798,7 +812,7 @@ class Aria2JsonRpc(object):
         Returns a list of dictionaries.
         """
         params = [gid]
-        return self.jsonrpc('getServers', params)
+        return self.jsonrpc("getServers", params)
 
     def tellActive(self, keys=None):
         """
@@ -813,7 +827,7 @@ class Aria2JsonRpc(object):
             params = [keys]
         else:
             params = None
-        return self.jsonrpc('tellActive', params)
+        return self.jsonrpc("tellActive", params)
 
     def tellWaiting(self, offset, num, keys=None):
         """
@@ -832,7 +846,7 @@ class Aria2JsonRpc(object):
         params = [offset, num]
         if keys:
             params.append(keys)
-        return self.jsonrpc('tellWaiting', params)
+        return self.jsonrpc("tellWaiting", params)
 
     def tellStopped(self, offset, num, keys=None):
         """
@@ -850,7 +864,7 @@ class Aria2JsonRpc(object):
         params = [offset, num]
         if keys:
             params.append(keys)
-        return self.jsonrpc('tellStopped', params)
+        return self.jsonrpc("tellStopped", params)
 
     def changePosition(self, gid, pos, how):
         """
@@ -863,7 +877,7 @@ class Aria2JsonRpc(object):
         how: "POS_SET", "POS_CUR" or "POS_END"
         """
         params = [gid, pos, how]
-        return self.jsonrpc('changePosition', params)
+        return self.jsonrpc("changePosition", params)
 
     def changeUri(self, gid, fileIndex, delUris, addUris, position=None):
         """
@@ -882,7 +896,7 @@ class Aria2JsonRpc(object):
         params = [gid, fileIndex, delUris, addUris]
         if position:
             params.append(position)
-        return self.jsonrpc('changePosition', params)
+        return self.jsonrpc("changePosition", params)
 
     def getOption(self, gid):
         """
@@ -893,7 +907,7 @@ class Aria2JsonRpc(object):
         Returns a dictionary of options.
         """
         params = [gid]
-        return self.jsonrpc('getOption', params)
+        return self.jsonrpc("getOption", params)
 
     def changeOption(self, gid, options):
         """
@@ -905,7 +919,7 @@ class Aria2JsonRpc(object):
                  (not all options can be changed for active downloads)
         """
         params = [gid, options]
-        return self.jsonrpc('changeOption', params)
+        return self.jsonrpc("changeOption", params)
 
     def getGlobalOption(self):
         """
@@ -913,7 +927,7 @@ class Aria2JsonRpc(object):
 
         Returns a dictionary.
         """
-        return self.jsonrpc('getGlobalOption')
+        return self.jsonrpc("getGlobalOption")
 
     def changeGlobalOption(self, options):
         """
@@ -922,7 +936,7 @@ class Aria2JsonRpc(object):
         options: dictionary of new options
         """
         params = [options]
-        return self.jsonrpc('changeGlobalOption', params)
+        return self.jsonrpc("changeGlobalOption", params)
 
     def getGlobalStat(self):
         """
@@ -930,13 +944,13 @@ class Aria2JsonRpc(object):
 
         Returns a dictionary.
         """
-        return self.jsonrpc('getGlobalStat')
+        return self.jsonrpc("getGlobalStat")
 
     def purgeDownloadResult(self):
         """
         aria2.purgeDownloadResult method
         """
-        self.jsonrpc('purgeDownloadResult')
+        self.jsonrpc("purgeDownloadResult")
 
     def removeDownloadResult(self, gid):
         """
@@ -945,7 +959,7 @@ class Aria2JsonRpc(object):
         gid: GID to remove
         """
         params = [gid]
-        return self.jsonrpc('removeDownloadResult', params)
+        return self.jsonrpc("removeDownloadResult", params)
 
     def getVersion(self):
         """
@@ -953,7 +967,7 @@ class Aria2JsonRpc(object):
 
         Returns a dictionary.
         """
-        return self.jsonrpc('getVersion')
+        return self.jsonrpc("getVersion")
 
     def getSessionInfo(self):
         """
@@ -961,19 +975,19 @@ class Aria2JsonRpc(object):
 
         Returns a dictionary.
         """
-        return self.jsonrpc('getSessionInfo')
+        return self.jsonrpc("getSessionInfo")
 
     def shutdown(self):
         """
         aria2.shutdown method
         """
-        return self.jsonrpc('shutdown')
+        return self.jsonrpc("shutdown")
 
     def forceShutdown(self):
         """
         aria2.forceShutdown method
         """
-        return self.jsonrpc('forceShutdown')
+        return self.jsonrpc("forceShutdown")
 
     def multicall(self, methods):
         """
@@ -983,7 +997,7 @@ class Aria2JsonRpc(object):
 
         The method names must be those used by Aria2c, e.g. "aria2.tellStatus".
         """
-        return self.jsonrpc('multicall', [methods], prefix='system.')
+        return self.jsonrpc("multicall", [methods], prefix="system.")
 
     # --------------------------- Convenience Methods ---------------------------- #
     @staticmethod
@@ -991,7 +1005,7 @@ class Aria2JsonRpc(object):
         """
         Read a file into a base64-encoded string.
         """
-        with open(path, 'rb') as handle:
+        with open(path, "rb") as handle:
             return base64.b64encode(handle.read()).encode(JSON_ENCODING)
 
     def add_torrent(self, path, uris=None, options=None, position=None):
@@ -1012,7 +1026,7 @@ class Aria2JsonRpc(object):
         """
         Get the status of a single GID.
         """
-        response = self.tellStatus(gid, ['status'])
+        response = self.tellStatus(gid, ["status"])
         return get_status(response)
 
     def wait_for_final_status(self, gid, interval=1):
@@ -1033,28 +1047,22 @@ class Aria2JsonRpc(object):
         Get the status of multiple GIDs. The status of each is yielded in order.
         """
         methods = [
-            {
-                'methodName': 'aria2.tellStatus',
-                'params': [gid, ['gid', 'status']]
-            }
+            {"methodName": "aria2.tellStatus", "params": [gid, ["gid", "status"]]}
             for gid in gids
         ]
         results = self.multicall(methods)
         if results:
-            status = dict((r[0]['gid'], r[0]['status']) for r in results)
+            status = dict((r[0]["gid"], r[0]["status"]) for r in results)
             for gid in gids:
                 try:
                     yield status[gid]
                 except KeyError:
-                    LOGGER.error(
-                        'Aria2 RPC server returned no status for GID %s',
-                        gid
-                    )
-                    yield 'error'
+                    LOGGER.error("Aria2 RPC server returned no status for GID %s", gid)
+                    yield "error"
         else:
-            LOGGER.error('no response from Aria2 RPC server')
+            LOGGER.error("no response from Aria2 RPC server")
             for gid in gids:
-                yield 'error'
+                yield "error"
 
     def wait_for_final_statuses(self, gids, interval=1):
         """
@@ -1067,17 +1075,13 @@ class Aria2JsonRpc(object):
         if not interval or interval < 0:
             interval = 1
         statusmap = dict((gid, None) for gid in gids)
-        remaining = list(
-            gid for gid, s in statusmap.items() if s is None
-        )
+        remaining = list(gid for gid, s in statusmap.items() if s is None)
         while remaining:
             for gid, status in zip(remaining, self.get_statuses(remaining)):
                 if status in TEMPORARY_STATUS:
                     continue
                 statusmap[gid] = status
-            remaining = list(
-                gid for gid, status in statusmap.items() if status is None
-            )
+            remaining = list(gid for gid, status in statusmap.items() if status is None)
             if remaining:
                 time.sleep(interval)
         for gid in gids:
@@ -1089,9 +1093,9 @@ class Aria2JsonRpc(object):
         """
         status = self.getGlobalStat()
         if status:
-            numWaiting = int(status['numWaiting'])
-            numStopped = int(status['numStopped'])
-            keys = ['totalLength', 'completedLength']
+            numWaiting = int(status["numWaiting"])
+            numStopped = int(status["numStopped"])
+            keys = ["totalLength", "completedLength"]
             total = self.tellActive(keys)
             waiting = self.tellWaiting(0, numWaiting, keys)
             if waiting:
@@ -1100,41 +1104,39 @@ class Aria2JsonRpc(object):
             if stopped:
                 total += stopped
 
-            downloadSpeed = int(status['downloadSpeed'])
-            uploadSpeed = int(status['uploadSpeed'])
-            totalLength = sum(int(x['totalLength']) for x in total)
-            completedLength = sum(int(x['completedLength']) for x in total)
+            downloadSpeed = int(status["downloadSpeed"])
+            uploadSpeed = int(status["uploadSpeed"])
+            totalLength = sum(int(x["totalLength"]) for x in total)
+            completedLength = sum(int(x["completedLength"]) for x in total)
             remaining = totalLength - completedLength
 
-            status['downloadSpeed'] = format_bytes(downloadSpeed) + '/s'
-            status['uploadSpeed'] = format_bytes(uploadSpeed) + '/s'
+            status["downloadSpeed"] = format_bytes(downloadSpeed) + "/s"
+            status["uploadSpeed"] = format_bytes(uploadSpeed) + "/s"
 
-            preordered = ('downloadSpeed', 'uploadSpeed')
+            preordered = ("downloadSpeed", "uploadSpeed")
 
             rows = list(
-                (k, v)
-                for (k, v) in sorted(status.items())
-                if k not in preordered
+                (k, v) for (k, v) in sorted(status.items()) if k not in preordered
             )
             rows.extend((x, status[x]) for x in preordered)
 
             if totalLength > 0:
-                rows.append(('total', format(format_bytes(totalLength))))
-                rows.append(('completed', format(format_bytes(completedLength))))
-                rows.append(('remaining', format(format_bytes(remaining))))
+                rows.append(("total", format(format_bytes(totalLength))))
+                rows.append(("completed", format(format_bytes(completedLength))))
+                rows.append(("remaining", format(format_bytes(remaining))))
                 if completedLength == totalLength:
-                    eta = 'finished'
+                    eta = "finished"
                 else:
                     try:
                         eta = format_seconds(remaining // downloadSpeed)
                     except ZeroDivisionError:
-                        eta = 'never'
-                rows.append(('ETA', eta))
+                        eta = "never"
+                rows.append(("ETA", eta))
 
             width_l = max(len(r[0]) for r in rows)
             width_r = max(len(r[1]) for r in rows)
             width_r = max(width_r, len(self.uri) - (width_l + 2))
-            fmt = '{{:<{:d}s}}  {{:>{:d}s}}'.format(width_l, width_r)
+            fmt = "{{:<{:d}s}}  {{:>{:d}s}}".format(width_l, width_r)
 
             print(self.uri)
             for row in rows:
@@ -1146,26 +1148,26 @@ class Aria2JsonRpc(object):
         regular intervals.
         """
         gid = self.addUri(uris, options)
-        print('GID: {}'.format(gid))
+        print("GID: {}".format(gid))
 
         if gid and interval is not None:
-            blanker = ''
+            blanker = ""
             while True:
-                response = self.tellStatus(gid, ['status'])
+                response = self.tellStatus(gid, ["status"])
                 if response:
                     try:
-                        status = response['status']
+                        status = response["status"]
                     except KeyError:
-                        print('error: no status returned from Aria2 RPC server')
+                        print("error: no status returned from Aria2 RPC server")
                         break
-                    print('{}\rstatus: {}'.format(blanker, status), end='')
-                    blanker = ' ' * len(status)
+                    print("{}\rstatus: {}".format(blanker, status), end="")
+                    blanker = " " * len(status)
                     if status in TEMPORARY_STATUS:
                         time.sleep(interval)
                     else:
                         break
                 else:
-                    print('error: no response from server')
+                    print("error: no response from server")
                     break
 
     # ----------------------- Polymethod download handlers ----------------------- #
@@ -1177,10 +1179,8 @@ class Aria2JsonRpc(object):
         downloads: Same as polymethod_download().
         """
         methods = list(
-            {
-                'methodName': 'aria2.{}'.format(d[0]),
-                'params': list(d[1:])
-            } for d in downloads
+            {"methodName": "aria2.{}".format(d[0]), "params": list(d[1:])}
+            for d in downloads
         )
         return self.multicall(methods)
 
@@ -1193,10 +1193,15 @@ class Aria2JsonRpc(object):
         """
         # The flattened list of GIDs
         pending_gids = list(itertools.chain.from_iterable(gid_lists))
-        statusmap = dict(zip(pending_gids, self.wait_for_final_statuses(pending_gids, interval=interval)))
+        statusmap = dict(
+            zip(
+                pending_gids,
+                self.wait_for_final_statuses(pending_gids, interval=interval),
+            )
+        )
         # Return the grouped statuses in order.
         for gids in gid_lists:
-            yield list(statusmap.get(gid, 'error') for gid in gids)
+            yield list(statusmap.get(gid, "error") for gid in gids)
 
     def polymethod_enqueue_one(self, download):
         """
@@ -1231,10 +1236,14 @@ class Aria2JsonRpc(object):
         """
         #     for status in self.polymethod_download(*args, **kwargs):
         #       yield all(s == 'complete' for s in status)
-        return list(all(s == 'complete' for s in status) for status in self.polymethod_download(*args, **kwargs))
+        return list(
+            all(s == "complete" for s in status)
+            for status in self.polymethod_download(*args, **kwargs)
+        )
 
 
 # --------------------------------- argparse --------------------------------- #
+
 
 def add_server_arguments(parser):
     """
@@ -1242,17 +1251,39 @@ def add_server_arguments(parser):
 
     Accepts an argparse ArgumentParser or group.
     """
-    parser.add_argument('-a', '--address', default='localhost', help='The server host. Default: %(default)s.')
-    parser.add_argument('-p', '--port', type=int, default=DEFAULT_PORT, help='The server port. Default: %(default)s.')
-    parser.add_argument('-s', '--scheme', default='http', help='The server scheme. Default: %(default)s.')
+    parser.add_argument(
+        "-a",
+        "--address",
+        default="localhost",
+        help="The server host. Default: %(default)s.",
+    )
+    parser.add_argument(
+        "-p",
+        "--port",
+        type=int,
+        default=DEFAULT_PORT,
+        help="The server port. Default: %(default)s.",
+    )
+    parser.add_argument(
+        "-s",
+        "--scheme",
+        default="http",
+        help="The server scheme. Default: %(default)s.",
+    )
 
     # parser.add_argument('--auth', nargs=2, help='HTTP Basic authentication user and password.')
 
-    parser.add_argument('--token', help='Secret RPC token.')
+    parser.add_argument("--token", help="Secret RPC token.")
 
-    parser.add_argument('--server-cert', help='HTTPS server certificate file, in PEM format.')
-    parser.add_argument('--client-cert', help='HTTPS client certificate file, in PEM format.')
-    parser.add_argument('--client-cert-password', help='Prompt for a client certificate password.')
+    parser.add_argument(
+        "--server-cert", help="HTTPS server certificate file, in PEM format."
+    )
+    parser.add_argument(
+        "--client-cert", help="HTTPS client certificate file, in PEM format."
+    )
+    parser.add_argument(
+        "--client-cert-password", help="Prompt for a client certificate password."
+    )
 
 
 def a2jr_from_args(identity, args):
@@ -1272,13 +1303,18 @@ def a2jr_from_args(identity, args):
     token = args.token
 
     if args.client_cert and args.client_cert_password:
-        client_cert_password = getpass.getpass('password for {}: '.format(args.client_cert))
+        client_cert_password = getpass.getpass(
+            "password for {}: ".format(args.client_cert)
+        )
     else:
         client_cert_password = None
 
-    return Aria2JsonRpc(identity, uri, token=token,
-                        #     http_user=http_user, http_passwd=http_passwd,
-                        server_cert=args.server_cert,
-                        client_cert=args.client_cert,
-                        client_cert_password=client_cert_password,
-                        )
+    return Aria2JsonRpc(
+        identity,
+        uri,
+        token=token,
+        #     http_user=http_user, http_passwd=http_passwd,
+        server_cert=args.server_cert,
+        client_cert=args.client_cert,
+        client_cert_password=client_cert_password,
+    )

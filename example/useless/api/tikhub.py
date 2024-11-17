@@ -20,20 +20,31 @@ class TikHubAPI:
     def login(self, username=None, password=None, token=None) -> bool:
         if token is not None:
             self.token = token
-            read_secret(cate1="fundrive", cate2="tiktok", cate3="token", value=self.token)
+            read_secret(
+                cate1="fundrive", cate2="tiktok", cate3="token", value=self.token
+            )
         elif username is not None and password is not None:
             token_expiry_minutes: int = 525600
-            url = f"{self.domain}/user/login?token_expiry_minutes={token_expiry_minutes}"
+            url = (
+                f"{self.domain}/user/login?token_expiry_minutes={token_expiry_minutes}"
+            )
 
             payload = {"username": username, "password": password}
             response = requests.request("POST", url, data=payload).json()
             self.token = response.get("access_token")
-            read_secret(cate1="fundrive", cate2="tiktok", cate3="token", value=self.token)
-            logger.info(f"Your token is: {(response.get('access_token', response.get('detail')))}")
+            read_secret(
+                cate1="fundrive", cate2="tiktok", cate3="token", value=self.token
+            )
+            logger.info(
+                f"Your token is: {(response.get('access_token', response.get('detail')))}"
+            )
         else:
             self.token = read_secret(cate1="fundrive", cate2="tiktok", cate3="token")
 
-        self._headers = {"Cookie": f"Authorization={self.token}", "Authorization": f"Bearer {self.token}"}
+        self._headers = {
+            "Cookie": f"Authorization={self.token}",
+            "Authorization": f"Bearer {self.token}",
+        }
         return True
 
     def _get(self, uri, params=None) -> dict:
@@ -60,14 +71,18 @@ class DouyinTikHubApi(TikHubAPI):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def get_douyin_video_data(self, url: str = None, video_id: str = None, language="zh") -> dict:
+    def get_douyin_video_data(
+        self, url: str = None, video_id: str = None, language="zh"
+    ) -> dict:
         """
         解析单一抖音视频数据
         """
         data = {"douyin_video_url": url, "video_id": video_id, "language": language}
         return self._get(uri="douyin/video_data/", params=data)
 
-    def get_douyin_user_data(self, url: str = None, user_id: str = None, language="zh") -> dict:
+    def get_douyin_user_data(
+        self, url: str = None, user_id: str = None, language="zh"
+    ) -> dict:
         """
         解析抖音作者数据
         """
@@ -101,11 +116,18 @@ class TikTokTikHubApi(TikHubAPI):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def get_tiktok_video_data(self, url: str = None, video_id: str = None, region="US", language="en") -> dict:
+    def get_tiktok_video_data(
+        self, url: str = None, video_id: str = None, region="US", language="en"
+    ) -> dict:
         """
         解析TikTok视频
         """
-        data = {"tiktok_video_url": url, "video_id": video_id, "region": region, "language": language}
+        data = {
+            "tiktok_video_url": url,
+            "video_id": video_id,
+            "region": region,
+            "language": language,
+        }
         return self._get(uri=f"/tiktok/video_data/", params=data)
 
 
@@ -194,7 +216,9 @@ class XiaohongshuHubApi(TikHubAPI):
         data = {"user_id": note_id, "cursor": cursor, "num": num}
         return self._get(uri="/xhs/get_note_comments/", params=data)
 
-    def get_xhs_note_sub_comments(self, note_id, root_comment_id, cursor=None, num=10) -> dict:
+    def get_xhs_note_sub_comments(
+        self, note_id, root_comment_id, cursor=None, num=10
+    ) -> dict:
         """
 
         :param note_id:
@@ -212,7 +236,12 @@ class XiaohongshuHubApi(TikHubAPI):
               "data": {}
             }
         """
-        data = {"user_id": note_id, "root_comment_id": root_comment_id, "cursor": cursor, "num": num}
+        data = {
+            "user_id": note_id,
+            "root_comment_id": root_comment_id,
+            "cursor": cursor,
+            "num": num,
+        }
         return self._get(uri="/xhs/get_note_sub_comments/", params=data)
 
 
@@ -269,7 +298,11 @@ def test1():
 
     tiktok = TikTokTikHubApi()
     tiktok.login()
-    print(tiktok.get_tiktok_video_data("https://www.tiktok.com/@evil0ctal/video/7202594778217844014"))
+    print(
+        tiktok.get_tiktok_video_data(
+            "https://www.tiktok.com/@evil0ctal/video/7202594778217844014"
+        )
+    )
 
 
 # test1()
