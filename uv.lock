@@ -318,7 +318,7 @@ wheels = [
 
 [[package]]
 name = "fundrive"
-version = "1.2.28"
+version = "1.2.29"
 source = { virtual = "." }
 dependencies = [
     { name = "funget" },
@@ -337,7 +337,7 @@ requires-dist = [
 
 [[package]]
 name = "fundrive-alipan"
-version = "1.2.28"
+version = "1.2.29"
 source = { virtual = "extbuild/fundrive-alipan" }
 dependencies = [
     { name = "aligo" },
@@ -352,7 +352,7 @@ requires-dist = [
 
 [[package]]
 name = "fundrive-lanzou"
-version = "1.2.28"
+version = "1.2.29"
 source = { virtual = "extbuild/fundrive-lanzou" }
 dependencies = [
     { name = "fundrive" },
@@ -363,7 +363,7 @@ requires-dist = [{ name = "fundrive", virtual = "." }]
 
 [[package]]
 name = "fundrive-oss"
-version = "1.2.28"
+version = "1.2.29"
 source = { virtual = "extbuild/fundrive-oss" }
 dependencies = [
     { name = "fundrive" },
@@ -378,7 +378,7 @@ requires-dist = [
 
 [[package]]
 name = "fundrive-wenshushu"
-version = "1.2.28"
+version = "1.2.29"
 source = { virtual = "extbuild/fundrive-wenshushu" }
 dependencies = [
     { name = "base58" },

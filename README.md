@@ -1,105 +1,92 @@
-## 1.支持列表
+# 统一云存储接口
 
-| 序号 | 网盘             | 支持内容       |
-| :--: | :--------------- | :------------- |
-|  1   | [蓝奏云](#3.1)   | 上传/下载/删除 |
-|  2   | [OSS](#3.2)      | 上传/下载/删除 |
-|  3   | [github](#3.3)   | 上传/下载/删除 |
-|  4   | [gitee](#3.4)    | 上传/下载/删除 |
-|  5   | [百度网盘](#3.5) | TODO           |
-|  6   | [阿里云盘](#3.6) | TODO           |
+## 概述
 
-## 2.安装
+统一云存储接口（Unified Cloud Storage Interface，简称 UCSI）是一个开源工具，旨在为各种云存储服务提供统一的 API。无论您使用的是 Google Drive、Dropbox、OneDrive 还是其他任何云存储服务，UCSI 都能抽象掉不同 API 的复杂性，使开发者能够通过一个一致的接口与多个云存储服务进行交互。
+
+## 功能特点
+
+- **统一 API**：通过一个 API 与多个云存储服务进行交互。
+- **可扩展性**：通过实现提供的接口，轻松添加对新云存储服务的支持。
+- **文件管理**：在不同的云存储服务之间上传、下载、删除和列出文件。
+- **权限管理**：统一管理不同云存储服务的权限和访问控制。
+- **跨平台支持**：支持多种编程语言和平台，方便集成到现有项目中。
+
+## 安装
+
+### 使用 pip 安装
 
 ```bash
 pip install fundrive
 ```
 
-或者直接从 gitHub 安装
+### 从源码安装
 
 ```bash
-pip install git+https://github.com/farfarfun/fundrive.git
+git clone https://github.com/farfarfun/fundrive.git
+cd fundrive
+python setup.py install
 ```
 
-或者直接从 gitee 安装
+## 快速开始
 
-```bash
-pip install git+https://gitee.com/farfarfun/fundrive.git
-```
-
-<h2 id="3">3 使用说明</h2>
-
-- 所有的 drive 都是继承基类，实现登录、上传、下载、删除
-- 每个 drive 的函数返回没有做统计，使用需注意
-- 部分 drive 需要安装额外的库，不装也行，直接使用时会尝试 import，import 失败会自动安装
-
-这是基类
+以下是一个简单的示例，展示如何使用 UCSI 上传文件到 Google Drive。
 
 ```python
-class DriveSystem:
-    def __init__(self, *args, **kwargs):
-        pass
+from fundrive import AliDrive
 
-    def login(self, *args, **kwargs) -> bool:
-        raise NotImplementedError()
+# 初始化 Google Drive 客户端
+client = AliDrive('google_drive')
 
-    def mkdir(self, path, *args, **kwargs) -> bool:
-        raise NotImplementedError()
+# 上传文件
+client.upload_file('/path/to/local/file.txt', 'remote_file.txt')
 
-    def delete(self, *args, **kwargs) -> bool:
-        raise NotImplementedError()
-
-    def get_file_list(self, *args, **kwargs) -> List[Dict[str, Any]]:
-        raise NotImplementedError()
-
-    def get_dir_list(self, *args, **kwargs) -> List[Dict[str, Any]]:
-        raise NotImplementedError()
-
-    def get_file_info(self, *args, **kwargs) -> Dict[str, Any]:
-        raise NotImplementedError()
-
-    def get_dir_info(self, *args, **kwargs) -> Dict[str, Any]:
-        raise NotImplementedError()
-
-    def download_file(self, dir_path="./cache", overwrite=False, *args, **kwargs) -> bool:
-        raise NotImplementedError()
-
-    def download_dir(self, dir_path="./cache", overwrite=False, *args, **kwargs) -> bool:
-        raise NotImplementedError()
-
-    def upload_file(self, file_path="./cache", overwrite=False, *args, **kwargs) -> bool:
-        raise NotImplementedError()
-
-    def upload_dir(self, dir_path="./cache", overwrite=False, *args, **kwargs) -> bool:
-        raise NotImplementedError()
+# 列出文件
+files = client.list_files()
+for file in files:
+    print(file['name'])
 ```
 
-<h3 id="3.1">3.1 蓝奏云</h3>
-# 蓝奏云
-额外安装lanzou底层api
+## 支持的云存储服务
 
-```bash
-pip install git+https://github.com/Leon406/lanzou-gui.git --no-deps
-```
+| 序号 | 网盘             | 支持内容          |
+| :--: | :--------------- | :------------- |
+|  1   | [蓝奏云](#3.1)   | 上传/下载/删除    |
+|  2   | [OSS](#3.2)      | 上传/下载/删除   |
+|  3   | [github](#3.3)   | 上传/下载/删除   |
+|  4   | [gitee](#3.4)    | 上传/下载/删除   |
+|  5   | [百度网盘](#3.5) | TODO            |
+|  6   | [阿里云盘](#3.6) | TODO            |
+|  7   | [Google Drive](#3.6) | TODO       |
+|  8   | [Dropbox](#3.6) | TODO            |
+|  9   | [OneDrive](#3.6) | TODO           |
+|  10  | [Amazon S3](#3.6) | TODO          |
 
-登录需要额外两个参数
+- 更多服务即将推出...
 
-<h3 id="3.1">3.2 OSS</h3>
-额外安装oss的库OSS2
+## 贡献
 
-```bash
-pip install oss2
-```
+我们欢迎任何形式的贡献！如果您想为 UCSI 做出贡献，请遵循以下步骤：
 
-登录需要参数
+1. Fork 项目仓库。
+2. 创建一个新的分支 (`git checkout -b feature/your-feature-name`)。
+3. 提交您的更改 (`git commit -am 'Add some feature'`)。
+4. 推送到分支 (`git push origin feature/your-feature-name`)。
+5. 创建一个新的 Pull Request。
 
-<h3 id="3.1">3.3 github</h3>
+## 许可证
 
-<h3 id="3.1">3.4 gitee</h3>
+本项目采用 MIT 许可证。有关更多信息，请参阅 [LICENSE](LICENSE) 文件。
 
-<h3 id="3.1">3.5 百度网盘</h3>
+## 联系我们
 
-<h3 id="3.1">3.6 阿里云盘</h3>
+如果您有任何问题或建议，请通过 [issues](https://github.com/yourusername/ucsi/issues) 或 [email](mailto:your-email@example.com) 联系我们。
+
+---
+
+感谢您使用统一云存储接口！我们希望这个工具能够简化您的云存储集成工作。
+
+
 
 #参考
 百度云盘的 python-api，[官方 API](https://openapi.baidu.com/wiki/index.php?title=docs/pcs/rest/file_data_apis_list)  
