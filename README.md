@@ -23,9 +23,7 @@ pip install fundrive
 ### 从源码安装
 
 ```bash
-git clone https://github.com/farfarfun/fundrive.git
-cd fundrive
-python setup.py install
+python install git+https://github.com/farfarfun/fundrive.git
 ```
 
 ## 快速开始
