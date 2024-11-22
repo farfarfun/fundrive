@@ -1,10 +1,14 @@
 [project]
 name = "fundrive"
-version = "1.2.30"
+version = "1.2.31"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [ "funget>=1.0.20", "funsecret>=1.4.2", "orjson>=3.10.10", "tqdm>=4.66.5",]
+
+[project.optional-dependencies]
+all = [ "torch",]
+gpu = [ "torch",]
 
 [tool.uv.workspace]
 members = [ "extbuild/fundrive-alipan", "extbuild/fundrive-lanzou", "extbuild/fundrive-oss", "extbuild/fundrive-wenshushu",]
