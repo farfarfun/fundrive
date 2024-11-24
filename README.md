@@ -94,7 +94,7 @@ drive.exist(path='upload/README.md')
 
 ## 联系我们
 
-如果您有任何问题或建议，请通过 [issues](https://github.com/yourusername/ucsi/issues) 或 [email](mailto:your-email@example.com) 联系我们。
+如果您有任何问题或建议，请通过 [issues](https://github.com/farfarfun/fundrive/issues) 或 [email](1007530194@qq.com) 联系我们。
 
 ---
 
