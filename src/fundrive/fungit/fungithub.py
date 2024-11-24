@@ -20,21 +20,12 @@ class GithubDrive(BaseDrive):
         self.headers = {}
 
     def login(self, repo_str, access_tokens=None, *args, **kwargs) -> bool:
-        if access_tokens:
-            read_secret(
-                cate1="fundrive",
-                cate2="drives",
-                cate3="fungithub",
-                cate4="access_tokens",
-                value=access_tokens,
-            )
-        else:
-            access_tokens = read_secret(
-                cate1="fundrive",
-                cate2="drives",
-                cate3="fungithub",
-                cate4="access_tokens",
-            )
+        access_tokens = access_tokens or read_secret(
+            cate1="fundrive",
+            cate2="drives",
+            cate3="fungithub",
+            cate4="access_tokens",
+        )
         self.headers = {"Authorization": f"Token {access_tokens}"}
         self.repo_str = repo_str
         return True

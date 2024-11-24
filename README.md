@@ -28,32 +28,45 @@ python install git+https://github.com/farfarfun/fundrive.git
 
 ## 快速开始
 
-以下是一个简单的示例，展示如何使用 UCSI 上传文件到 Google Drive。
+以下是一个简单的示例，展示如何使用。
 
 ```python
-from fundrive import AliDrive
+from fundrive import LanZouDrive, AlipanDrive, GiteeDrive, GithubDrive, OSSDrive
 
-# 初始化 Google Drive 客户端
-client = AliDrive('google_drive')
+drive = LanZouDrive()
+drive = AlipanDrive()
+drive = GiteeDrive()
+drive = GithubDrive()
+drive = OSSDrive()
 
-# 上传文件
-client.upload_file('/path/to/local/file.txt', 'remote_file.txt')
+drive.login('***每个网盘需要的东西不一样***')
 
-# 列出文件
-files = client.list_files()
-for file in files:
-    print(file['name'])
+# 上传
+drive.upload_file(local_path="./download", fid=888666)
+# 下载文件
+drive.download_file(fid=888666, local_dir='./download')
+# 下载文件夹
+drive.download_dir(fid=888666, local_dir="./download")
+# 获取目录下的所有目录
+drive.get_dir_list(fid=888666)
+# 获取目录下的所有文件
+drive.get_file_list(fid=888666)
+# 删除某个文件
+drive.delete(fid=888666)
+# 某个文件是否存在
+drive.exist(path='upload/README.md')
+
 ```
 
 ## 支持的云存储服务
 
-| 序号 | 网盘             | 支持内容          |
-| :--: | :--------------- | :------------- |
-|  1   | [蓝奏云](#3.1)   | 上传/下载/删除    |
-|  2   | [OSS](#3.2)      | 上传/下载/删除   |
-|  3   | [github](#3.3)   | 上传/下载/删除   |
-|  4   | [gitee](#3.4)    | 上传/下载/删除   |
-|  5   | [百度网盘](#3.5) | TODO            |
+| 序号 | 网盘             | 支持内容          |对应的包|
+| :--: | :--------------- | :------------- |fundrive-lanzou|
+|  1   | [蓝奏云](#蓝奏云)   | 上传/下载/删除    |fundrive[oss]|
+|  2   | [OSS](#3.2)      | 上传/下载/删除   |fundrive|
+|  3   | [github](#3.3)   | 上传/下载/删除   |fundrive|
+|  4   | [gitee](#3.4)    | 上传/下载/删除   |fundrive|
+|  5   | [百度网盘](#3.5)  | 上传/下载/删除    |fundrive[alipan]|
 |  6   | [阿里云盘](#3.6) | TODO            |
 |  7   | [Google Drive](#3.6) | TODO       |
 |  8   | [Dropbox](#3.6) | TODO            |
@@ -61,6 +74,9 @@ for file in files:
 |  10  | [Amazon S3](#3.6) | TODO          |
 
 - 更多服务即将推出...
+
+
+
 
 ## 贡献
 
