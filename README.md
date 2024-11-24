@@ -60,13 +60,13 @@ drive.exist(path='upload/README.md')
 
 ## 支持的云存储服务
 
-| 序号 | 网盘             | 支持内容          |对应的包|
-| :--: | :--------------- | :------------- |fundrive-lanzou|
-|  1   | [蓝奏云](#蓝奏云)   | 上传/下载/删除    |fundrive[oss]|
-|  2   | [OSS](#3.2)      | 上传/下载/删除   |fundrive|
-|  3   | [github](#3.3)   | 上传/下载/删除   |fundrive|
-|  4   | [gitee](#3.4)    | 上传/下载/删除   |fundrive|
-|  5   | [百度网盘](#3.5)  | 上传/下载/删除    |fundrive[alipan]|
+| 序号 | 网盘             | 支持内容          | 对应的包 |
+| :--: | :--------------- | :------------- | :-- |
+|  1   | [蓝奏云](#蓝奏云)   | 上传/下载/删除    |fundrive-lanzou |
+|  2   | [OSS](#3.2)      | 上传/下载/删除   | fundrive[oss] |
+|  3   | [github](#3.3)   | 上传/下载/删除   | fundrive |
+|  4   | [gitee](#3.4)    | 上传/下载/删除   | fundrive |
+|  5   | [百度网盘](#3.5)  | 上传/下载/删除   | fundrive[alipan] |
 |  6   | [阿里云盘](#3.6) | TODO            |
 |  7   | [Google Drive](#3.6) | TODO       |
 |  8   | [Dropbox](#3.6) | TODO            |
