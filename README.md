@@ -88,9 +88,11 @@ drive.exist(path='upload/README.md')
 4. 推送到分支 (`git push origin feature/your-feature-name`)。
 5. 创建一个新的 Pull Request。
 
+<!-- 
 ## 许可证
 
 本项目采用 MIT 许可证。有关更多信息，请参阅 [LICENSE](LICENSE) 文件。
+ -->
 
 ## 联系我们
 
