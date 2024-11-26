@@ -6,6 +6,7 @@ from .drives import (
     OSSDrive,
     TianChiDrive,
     TSingHuaDrive,
+    ZenodoDrive,
 )
 from .fungit import GiteeDrive, GithubDrive
 
@@ -14,6 +15,7 @@ __all__ = [
     "OSSDrive",
     "TianChiDrive",
     "TSingHuaDrive",
+    "ZenodoDrive",
     "OpenDataLabDrive",
     "GithubDrive",
     "LanZouDrive",
