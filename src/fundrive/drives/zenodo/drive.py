@@ -210,7 +210,7 @@ class ZenodoDrive(BaseDrive):
         self, record_id, local_dir, overwrite=False, *args, **kwargs
     ) -> bool:
         for file in self.get_file_list(record_id, *args, **kwargs):
-            simple_download(url=file["url"], filepath=f"{local_dir}/{file['key']}")
+            simple_download(url=file["url"], filepath=f"{local_dir}/{file['name']}")
         return True
 
     def download_dir(
