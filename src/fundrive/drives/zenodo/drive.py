@@ -9,6 +9,73 @@ from funsecret import read_secret
 from funutil import getLogger
 
 logger = getLogger("fundrive")
+code_list = {
+    200: {
+        "code": 200,
+        "name": "OK",
+        "desc": "Request succeeded. Response included. Usually sent for GET/PUT/PATCH requests.",
+    },
+    201: {
+        "code": 201,
+        "name": "Created",
+        "desc": "Request succeeded. Response included. Usually sent for POST requests.",
+    },
+    202: {
+        "code": 202,
+        "name": "Accepted",
+        "desc": "Request succeeded. Response included. Usually sent for POST requests, where background processing is needed to fulfill the request.",
+    },
+    204: {
+        "code": 204,
+        "name": "No Content",
+        "desc": "Request succeeded. No response included. Usually sent for DELETE requests.",
+    },
+    400: {
+        "code": 400,
+        "name": "Bad Request",
+        "desc": "Request failed. Error response included.",
+    },
+    401: {
+        "code": 401,
+        "name": "Unauthorized",
+        "desc": "Request failed, due to an invalid access token. Error response included.",
+    },
+    403: {
+        "code": 403,
+        "name": "Forbidden",
+        "desc": "Request failed, due to missing authorization (e.g. deleting an already submitted upload or missing scopes for your access token). Error response included.",
+    },
+    404: {
+        "code": 404,
+        "name": "Not Found",
+        "desc": "Request failed, due to the resource not being found. Error response included.",
+    },
+    405: {
+        "code": 405,
+        "name": "Method Not Allowed",
+        "desc": "Request failed, due to unsupported HTTP method. Error response included.",
+    },
+    409: {
+        "code": 409,
+        "name": "Conflict",
+        "desc": "Request failed, due to the current state of the resource (e.g. edit a deopsition which is not fully integrated). Error response included.",
+    },
+    415: {
+        "code": 415,
+        "name": "Unsupported Media Type",
+        "desc": "Request failed, due to missing or invalid request header Content-Type. Error response included.",
+    },
+    429: {
+        "code": 429,
+        "name": "Too Many Requests",
+        "desc": "Request failed, due to rate limiting. Error response included.",
+    },
+    500: {
+        "code": 500,
+        "name": "Internal Server Error",
+        "desc": "Request failed, due to an internal server error. Error response NOT included. Don’t worry, Zenodo admins have been notified and will be dealing with the problem ASAP.",
+    },
+}
 
 
 class ZenodoDrive(BaseDrive):
@@ -28,7 +95,7 @@ class ZenodoDrive(BaseDrive):
         )
         if r.status_code != 200:
             logger.error(
-                f"Token accept error, status code: {r.status_code}  {r.json()['message']}"
+                f"Token accept error, status code: {r.status_code}:{code_list.get(r.status_code)}  {r.json()['message']}"
             )
         logger.success("access token success")
 
@@ -37,6 +104,80 @@ class ZenodoDrive(BaseDrive):
             "fundrive", "zenodo", "access_token"
         )
         return True
+
+    def search_records(
+        self,
+        q=None,
+        status=None,
+        sort=None,
+        page=None,
+        size=None,
+        all_versions=None,
+        communities=None,
+        type=None,
+        subtype=None,
+        bounds=None,
+        custom=None,
+        *args,
+        **kwargs,
+    ):
+        """
+        q
+        string	optional	Search query (using Elasticsearch query string syntax - note that some characters have special meaning here, including /, which is also present in full DOIs).
+        status
+        string	optional	Filter result based on the deposit status (either draft or published)
+        sort
+        string	optional	Sort order (bestmatch or mostrecent). Prefix with minus to change form ascending to descending (e.g. -mostrecent).
+        page
+        integer	optional	Page number for pagination.
+        size
+        integer	optional	Number of results to return per page.
+        all_versions
+        integer/string	optional	Show (true or 1) or hide (false or 0) all versions of records.
+        communities
+        string	optional	Return records that are part of the specified communities. (Use of community identifier)
+        type
+        string	optional	Return records of the specified type. (Publication, Poster, Presentation…)
+        subtype
+        string	optional	Return records of the specified subtype. (Journal article, Preprint, Proposal…)
+        bounds
+        string	optional	Return records filtered by a geolocation bounding box. (Format bounds=143.37158,-38.99357,146.90918,-37.35269)
+        custom
+        string	optional	Return records containing the specified custom keywords. (Format custom=[field_name]:field_value)
+
+        Returns:
+
+        """
+        payload = {
+            "q": q,
+            "status": status,
+            "sort": sort,
+            "page": page,
+            "size": size,
+            "all_versions": all_versions,
+            "communities": communities,
+            "type": type,
+            "subtype": subtype,
+            "bounds": bounds,
+            "custom": custom,
+        }
+        r = requests.get(
+            url=f"{self.base_url}/records",
+            data=payload,
+            headers={"Content-Type": "application/json"},
+        )
+        if r.status_code != 200:
+            logger.error(
+                f"search error, status code: {r.status_code}   {r.json()['message']}"
+            )
+        return r.json()
+
+    def get_dir_list(self, q=None, *args, **kwargs) -> List[DriveFile]:
+        response = self.search_records(q=q, *args, **kwargs)
+        result = []
+        for record in response["hits"]["hits"]:
+            result.append(DriveFile(fid=record["id"], name=record["title"], **record))
+        return result
 
     def get_file_info(
         self, fid=None, record_id=None, filepath=None, *args, **kwargs
@@ -50,7 +191,6 @@ class ZenodoDrive(BaseDrive):
     def get_file_list(self, record_id, *args, **kwargs) -> List[DriveFile]:
         url = f"{self.base_url}/records/{record_id}"
         response = requests.get(url).json()
-        print(response)
         result = []
         for file in response["files"]:
             result.append(
@@ -60,12 +200,11 @@ class ZenodoDrive(BaseDrive):
                     name=file["key"],
                     size=file["size"],
                     url=file["links"]["self"],
+                    id=file["id"],
+                    checksum=file["checksum"],
                 )
             )
         return result
-
-    def get_dir_list(self, record_id, *args, **kwargs) -> List[DriveFile]:
-        return self.get_file_list(record_id, *args, **kwargs)
 
     def download_file(
         self, record_id, local_dir, overwrite=False, *args, **kwargs
@@ -93,8 +232,6 @@ class ZenodoDrive(BaseDrive):
             logger.error(
                 f"Error in creation, status code: {r.status_code}   {r.json()['message']}"
             )
-        # deposition_id = r.json()["id"]
-        # bucket_url = r.json()["links"]["bucket"]
         return r.json()
 
     def upload_file(
@@ -118,7 +255,7 @@ class ZenodoDrive(BaseDrive):
             )
             if r.status_code != 201:
                 logger.error(
-                    f"Error in data upload, status code: {r.status_code}   {r.json()['message']}"
+                    f"Error in data upload, status code: {r.status_code}:{code_list.get(r.status_code)}   {r.json()['message']}"
                 )
                 return False
             return True
@@ -133,7 +270,10 @@ class ZenodoDrive(BaseDrive):
                 params={"access_token": self.access_token},
                 data=fp,
             )
-        print(json.dumps(r.json(), indent=2))
+            if r.status_code != 200:
+                logger.error(
+                    f"upload error, status code: {r.status_code}:{code_list.get(r.status_code)}   {r.json()['message']}"
+                )
         logger.success(
             f"{local_path} ID = {record_id} (DOI: 10.5281/zenodo.{record_id})"
         )
@@ -166,7 +306,9 @@ class ZenodoDrive(BaseDrive):
             headers={"Content-Type": "application/json"},
         )
         if r.status_code != 200:
-            logger.error("update meta error")
+            logger.error(
+                f"update meta error,status code: {r.status_code}:{code_list.get(r.status_code)}"
+            )
 
     def publish(self, record_id=None):
         r = requests.post(
@@ -174,6 +316,8 @@ class ZenodoDrive(BaseDrive):
             params={"access_token": self.access_token},
         )
         if r.status_code != 202:
-            logger.error("publish error")
+            logger.error(
+                f"publish error,status code: {r.status_code}:{code_list.get(r.status_code)}"
+            )
             return False
         return True
