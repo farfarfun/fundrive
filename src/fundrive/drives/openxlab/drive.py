@@ -11,7 +11,7 @@ from fundrive.core import BaseDrive
 logger = getLogger("fundrive")
 
 
-class OpenDataLabDrive(BaseDrive):
+class OpenXLabDrive(BaseDrive):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.host = "https://openxlab.org.cn"

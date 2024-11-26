@@ -1,6 +1,6 @@
 from .alipan import AlipanDrive
 from .lanzou import LanZouDrive, LanZouSnapshot
-from .opendatalab import OpenDataLabDrive
+from .openxlab import OpenDataLabDrive, OpenXLabDrive
 from .os import OSDrive
 from .oss import OSSDrive
 from .tianchi import TianChiDrive
@@ -13,6 +13,7 @@ __all__ = [
     "download_tsinghua",
     "TianChiDrive",
     "OSSDrive",
+    "OpenXLabDrive",
     "OpenDataLabDrive",
     "LanZouDrive",
     "LanZouSnapshot",
