@@ -60,18 +60,18 @@ drive.exist(path='upload/README.md')
 
 ## 支持的云存储服务
 
-| 序号 | 网盘             | 支持内容          | 对应的包 | 文档 |
-| :--: | :--------------- | :------------- | :-- | :-- |
-|  1   | [蓝奏云](src/fundrive/drives/alipan/README.md)   | 上传/下载/删除    |fundrive-lanzou | [文档](src/fundrive/drives/alipan/README.md) |
-|  2   | [OSS](#3.2)      | 上传/下载/删除   | fundrive[oss] |  |
-|  3   | [github](#3.3)   | 上传/下载/删除   | fundrive |  |
-|  4   | [gitee](#3.4)    | 上传/下载/删除   | fundrive |  |
-|  5   | [百度网盘](#3.5)  | 上传/下载/删除   | fundrive[alipan] |  |
-|  6   | [阿里云盘](#3.6) | TODO            |  |  |
-|  7   | [Google Drive](#3.6) | TODO       |  |  |
-|  8   | [Dropbox](#3.6) | TODO            |  |  |
-|  9   | [OneDrive](#3.6) | TODO           |  |  |
-|  10  | [Amazon S3](#3.6) | TODO          |  |  |
+| 序号 | 网盘             | 支持内容          | 对应的包 |
+| :--: | :--------------- | :------------- | :-- | 
+|  1   | [蓝奏云](src/fundrive/drives/lanzou/README.md)     | 上传/下载/删除    |fundrive-lanzou | 
+|  2   | [OSS](src/fundrive/drives/oss/README.md)           | 上传/下载/删除   | fundrive[oss] |
+|  3   | [github](src/fundrive/fungit/README.md)            | 上传/下载/删除   | fundrive |
+|  4   | [gitee](src/fundrive/fungit/README.md)             | 上传/下载/删除   | fundrive |
+|  5   | [阿里云盘](src/fundrive/drives/alipan/README.md)     | 上传/下载/删除   | fundrive[alipan] |
+|  6   | [百度网盘](src/fundrive/drives/baidu/README.md)      | 上传/下载/删除   | fundrive[baidu] |
+|  7   | [谷歌网盘](src/fundrive/drives/google/README.md)     | TODO           | fundrive |
+|  8   | [Dropbox](src/fundrive/drives/dropbox/README.md)   | TODO            | fundrive |
+|  9   | [OneDrive](src/fundrive/drives/onedrive/README.md) | TODO            | fundrive |
+|  10  | [Amazon](src/fundrive/drives/amazon/README.md)     | TODO            | fundrive |
 
 - 更多服务即将推出...
 
