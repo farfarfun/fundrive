@@ -303,6 +303,10 @@ class ZenodoDrive(BaseDrive):
                 logger.error(
                     f"upload error, status code: {r.status_code}:{code_list.get(r.status_code)}   {r.json()['message']}"
                 )
+            else:
+                logger.success(
+                    f"upload success, status code: {r.status_code}:{code_list.get(r.status_code)}   {r.json()['message']}"
+                )
         logger.success(
             f"{local_path} ID = {record_id} (DOI: 10.5281/zenodo.{record_id})"
         )
