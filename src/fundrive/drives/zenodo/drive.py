@@ -3,10 +3,11 @@ import os
 from typing import List
 
 import requests
-from fundrive.core import BaseDrive, DriveFile
 from funget import simple_download
 from funsecret import read_secret
 from funutil import getLogger
+
+from fundrive.core import BaseDrive, DriveFile
 
 logger = getLogger("fundrive")
 code_list = {
@@ -233,6 +234,34 @@ class ZenodoDrive(BaseDrive):
                 f"Error in creation, status code: {r.status_code}   {r.json()['message']}"
             )
         return r.json()
+
+    def upload_dir(
+        self,
+        local_path,
+        record_id=None,
+        bucket_url=None,
+        recursion=True,
+        overwrite=False,
+        *args,
+        **kwargs,
+    ) -> bool:
+        for file in os.listdir(local_path):
+            file_path = os.path.join(local_path, file)
+            if os.path.isfile(file_path):
+                self.upload_file(
+                    local_path=file_path,
+                    record_id=record_id,
+                    bucket_url=bucket_url,
+                    overwrite=overwrite,
+                )
+            elif os.path.isdir(file_path) and recursion:
+                self.upload_dir(
+                    local_path=file_path,
+                    record_id=record_id,
+                    bucket_url=bucket_url,
+                    overwrite=overwrite,
+                )
+        return True
 
     def upload_file(
         self,
