@@ -344,7 +344,7 @@ wheels = [
 
 [[package]]
 name = "fundrive"
-version = "1.2.49"
+version = "1.2.50"
 source = { virtual = "." }
 dependencies = [
     { name = "funget" },
@@ -384,7 +384,7 @@ requires-dist = [
 
 [[package]]
 name = "fundrive-lanzou"
-version = "1.2.49"
+version = "1.2.50"
 source = { virtual = "extbuild/fundrive-lanzou" }
 dependencies = [
     { name = "fundrive" },

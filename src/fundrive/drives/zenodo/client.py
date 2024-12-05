@@ -95,7 +95,7 @@ class ZenodoClient(object):
     def __check_status_code(self, r, status_code):
         if r.status_code != status_code:
             logger.error(
-                f"request error,status code: {r.status_code}:{self.code_list.get(r.status_code)}: {r.json().get('message')}"
+                f"request error,status code: {r.status_code}:{self.code_list.get(r.status_code)}: {r.url}: {r.json().get('message')}"
             )
             return False
         return True
