@@ -95,7 +95,7 @@ class ZenodoClient(object):
     def __check_status_code(self, r, status_code):
         if r.status_code != status_code:
             logger.error(
-                f"publish error,status code: {r.status_code}:{self.code_list.get(r.status_code)}: {r.json().get('message')}"
+                f"request error,status code: {r.status_code}:{self.code_list.get(r.status_code)}: {r.json().get('message')}"
             )
             return False
         return True
@@ -132,7 +132,7 @@ class ZenodoClient(object):
         data = {}
         headers = {"Content-Type": "application/json"}
         r = self.__request("post", uri, data=json.dumps(data), headers=headers)
-        return self.__check_status_code(r, 200), r.json()
+        return self.__check_status_code(r, 201), r.json()
 
     def representation_retrieve(self, record_id):
         uri = f"/api/deposit/depositions/{record_id}"
