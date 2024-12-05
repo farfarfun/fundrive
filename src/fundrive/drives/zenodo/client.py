@@ -132,7 +132,7 @@ class ZenodoClient(object):
         data = {}
         headers = {"Content-Type": "application/json"}
         r = self.__request("post", uri, data=json.dumps(data), headers=headers)
-        return self.__check_status_code(r, 201), r.json()
+        return self.__check_status_code(r, 200), r.json()
 
     def representation_retrieve(self, record_id):
         uri = f"/api/deposit/depositions/{record_id}"
@@ -140,7 +140,7 @@ class ZenodoClient(object):
             "get",
             uri,
         )
-        return self.__check_status_code(r, 201), r.json()
+        return self.__check_status_code(r, 200), r.json()
 
     def representation_update(
         self,
@@ -202,12 +202,12 @@ class ZenodoClient(object):
         with open(filepath, "rb") as fr:
             r = self.__request("put", uri=uri, data=fr)
             if self.__check_status_code(r, 201):
-                return False, r.json()
-            else:
                 logger.success(
                     f"{filepath} ID = {record_id} (DOI: 10.5281/zenodo.{record_id})"
                 )
                 return True, r.json()
+            else:
+                return False, r.json()
 
     def deposition_files_create(self, record_id, filepath, filename=None):
         uri = f"api/deposit/depositions/{record_id}/files"
