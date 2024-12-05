@@ -1,10 +1,11 @@
 import os
 from typing import List
 
-from fundrive.core import BaseDrive, DriveFile
 from funget import simple_download
 from funsecret import read_secret
 from funutil import getLogger
+
+from fundrive.core import BaseDrive, DriveFile
 
 from .client import ZenodoClient
 
