@@ -22,7 +22,7 @@ class ZenodoDrive(BaseDrive):
     def check_token(self):
         if not isinstance(self.access_token, str) or not self.access_token:
             logger.error("Token need to be a string")
-        return self.client.representation_create()
+        return self.client.representation_create()[0]
 
     def login(self, access_token=None, *args, **kwargs) -> bool:
         self.access_token = access_token or read_secret(
@@ -88,7 +88,7 @@ class ZenodoDrive(BaseDrive):
             custom=custom,
             *args,
             **kwargs,
-        )
+        )[1]
 
     def get_dir_list(self, q=None, *args, **kwargs) -> List[DriveFile]:
         response = self.search_records(q=q, *args, **kwargs)
@@ -102,11 +102,11 @@ class ZenodoDrive(BaseDrive):
     ) -> DriveFile:
         response = self.client.deposition_files_retrieve(
             record_id=record_id, file_id=filepath
-        )
+        )[1]
         return DriveFile(fid=fid, name=response["key"], **response)
 
     def get_file_list(self, record_id, *args, **kwargs) -> List[DriveFile]:
-        response = self.client.records_retrieve(record_id=record_id)
+        response = self.client.records_retrieve(record_id=record_id)[1]
         result = []
         print(response)
         for file in response["files"]:
@@ -138,7 +138,7 @@ class ZenodoDrive(BaseDrive):
         )
 
     def mkdir(self, fid=None, name=None, return_if_exist=True, *args, **kwargs) -> dict:
-        return self.client.representation_create()
+        return self.client.representation_create()[1]
 
     def upload_dir(
         self,
@@ -196,4 +196,4 @@ class ZenodoDrive(BaseDrive):
         )
 
     def publish(self, record_id=None):
-        return self.client.deposition_actions_publish(record_id=record_id)
+        return self.client.deposition_actions_publish(record_id=record_id)[1]
