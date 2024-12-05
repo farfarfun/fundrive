@@ -3,6 +3,7 @@ import os
 
 import requests
 from funutil import getLogger
+from funutil.cache import cache
 
 logger = getLogger("fundrive")
 
@@ -87,7 +88,7 @@ class ZenodoClient(object):
         )
 
     def __request(self, method, uri, params=None, *args, **kwargs):
-        url = f"{self.base_url}/{uri}"
+        url = uri if uri.startswith("http") else f"{self.base_url}/{uri}"
         params = params or {"access_token": self.access_token}
         return requests.request(method, url, params=params, *args, **kwargs)
 
@@ -131,10 +132,11 @@ class ZenodoClient(object):
 
     def representation_retrieve(self, record_id):
         uri = f"/api/deposit/depositions/{record_id}"
-        return self.__request(
+        r = self.__request(
             "get",
             uri,
         )
+        return r.json()
 
     def representation_update(
         self,
@@ -183,6 +185,30 @@ class ZenodoClient(object):
             "get",
             uri=uri,
         )
+
+    @cache
+    def __get_bucket_url_by_record_id(self, record_id, *args, **kwargs):
+        retrieve = self.representation_retrieve(record_id=record_id)
+        return retrieve["link"]["bucket"]
+
+    def deposition_files_upload(
+        self, record_id, filepath, filename=None
+    ) -> [bool, dict]:
+        bucket_url = self.__get_bucket_url_by_record_id(record_id=record_id)
+        filename = filename or os.path.basename(filepath)
+        uri = f"{bucket_url}/{filename}"
+        with open(filepath, "rb") as fr:
+            r = self.__request("put", uri=uri, data=fr)
+            if r.status_code != 201:
+                logger.error(
+                    f"Error in data upload, status code: {r.status_code}:{code_list.get(r.status_code)}   {r.json()['message']}"
+                )
+                return False, r.json()
+            else:
+                logger.success(
+                    f"{filepath} ID = {record_id} (DOI: 10.5281/zenodo.{record_id})"
+                )
+                return True, r.json()
 
     def deposition_files_create(self, record_id, filepath, filename=None):
         uri = f"api/deposit/depositions/{record_id}/files"

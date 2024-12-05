@@ -144,7 +144,6 @@ class ZenodoDrive(BaseDrive):
         self,
         local_path,
         record_id=None,
-        bucket_url=None,
         recursion=True,
         overwrite=False,
         *args,
@@ -156,14 +155,12 @@ class ZenodoDrive(BaseDrive):
                 self.upload_file(
                     local_path=file_path,
                     record_id=record_id,
-                    bucket_url=bucket_url,
                     overwrite=overwrite,
                 )
             elif os.path.isdir(file_path) and recursion:
                 self.upload_dir(
                     local_path=file_path,
                     record_id=record_id,
-                    bucket_url=bucket_url,
                     overwrite=overwrite,
                 )
         return True
@@ -172,21 +169,15 @@ class ZenodoDrive(BaseDrive):
         self,
         local_path,
         record_id=None,
-        bucket_url=None,
         recursion=True,
         overwrite=False,
         *args,
         **kwargs,
     ) -> bool:
-        if record_id is not None:
-            self.client.deposition_files_create(
-                record_id=record_id, filepath=local_path
-            )
-            return True
-        logger.success(
-            f"{local_path} ID = {record_id} (DOI: 10.5281/zenodo.{record_id})"
+        response = self.client.deposition_files_upload(
+            record_id=record_id, filepath=local_path
         )
-        return True
+        return response[0]
 
     def update_meta(
         self,
