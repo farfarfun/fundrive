@@ -189,6 +189,11 @@ class ZenodoClient(object):
         return self.__check_status_code(r, 201), r.json()
 
     @cache
+    def __get_deposition_id_by_record_id(self, record_id, *args, **kwargs):
+        status, retrieve = self.representation_retrieve(record_id=record_id)
+        return retrieve["id"]
+
+    @cache
     def __get_bucket_url_by_record_id(self, record_id, *args, **kwargs):
         status, retrieve = self.representation_retrieve(record_id=record_id)
         return retrieve["links"]["bucket"]
@@ -199,15 +204,31 @@ class ZenodoClient(object):
         bucket_url = self.__get_bucket_url_by_record_id(record_id=record_id)
         filename = filename or os.path.basename(filepath)
         uri = f"{bucket_url}/{filename}"
-        with open(filepath, "rb") as fr:
-            r = self.__request("put", uri=uri, data=fr)
-            if self.__check_status_code(r, 201):
-                logger.success(
-                    f"{filepath} ID = {record_id} (DOI: 10.5281/zenodo.{record_id})"
-                )
-                return True, r.json()
-            else:
-                return False, r.json()
+        # with open(filepath, "rb") as fr:
+        #     r = self.__request('put', uri=uri, data=fr)
+        #     if self.__check_status_code(r, 201):
+        #         logger.success(
+        #             f"{filepath} ID = {record_id} (DOI: 10.5281/zenodo.{record_id})"
+        #         )
+        #         return True, r.json()
+        #     else:
+        #         return False, r.json()
+
+        deposition_id = self.__get_deposition_id_by_record_id(record_id=record_id)
+
+        r = self.__request(
+            "post",
+            f"/api/deposit/depositions/{deposition_id}/files",
+            data={"name": filename},
+            files={"file": open(filepath, "rb")},
+        )
+        if self.__check_status_code(r, 201):
+            logger.success(
+                f"{filepath} ID = {record_id} (DOI: 10.5281/zenodo.{record_id})"
+            )
+            return True, r.json()
+        else:
+            return False, r.json()
 
     def deposition_files_create(self, record_id, filepath, filename=None):
         uri = f"api/deposit/depositions/{record_id}/files"
