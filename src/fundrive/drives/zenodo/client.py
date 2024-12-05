@@ -189,7 +189,7 @@ class ZenodoClient(object):
     @cache
     def __get_bucket_url_by_record_id(self, record_id, *args, **kwargs):
         retrieve = self.representation_retrieve(record_id=record_id)
-        return retrieve["link"]["bucket"]
+        return retrieve["links"]["bucket"]
 
     def deposition_files_upload(
         self, record_id, filepath, filename=None
