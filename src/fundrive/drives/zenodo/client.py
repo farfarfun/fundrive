@@ -343,4 +343,4 @@ class ZenodoClient(object):
     def records_retrieve(self, record_id):
         uri = f"api/records/{record_id}"
         r = self.__request("get", uri=uri, params={})
-        return self.__check_status_code(r, 201), r.json()
+        return self.__check_status_code(r, 200), r.json()
