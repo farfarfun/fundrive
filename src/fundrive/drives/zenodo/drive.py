@@ -5,7 +5,7 @@ from fundrive.core import BaseDrive, DriveFile
 from funget import simple_download
 from funsecret import read_secret
 from funutil import getLogger
-
+from funutil.cache import cache
 from .client import ZenodoClient
 
 logger = getLogger("fundrive")
@@ -104,6 +104,7 @@ class ZenodoDrive(BaseDrive):
         )[1]
         return DriveFile(fid=fid, name=response["key"], **response)
 
+    @cache
     def get_file_list(self, record_id, *args, **kwargs) -> List[DriveFile]:
         response = self.client.records_retrieve(record_id=record_id)[1]
         result = []
