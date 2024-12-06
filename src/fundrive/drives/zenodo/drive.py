@@ -89,6 +89,7 @@ class ZenodoDrive(BaseDrive):
             **kwargs,
         )[1]
 
+    @cache
     def get_dir_list(self, q=None, *args, **kwargs) -> List[DriveFile]:
         response = self.search_records(q=q, *args, **kwargs)
         result = []
@@ -96,6 +97,7 @@ class ZenodoDrive(BaseDrive):
             result.append(DriveFile(fid=record["id"], name=record["title"], **record))
         return result
 
+    @cache
     def get_file_info(
         self, fid=None, record_id=None, filepath=None, *args, **kwargs
     ) -> DriveFile:
@@ -108,7 +110,6 @@ class ZenodoDrive(BaseDrive):
     def get_file_list(self, record_id, *args, **kwargs) -> List[DriveFile]:
         response = self.client.records_retrieve(record_id=record_id)[1]
         result = []
-        print(response)
         for file in response["files"]:
             result.append(
                 DriveFile(
