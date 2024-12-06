@@ -145,9 +145,15 @@ class ZenodoDrive(BaseDrive):
         record_id=None,
         recursion=True,
         overwrite=False,
+        new_version=True,
         *args,
         **kwargs,
     ) -> bool:
+        if new_version:
+            record_id = self.client.deposition_actions_new_version(record_id=record_id)[
+                1
+            ]["id"]
+
         for file in os.listdir(local_path):
             file_path = os.path.join(local_path, file)
             if os.path.isfile(file_path):
@@ -155,12 +161,14 @@ class ZenodoDrive(BaseDrive):
                     local_path=file_path,
                     record_id=record_id,
                     overwrite=overwrite,
+                    new_version=False,
                 )
             elif os.path.isdir(file_path) and recursion:
                 self.upload_dir(
                     local_path=file_path,
                     record_id=record_id,
                     overwrite=overwrite,
+                    new_version=new_version,
                 )
         return True
 
@@ -170,14 +178,19 @@ class ZenodoDrive(BaseDrive):
         record_id=None,
         recursion=True,
         overwrite=False,
+        new_version=True,
         *args,
         **kwargs,
     ) -> bool:
+        if new_version:
+            record_id = self.client.deposition_actions_new_version(record_id=record_id)[
+                1
+            ]["id"]
         return self.client.deposition_files_upload(
             record_id=record_id, filepath=local_path
         )[0]
 
-    def update_meta(
+    def publish(
         self,
         record_id=None,
         title="My first upload",
@@ -192,6 +205,4 @@ class ZenodoDrive(BaseDrive):
             names=names,
             creators=creators,
         )
-
-    def publish(self, record_id=None):
         return self.client.deposition_actions_publish(record_id=record_id)[1]

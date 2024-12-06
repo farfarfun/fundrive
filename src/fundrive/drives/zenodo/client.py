@@ -324,7 +324,7 @@ class ZenodoClient(object):
         status
         string	optional	Filter result based on the deposit status (either draft or published)
         sort
-        string	optional	Sort order (bestmatch or mostrecent). Prefix with minus to change form ascending to descending (e.g. -mostrecent).
+        string	optional	Sort order (best match or mostrecent). Prefix with minus to change form ascending to descending (e.g. -mostrecent).
         page
         integer	optional	Page number for pagination.
         size
