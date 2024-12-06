@@ -187,7 +187,7 @@ class ZenodoDrive(BaseDrive):
         )[0]
 
     def check_record(self, record_id=None, new_version=True, *args, **kwargs) -> int:
-        if self.client.records_retrieve(record_id) is False:
+        if self.client.records_retrieve(record_id)[0] is False:
             return record_id
         if new_version:
             response = self.client.deposition_actions_new_version(record_id=record_id)
