@@ -145,14 +145,12 @@ class ZenodoDrive(BaseDrive):
         record_id=None,
         recursion=True,
         overwrite=False,
-        new_version=True,
+        check=True,
         *args,
         **kwargs,
     ) -> bool:
-        if new_version:
-            record_id = self.client.deposition_actions_new_version(record_id=record_id)[
-                1
-            ]["id"]
+        if check:
+            record_id = self.check_record(record_id=record_id)
 
         for file in os.listdir(local_path):
             file_path = os.path.join(local_path, file)
@@ -161,14 +159,14 @@ class ZenodoDrive(BaseDrive):
                     local_path=file_path,
                     record_id=record_id,
                     overwrite=overwrite,
-                    new_version=False,
+                    check=False,
                 )
             elif os.path.isdir(file_path) and recursion:
                 self.upload_dir(
                     local_path=file_path,
                     record_id=record_id,
                     overwrite=overwrite,
-                    new_version=new_version,
+                    check=False,
                 )
         return True
 
@@ -178,17 +176,24 @@ class ZenodoDrive(BaseDrive):
         record_id=None,
         recursion=True,
         overwrite=False,
-        new_version=True,
+        check=True,
         *args,
         **kwargs,
     ) -> bool:
-        if new_version:
-            record_id = self.client.deposition_actions_new_version(record_id=record_id)[
-                1
-            ]["id"]
+        if check:
+            record_id = self.check_record(record_id, new_version=False)
         return self.client.deposition_files_upload(
             record_id=record_id, filepath=local_path
         )[0]
+
+    def check_record(self, record_id=None, new_version=True, *args, **kwargs) -> int:
+        if not self.client.records_retrieve(record_id):
+            return True
+        if new_version:
+            response = self.client.deposition_actions_new_version(record_id=record_id)
+            if response[0]:
+                return response[1]["id"]
+        raise Exception(f"No record found for {record_id}")
 
     def publish(
         self,
