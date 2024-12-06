@@ -1,11 +1,10 @@
 import os
 from typing import List
 
+from fundrive.core import BaseDrive, DriveFile
 from funget import simple_download
 from funsecret import read_secret
 from funutil import getLogger
-
-from fundrive.core import BaseDrive, DriveFile
 
 from .client import ZenodoClient
 
@@ -174,10 +173,9 @@ class ZenodoDrive(BaseDrive):
         *args,
         **kwargs,
     ) -> bool:
-        response = self.client.deposition_files_upload(
+        return self.client.deposition_files_upload(
             record_id=record_id, filepath=local_path
-        )
-        return response[0]
+        )[0]
 
     def update_meta(
         self,

@@ -92,17 +92,17 @@ class ZenodoClient(object):
         params = params or {"access_token": self.access_token}
         return requests.request(method, url, params=params, *args, **kwargs)
 
-    def __check_status_code(self, r, status_code):
+    def __check_status_code(self, r, status_code, prefix=""):
         if r.status_code != status_code:
             logger.error(
-                f"request error,status code: {r.status_code}:{self.code_list.get(r.status_code)}: {r.url}: {r.json().get('message')}"
+                f"{prefix} request error,status code: {r.status_code}:{self.code_list.get(r.status_code)}: {r.url}: {r.json().get('message')}"
             )
             return False
         return True
 
     def representation_list(
         self, q, status=None, sort=None, page=None, size=None, all_versions=None
-    ):
+    ) -> [bool, dict]:
         """
         q        string	optional	Search query (using Elasticsearch query string syntax - note that some characters have special meaning here, including /, which is also present in full DOIs).
         status        string	optional	Filter result based on deposit status (either draft or published)
@@ -127,7 +127,7 @@ class ZenodoClient(object):
 
     def representation_create(
         self,
-    ):
+    ) -> [bool, dict]:
         uri = "/api/deposit/depositions"
         data = {}
         headers = {"Content-Type": "application/json"}
@@ -149,7 +149,7 @@ class ZenodoClient(object):
         description,
         names="farfarfun",
         creators=None,
-    ):
+    ) -> [bool, dict]:
         data = {
             "metadata": {
                 "title": title,
@@ -172,7 +172,7 @@ class ZenodoClient(object):
         )
         return self.__check_status_code(r, 200), r.json()
 
-    def representation_delete(self, record_id):
+    def representation_delete(self, record_id) -> [bool, dict]:
         uri = f"/api/deposit/depositions/{record_id}"
         r = self.__request(
             "delete",
@@ -180,7 +180,7 @@ class ZenodoClient(object):
         )
         return self.__check_status_code(r, 201), r.json()
 
-    def deposition_files_list(self, record_id):
+    def deposition_files_list(self, record_id) -> [bool, dict]:
         uri = f"api/deposit/depositions/{record_id}/files"
         r = self.__request(
             "get",
@@ -189,12 +189,14 @@ class ZenodoClient(object):
         return self.__check_status_code(r, 201), r.json()
 
     @cache
-    def __get_deposition_id_by_record_id(self, record_id, *args, **kwargs):
+    def __get_deposition_id_by_record_id(
+        self, record_id, *args, **kwargs
+    ) -> [bool, dict]:
         status, retrieve = self.representation_retrieve(record_id=record_id)
         return retrieve["id"]
 
     @cache
-    def __get_bucket_url_by_record_id(self, record_id, *args, **kwargs):
+    def __get_bucket_url_by_record_id(self, record_id, *args, **kwargs) -> [bool, dict]:
         status, retrieve = self.representation_retrieve(record_id=record_id)
         return retrieve["links"]["bucket"]
 
@@ -212,7 +214,7 @@ class ZenodoClient(object):
                 data={"name": filename},
                 files={"file": open(filepath, "rb")},
             )
-            if self.__check_status_code(r, 201):
+            if self.__check_status_code(r, 201, prefix=filename):
                 logger.success(
                     f"{filepath} ID = {record_id} (DOI: 10.5281/zenodo.{record_id})"
                 )
@@ -222,7 +224,7 @@ class ZenodoClient(object):
         else:
             with open(filepath, "rb") as fr:
                 r = self.__request("put", uri=f"{bucket_url}/{filename}", data=fr)
-                if self.__check_status_code(r, 201):
+                if self.__check_status_code(r, 201, prefix=filename):
                     logger.success(
                         f"{filepath} ID = {record_id} (DOI: 10.5281/zenodo.{record_id})"
                     )
@@ -230,20 +232,22 @@ class ZenodoClient(object):
                 else:
                     return False, r.json()
 
-    def deposition_files_create(self, record_id, filepath, filename=None):
+    def deposition_files_create(
+        self, record_id, filepath, filename=None
+    ) -> [bool, dict]:
         uri = f"api/deposit/depositions/{record_id}/files"
         data = {"name": filename or os.path.basename(filepath)}
         files = {"file": open(filepath, "rb")}
         r = self.__request("post", uri=uri, data=data, files=files)
         return self.__check_status_code(r, 201), r.json()
 
-    def deposition_files_sort(self, record_id, data):
+    def deposition_files_sort(self, record_id, data) -> [bool, dict]:
         uri = f"api/deposit/depositions/{record_id}/files"
         headers = {"Content-Type": "application/json"}
         r = self.__request("put", uri=uri, data=json.dumps(data), headers=headers)
         return self.__check_status_code(r, 200), r.json()
 
-    def deposition_files_retrieve(self, record_id, file_id):
+    def deposition_files_retrieve(self, record_id, file_id) -> [bool, dict]:
         uri = f"api/deposit/depositions/{record_id}/files/{file_id}"
         r = self.__request(
             "get",
@@ -251,14 +255,14 @@ class ZenodoClient(object):
         )
         return self.__check_status_code(r, 201), r.json()
 
-    def deposition_files_update(self, record_id, filename=None):
+    def deposition_files_update(self, record_id, filename=None) -> [bool, dict]:
         uri = f"api/deposit/depositions/{record_id}/files"
         data = {"name": filename}
         headers = {"Content-Type": "application/json"}
         r = self.__request("put", uri=uri, data=data, headers=headers)
         return self.__check_status_code(r, 201), r.json()
 
-    def deposition_files_delete(self, record_id, file_id):
+    def deposition_files_delete(self, record_id, file_id) -> [bool, dict]:
         uri = f"api/deposit/depositions/{record_id}/files/{file_id}"
         r = self.__request(
             "delete",
@@ -266,7 +270,7 @@ class ZenodoClient(object):
         )
         return self.__check_status_code(r, 201), r.json()
 
-    def deposition_actions_publish(self, record_id):
+    def deposition_actions_publish(self, record_id) -> [bool, dict]:
         uri = f"api/deposit/depositions/{record_id}/actions/publish"
         r = self.__request(
             "post",
@@ -274,7 +278,7 @@ class ZenodoClient(object):
         )
         return self.__check_status_code(r, 202), r.json()
 
-    def deposition_actions_edit(self, record_id):
+    def deposition_actions_edit(self, record_id) -> [bool, dict]:
         uri = f"api/deposit/depositions/{record_id}/actions/edit"
         r = self.__request(
             "post",
@@ -282,7 +286,7 @@ class ZenodoClient(object):
         )
         return self.__check_status_code(r, 201), r.json()
 
-    def deposition_actions_discard(self, record_id):
+    def deposition_actions_discard(self, record_id) -> [bool, dict]:
         uri = f"api/deposit/depositions/{record_id}/actions/discard"
         r = self.__request(
             "post",
@@ -290,7 +294,7 @@ class ZenodoClient(object):
         )
         return self.__check_status_code(r, 201), r.json()
 
-    def deposition_actions_new_version(self, record_id):
+    def deposition_actions_new_version(self, record_id) -> [bool, dict]:
         uri = f"api/deposit/depositions/{record_id}/actions/newversion"
         r = self.__request(
             "post",
@@ -313,7 +317,7 @@ class ZenodoClient(object):
         custom=None,
         *args,
         **kwargs,
-    ):
+    ) -> [bool, dict]:
         """
         q
         string	optional	Search query (using Elasticsearch query string syntax - note that some characters have special meaning here, including /, which is also present in full DOIs).
@@ -361,7 +365,7 @@ class ZenodoClient(object):
         )
         return self.__check_status_code(r, 200), r.json()
 
-    def records_retrieve(self, record_id):
+    def records_retrieve(self, record_id) -> [bool, dict]:
         uri = f"api/records/{record_id}"
         r = self.__request("get", uri=uri, params={})
         return self.__check_status_code(r, 200), r.json()
