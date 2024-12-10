@@ -1,16 +1,22 @@
 [project]
 name = "fundrive"
-version = "1.2.60"
-description = "Add your description here"
+version = "1.2.61"
+description = "fundrive"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [ "funget>=1.0.20", "funsecret>=1.4.2", "orjson>=3.10.10", "tqdm>=4.66.5",]
+[[project.authors]]
+name = "niuliangtao"
+email = "farfarfun@qq.com"
 
 [project.optional-dependencies]
 alipan = [ "aligo>=6.2.4",]
 oss = [ "oss2>=2.19.0",]
 webdav = [ "webdav4>=0.10.0",]
 wenshushu = [ "base58>=2.1.1", "fundrive", "pycryptodomex>=3.21.0",]
+
+[tool.setuptools]
+license-files = []
 
 [tool.uv.workspace]
 members = [ "extbuild/fundrive-alipan", "extbuild/fundrive-lanzou", "extbuild/fundrive-oss", "extbuild/fundrive-wenshushu",]

@@ -1,13 +1,16 @@
 [project]
 name = "fundrive-lanzou"
-version = "1.2.60"
-description = "Add your description here"
+version = "1.2.61"
+description = "fundrive"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [ "fundrive",]
 [[project.authors]]
-name = "farfun"
+name = "niuliangtao"
 email = "farfarfun@qq.com"
+
+[tool.setuptools]
+license-files = []
 
 [tool.uv.sources.fundrive]
 workspace = true
