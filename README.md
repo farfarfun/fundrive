@@ -77,6 +77,17 @@ drive.exist(path='upload/README.md')
 
 
 
+## 资源汇总
+
+### [acoooder/aliyunpanshare](https://github.com/acoooder/aliyunpanshare)
+
+狗狗盘搜网站：https://gogopanso.com
+
+全量影视资源：https://link3.cc/alipan
+
+今日新增资源：https://link3.cc/zuixin
+
+
 
 ## 贡献
 
