@@ -174,7 +174,7 @@ class Uploader:
             raise Exception(f'操作太快啦！请{rsp["message"]}秒后重试')
 
         data = rsp["data"]
-        assert data, "需要滑动验证码"
+        logger.info(f"data: {data}")
         bid, ufileid, tid = data["bid"], data["ufileid"], data["tid"]
         upId = self.get_up_id(bid, ufileid, tid)
         return bid, ufileid, tid, upId
