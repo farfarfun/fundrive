@@ -46,7 +46,12 @@ class AlipanDrive(BaseDrive):
         for file in self.drive.get_file_list(parent_file_id=fid):
             if file.type == "file":
                 result.append(
-                    DriveFile(fid=file.file_id, name=file.name, size=file.size)
+                    DriveFile(
+                        fid=file.file_id,
+                        name=file.name,
+                        size=file.size,
+                        ext=file.to_dict(),
+                    )
                 )
         return result
 
