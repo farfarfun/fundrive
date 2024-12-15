@@ -1,6 +1,6 @@
 [project]
 name = "fundrive-lanzou"
-version = "1.2.62"
+version = "1.2.63"
 description = "fundrive"
 readme = "README.md"
 requires-python = ">=3.8"

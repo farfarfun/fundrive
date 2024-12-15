@@ -4,14 +4,17 @@ import hashlib
 import os
 import subprocess
 import time
+import traceback
 from concurrent.futures import ThreadPoolExecutor
 
 import orjson
 import requests
+from fundrive.core import BaseDrive as BaseDrive2
 from funget import simple_download
+from funutil import getLogger
 from tqdm import tqdm
 
-from fundrive.core import BaseDrive as BaseDrive2
+logger = getLogger("fundrive")
 
 
 class BaseDrive:
@@ -36,7 +39,7 @@ class BaseDrive:
         rest_space = int(rsp["data"]["rest_space"])
         send_space = int(rsp["data"]["send_space"])
         storage_space = rest_space + send_space
-        print(
+        logger.info(
             "当前已用空间:{}GB,剩余空间:{}GB,总空间:{}GB".format(
                 round(send_space / 1024**3, 2),
                 round(rest_space / 1024**3, 2),
@@ -182,8 +185,8 @@ class Uploader:
             json={"bid": boxid, "tid": taskid, "ufileid": preid},
         )
         rsp = r.json()
-        print(f"个人管理链接：{rsp['data']['mgr_url']}")
-        print(f"公共链接：{rsp['data']['public_url']}")
+        logger.info(f"个人管理链接：{rsp['data']['mgr_url']}")
+        logger.info(f"公共链接：{rsp['data']['public_url']}")
 
     def sha1_str(self, s):
         cm = hashlib.sha1(s.encode()).hexdigest()
@@ -198,6 +201,8 @@ class Uploader:
             hash_code = hashlib.md5(block).hexdigest()
         elif hash_type == "SHA1":
             hash_code = hashlib.sha1(block).hexdigest()
+        else:
+            raise NotImplementedError
         return hash_code
 
     def get_cipherheader(self, epochtime, token, data):
@@ -206,7 +211,7 @@ class Uploader:
             from Cryptodome.Cipher import DES
             from Cryptodome.Util import Padding
         except Exception as e:
-            print(e)
+            logger.info(f"error: {e} traceback: {traceback.format_exc()}")
             subprocess.check_call(["pip", "install", "pycryptodomex"])
             import base58
             from Cryptodome.Cipher import DES
@@ -267,7 +272,7 @@ class Uploader:
                     hash_codes += self.calc_file_hash("MD5", block)
                 payload["hash"]["cm"] = self.sha1_str(hash_codes)
             elif can_fast and ufile:
-                print(f"文件{name}可以被秒传！")
+                logger.info(f"文件{name}可以被秒传！")
                 self.get_process(upId)
                 self.copysend(boxid, taskid, preid)
 
@@ -338,10 +343,10 @@ class Downloader:
         days, remainder = divmod(int(float(expire)), 3600 * 24)
         hours, remainder = divmod(remainder, 3600)
         minutes, seconds = divmod(remainder, 60)
-        print(f"文件过期时间:{days}天{hours}时{minutes}分{seconds}秒")
+        logger.info(f"文件过期时间:{days}天{hours}时{minutes}分{seconds}秒")
 
         file_size = rsp["data"]["file_size"]
-        print(f"文件大小:{round(int(file_size) / 1024 ** 2, 2)}MB")
+        logger.info(f"文件大小:{round(int(file_size) / 1024 ** 2, 2)}MB")
         return rsp["data"]["boxid"], rsp["data"]["ufileid"]  # pid
 
     def sign_url(self, fid):
@@ -401,8 +406,10 @@ class WSSDrive(BaseDrive2):
         uploader = Uploader(drive=self.drive, file_path=file_path)
         try:
             uploader.upload()
+            return True
         except Exception as e:
-            print(e)
+            logger.info(f"error: {e} traceback: {traceback.format_exc()}")
+            return False
 
     def download_file(
         self, share_url=None, dir_path="./cache", overwrite=False, *args, **kwargs
@@ -412,5 +419,7 @@ class WSSDrive(BaseDrive2):
         )
         try:
             downloader.download()
+            return True
         except Exception as e:
-            print(e)
+            logger.info(f"error: {e} traceback: {traceback.format_exc()}")
+            return False
