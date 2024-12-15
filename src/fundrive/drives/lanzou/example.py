@@ -18,7 +18,7 @@ def example3():
     # download("https://wwe.lanzoui.com/ig56tpia6rg", dir_pwd="./download/lanzou")
     # download('https://wws.lanzous.com/b01hh63kf', dir_pwd='./download/lanzou')
     # downer.download_file(fid=133463386)
-    downer.download_dir(drive_path="6073427", local_path="cache")
+    downer.download_dir(fid="6073427", local_dir="cache")
 
 
 def example4():
