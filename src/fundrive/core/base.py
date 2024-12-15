@@ -3,8 +3,8 @@ from typing import List
 
 
 class DriveFile(dict):
-    def __init__(self, fid, name, *args, **kwargs):
-        kwargs.update({"fid": fid, "name": name})
+    def __init__(self, fid, name, ext=None, *args, **kwargs):
+        kwargs.update({"fid": fid, "name": name, "ext": ext})
         super().__init__(*args, **kwargs)
         self.fid = fid
         self.name = name
