@@ -8,6 +8,7 @@ class DriveFile(dict):
         super().__init__(*args, **kwargs)
         self.fid = fid
         self.name = name
+        self.ext = ext
         self.data = {"fid": fid, "name": name}
 
     @property
