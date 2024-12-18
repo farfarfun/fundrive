@@ -53,11 +53,11 @@ class LanZouDrive(BaseDrive):
         if self.drive is not None:
             return
         try:
-            from lanzou.api import LanZouCloud
+            from fundrives.lanzou import LanZouCloud
         except Exception as e:
             logger.error(e)
             subprocess.check_call(["pip", "install", "fundrive-lanzou"])
-            from lanzou.api import LanZouCloud
+            from fundrives.lanzou import LanZouCloud
         self.drive = LanZouCloud()
 
     def login(
@@ -103,7 +103,7 @@ class LanZouDrive(BaseDrive):
     def get_file_list(
         self, fid, url=None, pwd=None, *args, **kwargs
     ) -> List[DriveFile]:
-        from lanzou.api.utils import convert_file_size_to_int
+        from fundrives.lanzou.utils import convert_file_size_to_int
 
         result = []
         if fid is not None:
@@ -131,7 +131,7 @@ class LanZouDrive(BaseDrive):
         return result
 
     def get_file_info(self, fid, url=None, pwd=None, *args, **kwargs) -> DriveFile:
-        from lanzou.api.utils import convert_file_size_to_int
+        from fundrives.lanzou.utils import convert_file_size_to_int
 
         data = None
         if fid is not None:
