@@ -451,7 +451,7 @@ wheels = [
 
 [[package]]
 name = "fundrive"
-version = "1.2.69"
+version = "1.2.70"
 source = { virtual = "." }
 dependencies = [
     { name = "funget" },
@@ -485,7 +485,6 @@ wenshushu = [
 requires-dist = [
     { name = "aligo", marker = "extra == 'alipan'", specifier = ">=6.2.4" },
     { name = "base58", marker = "extra == 'wenshushu'", specifier = ">=2.1.1" },
-    { name = "fundrive", marker = "extra == 'wenshushu'" },
     { name = "fundrive-baidu", marker = "extra == 'baidu'" },
     { name = "fundrive-lanzou", marker = "extra == 'lanzou'" },
     { name = "funget", specifier = ">=1.0.20" },

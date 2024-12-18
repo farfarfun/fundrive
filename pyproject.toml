@@ -1,6 +1,6 @@
 [project]
 name = "fundrive"
-version = "1.2.69"
+version = "1.2.70"
 description = "fundrive"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -13,7 +13,7 @@ email = "farfarfun@qq.com"
 alipan = [ "aligo>=6.2.4",]
 oss = [ "oss2>=2.19.0",]
 webdav = [ "webdav4>=0.10.0",]
-wenshushu = [ "base58>=2.1.1", "fundrive", "pycryptodomex>=3.21.0",]
+wenshushu = [ "base58>=2.1.1", "pycryptodomex>=3.21.0",]
 baidu = [ "fundrive-baidu",]
 lanzou = [ "fundrive-lanzou",]
 
