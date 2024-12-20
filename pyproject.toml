@@ -1,6 +1,6 @@
 [project]
 name = "fundrive"
-version = "1.2.75"
+version = "1.2.76"
 description = "fundrive"
 readme = "README.md"
 requires-python = ">=3.8"

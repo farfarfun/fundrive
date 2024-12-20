@@ -134,7 +134,7 @@ class BaseDrive:
         for file in self.get_dir_list(fid):
             self.download_dir(
                 fid=file.fid,
-                local_dir=os.path.join(local_dir, os.path.basename(fid.name)),
+                local_dir=os.path.join(local_dir, os.path.basename(file.name)),
                 overwrite=overwrite,
                 recursion=recursion,
                 *args,
