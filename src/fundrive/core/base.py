@@ -107,7 +107,14 @@ class BaseDrive:
         raise NotImplementedError()
 
     def download_dir(
-        self, fid, local_dir, recursion=True, overwrite=False, *args, **kwargs
+        self,
+        fid,
+        local_dir,
+        recursion=True,
+        overwrite=False,
+        ignore_filter=None,
+        *args,
+        **kwargs,
     ) -> bool:
         """
         下载目录
@@ -117,6 +124,7 @@ class BaseDrive:
         :param overwrite:
         :param args:
         :param kwargs:
+        :param ignore_filter
         :return:
         """
         if not self.exist(fid):
@@ -124,7 +132,9 @@ class BaseDrive:
         if not os.path.exists(local_dir):
             os.makedirs(local_dir, exist_ok=True)
         for file in self.get_file_list(fid):
-            _drive_path = file["fid"]
+            if ignore_filter and ignore_filter(file.name):
+                continue
+            _drive_path = file.fid
             self.download_file(
                 fid=file.fid, local_dir=local_dir, overwrite=overwrite, *args, **kwargs
             )
