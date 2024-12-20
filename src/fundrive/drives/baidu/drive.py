@@ -2,7 +2,7 @@ import os
 from typing import List, Optional
 
 from fundrives.baidu import BaiduPCSApi, PcsFile
-from funget import simple_download
+from funget import download
 from funutil import getLogger
 
 from fundrive.core import BaseDrive, DriveFile
@@ -67,11 +67,13 @@ class BaiDuDrive(BaseDrive):
             "Cookie": f"BDUSS={self.drive.bduss};ptoken={self.drive.ptoken}",
         }
         try:
-            simple_download(
+            download(
                 link,
                 filepath=f"{local_dir}/{os.path.basename(fid)}",
                 headers=headers,
                 overwrite=overwrite,
+                *args,
+                **kwargs,
             )
             return True
         except Exception as e:
