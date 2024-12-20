@@ -147,6 +147,7 @@ class BaseDrive:
                 local_dir=os.path.join(local_dir, os.path.basename(file.name)),
                 overwrite=overwrite,
                 recursion=recursion,
+                ignore_filter=ignore_filter,
                 *args,
                 **kwargs,
             )
