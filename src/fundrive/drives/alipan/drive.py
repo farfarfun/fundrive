@@ -17,12 +17,11 @@ class AlipanDrive(BaseDrive):
         self.drive = Aligo()
 
     def login(
-        self, server_url=None, refresh_token=None, drive_id=None, *args, **kwargs
+        self, server_url=None, refresh_token=None, is_resource=False, *args, **kwargs
     ) -> bool:
         refresh_token = refresh_token or read_secret(
             "fundrive", "drives", "alipan", "refresh_token"
         )
-        drive_id = drive_id or read_secret("fundrive", "drives", "alipan", "drive_id")
         try:
             from aligo import Aligo
         except Exception as e:
@@ -30,7 +29,8 @@ class AlipanDrive(BaseDrive):
             subprocess.check_call(["pip", "install", "fundrive-alipan"])
             from aligo import Aligo
         self.drive = Aligo(refresh_token=refresh_token)
-        self.drive.default_drive_id = drive_id
+        if is_resource:
+            self.drive.default_drive_id = self.drive.v2_user_get().resource_drive_id
         return True
 
     def mkdir(self, fid, name, return_if_exist=True, *args, **kwargs) -> str:
