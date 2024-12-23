@@ -10,7 +10,7 @@ logger = getLogger("fundrive")
 
 
 class AlipanDrive(BaseDrive):
-    def __init__(self, drive_id=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(AlipanDrive, self).__init__(*args, **kwargs)
         from aligo import Aligo
 
