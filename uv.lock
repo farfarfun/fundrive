@@ -451,7 +451,7 @@ wheels = [
 
 [[package]]
 name = "fundrive"
-version = "1.2.81"
+version = "1.2.82"
 source = { virtual = "." }
 dependencies = [
     { name = "funget" },

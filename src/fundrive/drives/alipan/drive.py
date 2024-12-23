@@ -17,9 +17,9 @@ class AlipanDrive(BaseDrive):
         self.drive = Aligo()
 
     def login(
-        self, server_url=None, username=None, password=None, *args, **kwargs
+        self, server_url=None, refresh_token=None, password=None, *args, **kwargs
     ) -> bool:
-        refresh_token = username or read_secret(
+        refresh_token = refresh_token or read_secret(
             "fundrive", "drives", "alipan", "refresh_token"
         )
         try:
