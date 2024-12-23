@@ -30,6 +30,7 @@ class AlipanDrive(BaseDrive):
             from aligo import Aligo
         self.drive = Aligo(refresh_token=refresh_token)
         if is_resource:
+            logger.info("使用资源盘")
             self.drive.default_drive_id = self.drive.v2_user_get().resource_drive_id
         return True
 
