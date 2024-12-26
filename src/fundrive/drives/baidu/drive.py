@@ -58,7 +58,9 @@ class BaiDuDrive(BaseDrive):
     def get_dir_list(self, fid, *args, **kwargs) -> List[DriveFile]:
         return [convert(file) for file in self.drive.list(fid) if file.is_dir]
 
-    def download_file(self, fid, local_dir, overwrite=False, *args, **kwargs) -> bool:
+    def download_file(
+        self, fid, local_dir, filename=None, overwrite=False, *args, **kwargs
+    ) -> bool:
         link = self.drive.download_link(fid)
 
         headers = {
@@ -69,7 +71,7 @@ class BaiDuDrive(BaseDrive):
         try:
             download(
                 link,
-                filepath=f"{local_dir}/{os.path.basename(fid)}",
+                filepath=f"{local_dir}/{filename or os.path.basename(fid)}",
                 headers=headers,
                 overwrite=overwrite,
                 *args,
