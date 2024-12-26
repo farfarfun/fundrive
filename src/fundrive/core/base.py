@@ -16,6 +16,19 @@ class DriveFile(dict):
         return len(self.data)
 
 
+def get_filepath(
+    filedir: str = None,
+    filename: str = None,
+    filepath: str = None,
+) -> str:
+    if filepath is not None:
+        return filepath
+    elif filedir is not None and filename is not None:
+        return os.path.join(filedir, filename)
+    else:
+        return None
+
+
 class BaseDrive:
     def __init__(self, *args, **kwargs):
         pass
@@ -94,12 +107,25 @@ class BaseDrive:
         """
         raise NotImplementedError()
 
-    def download_file(self, fid, local_dir, overwrite=False, *args, **kwargs) -> bool:
+    def download_file(
+        self,
+        fid,
+        local_dir,
+        filedir=None,
+        filename=None,
+        filepath=None,
+        overwrite=False,
+        *args,
+        **kwargs,
+    ) -> bool:
         """
         下载文件
         :param fid:
         :param local_dir:
         :param overwrite:
+        :param filename:
+        :param filepath:
+        :param filedir:
         :param args:
         :param kwargs:
         :return:
