@@ -1,12 +1,12 @@
 import os
 from typing import List, Optional
 
-from fundrives.baidu import BaiduPCSApi, PcsFile
-from funget import download
-from funutil import getLogger
-
 from fundrive.core import BaseDrive, DriveFile
 from fundrive.core.base import get_filepath
+from fundrives.baidu import BaiduPCSApi, PcsFile
+from funget import download
+from funsecret import read_secret
+from funutil import getLogger
 
 logger = getLogger("fundrive")
 
@@ -26,6 +26,9 @@ class BaiDuDrive(BaseDrive):
         self.drive: BaiduPCSApi = None
 
     def login(self, bduss, stoken, ptoken, *args, **kwargs) -> bool:
+        bduss = bduss or read_secret("fundrive", "baidu", "bduss")
+        stoken = stoken or read_secret("fundrive", "baidu", "stoken")
+        ptoken = ptoken or read_secret("fundrive", "baidu", "ptoken")
         self.drive = BaiduPCSApi(bduss=bduss, stoken=stoken, ptoken=ptoken)
         return True
 
