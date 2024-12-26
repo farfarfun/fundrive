@@ -6,6 +6,7 @@ from funget import download
 from funutil import getLogger
 
 from fundrive.core import BaseDrive, DriveFile
+from fundrive.core.base import get_filepath
 
 logger = getLogger("fundrive")
 
@@ -59,7 +60,15 @@ class BaiDuDrive(BaseDrive):
         return [convert(file) for file in self.drive.list(fid) if file.is_dir]
 
     def download_file(
-        self, fid, local_dir, filename=None, overwrite=False, *args, **kwargs
+        self,
+        fid,
+        local_dir,
+        filedir=None,
+        filename=None,
+        filepath=None,
+        overwrite=False,
+        *args,
+        **kwargs,
     ) -> bool:
         link = self.drive.download_link(fid)
 
@@ -69,9 +78,10 @@ class BaiDuDrive(BaseDrive):
             "Cookie": f"BDUSS={self.drive.bduss};ptoken={self.drive.ptoken}",
         }
         try:
+            filepath = get_filepath(filedir or local_dir, filename, filepath)
             download(
                 link,
-                filepath=f"{local_dir}/{filename or os.path.basename(fid)}",
+                filepath=filepath or f"{local_dir}/{filename or os.path.basename(fid)}",
                 headers=headers,
                 overwrite=overwrite,
                 *args,
