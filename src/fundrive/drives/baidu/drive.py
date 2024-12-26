@@ -25,7 +25,7 @@ class BaiDuDrive(BaseDrive):
         super(BaiDuDrive, self).__init__(*args, **kwargs)
         self.drive: BaiduPCSApi = None
 
-    def login(self, bduss, stoken, ptoken, *args, **kwargs) -> bool:
+    def login(self, bduss=None, stoken=None, ptoken=None, *args, **kwargs) -> bool:
         bduss = bduss or read_secret("fundrive", "baidu", "bduss")
         stoken = stoken or read_secret("fundrive", "baidu", "stoken")
         ptoken = ptoken or read_secret("fundrive", "baidu", "ptoken")
