@@ -55,7 +55,10 @@ drive.get_file_list(fid=888666)
 drive.delete(fid=888666)
 # 某个文件是否存在
 drive.exist(path='upload/README.md')
-
+# 分享
+drive.share("root", password="123456", expire_days=1)
+# 转存
+drive.save_shared("https://www.aliyundrive.com/s/kXLX7XLXLXL", "root")
 ```
 
 ## 支持的云存储服务

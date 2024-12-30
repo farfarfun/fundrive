@@ -211,7 +211,7 @@ class BaseDrive:
         """
         raise NotImplementedError()
 
-    def share(self, *fids: str, password: str, expire: int = 0):
+        def share(self, *fids: str, password: str, expire_days: int = 0,description=""):
         raise NotImplementedError()
 
     def save_shared(self, shared_url: str, fid: str, password: Optional[str] = None):

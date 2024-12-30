@@ -95,6 +95,9 @@ class BaiDuDrive(BaseDrive):
             logger.error(f"Failed to download file {fid}: {e}")
             return False
 
+        def share(self, *fids: str, password: str, expire_days: int = 0,description=""):
+        self.drive.share(*fids, password=password, period=expire_days)
+
     def save_shared(
         self, shared_url: str, remote_dir: str, password: Optional[str] = None
     ):

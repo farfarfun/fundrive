@@ -1,10 +1,10 @@
 import subprocess
-from typing import List
-
-from funsecret import read_secret
-from funutil import getLogger
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional
 
 from fundrive.core import BaseDrive, DriveFile
+from funsecret import read_secret
+from funutil import getLogger
 
 logger = getLogger("fundrive")
 
@@ -88,3 +88,16 @@ class AlipanDrive(BaseDrive):
             check_name_mode="overwrite" if overwrite else "refuse",
         )
         return True
+
+    def share(self, *fids: str, password: str, expire_days: int = 0, description=""):
+        now = datetime.now(timezone.utc) + timedelta(days=expire_days)
+        expiration = now.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+        self.drive.share_files(
+            [fid for fid in fids], share_pwd=password, expiration=expiration
+        )
+
+    def save_shared(self, shared_url: str, fid: str, password: Optional[str] = None):
+        r = self.drive.share_link_extract_code(shared_url)
+        r.share_pwd = password or r.share_pwd
+        self.drive.share_file_save_all_to_drive(share_token=r, to_parent_file_id=fid)
