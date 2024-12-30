@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Optional
 
 
 class DriveFile(dict):
@@ -25,8 +25,6 @@ def get_filepath(
         return filepath
     elif filedir is not None and filename is not None:
         return os.path.join(filedir, filename)
-    else:
-        return None
 
 
 class BaseDrive:
@@ -162,7 +160,12 @@ class BaseDrive:
                 continue
             _drive_path = file.fid
             self.download_file(
-                fid=file.fid, local_dir=local_dir, overwrite=overwrite, *args, **kwargs
+                fid=file.fid,
+                filepath=local_dir,
+                filename=os.path.basename(file.name),
+                overwrite=overwrite,
+                *args,
+                **kwargs,
             )
         if not recursion:
             return True
@@ -204,6 +207,19 @@ class BaseDrive:
         :param overwrite:
         :param args:
         :param kwargs:
+        :return:
+        """
+        raise NotImplementedError()
+
+    def share(self, *fids: str, password: str, expire: int = 0):
+        raise NotImplementedError()
+
+    def save_shared(self, shared_url: str, fid: str, password: Optional[str] = None):
+        """
+        保存共享链接
+        :param shared_url:
+        :param fid:
+        :param password:
         :return:
         """
         raise NotImplementedError()
