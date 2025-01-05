@@ -210,7 +210,23 @@ class BaseDrive:
         :param kwargs:
         :return:
         """
-        raise NotImplementedError()
+        dir_map = dict([(file.name, file.fid) for file in self.get_dir_list(fid=fid)])
+        for file in os.listdir(local_path):
+            filepath = os.path.join(local_path, file)
+            if os.path.isfile(filepath):
+                self.upload_file(filepath, fid)
+            elif os.path.isdir(filepath):
+                if file not in dir_map:
+                    dir_map[file] = self.mkdir(fid, file)
+                self.upload_dir(
+                    filepath,
+                    dir_map[file],
+                    recursion=recursion,
+                    overwrite=overwrite,
+                    *args,
+                    **kwargs,
+                )
+        return True
 
     def share(self, *fids: str, password: str, expire_days: int = 0, description=""):
         raise NotImplementedError()
