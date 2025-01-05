@@ -144,7 +144,7 @@ class BaseDrive:
         下载目录
         :param fid:
         :param local_dir:
-         :param recursion:
+        :param recursion:
         :param overwrite:
         :param args:
         :param kwargs:
@@ -161,6 +161,7 @@ class BaseDrive:
             _drive_path = file.fid
             self.download_file(
                 fid=file.fid,
+                local_dir=local_dir,
                 filepath=local_dir,
                 filename=os.path.basename(file.name),
                 overwrite=overwrite,
