@@ -162,7 +162,7 @@ class BaseDrive:
             self.download_file(
                 fid=file.fid,
                 local_dir=local_dir,
-                filepath=local_dir,
+                filedir=local_dir,
                 filename=os.path.basename(file.name),
                 overwrite=overwrite,
                 *args,
