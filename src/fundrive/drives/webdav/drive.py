@@ -33,6 +33,10 @@ class WebDavDrive(BaseDrive):
         return True
 
     def mkdir(self, fid, name, return_if_exist=True, *args, **kwargs) -> str:
+        dir_map = dict([(file.name, file.fid) for file in self.get_dir_list(fid=fid)])
+        if name in dir_map:
+            logger.info(f"name={name} exists, return fid={fid}")
+            return dir_map[name]
         path = str(os.path.join(fid, name))
         self.drive.mkdir(path=path)
         return path
