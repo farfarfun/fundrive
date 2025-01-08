@@ -38,7 +38,10 @@ class BaiDuDrive(BaseDrive):
             logger.info(f"name={name} exists, return fid={fid}")
             return dir_map[name]
         path = f"{fid}/{name}"
-        self.drive.makedir(path)
+        try:
+            self.drive.makedir(path)
+        except Exception as e:
+            logger.error(f"makedir ({path}) error :{e}")
         return path
 
     def delete(self, fid, *args, **kwargs) -> bool:
