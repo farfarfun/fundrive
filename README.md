@@ -12,6 +12,70 @@
 - **权限管理**：统一管理不同云存储服务的权限和访问控制。
 - **跨平台支持**：支持多种编程语言和平台，方便集成到现有项目中。
 
+
+## 功能特性
+
+- 登录认证
+- 文件/目录操作
+  - 创建目录
+  - 删除文件/目录
+  - 获取文件/目录列表
+  - 获取文件/目录信息
+- 文件传输
+  - 下载文件/目录
+  - 上传文件/目录
+- 文件分享
+  - 创建分享链接
+  - 保存他人分享的文件
+
+## 使用示例
+
+```python
+from drive import BaseDrive
+
+class MyDrive(BaseDrive):
+    # 实现具体的云存储操作
+    pass
+
+# 初始化
+drive = MyDrive()
+
+# 登录
+drive.login()
+
+# 上传文件
+drive.upload_file('/path/to/local/file', 'remote_folder_id')
+
+# 下载文件
+drive.download_file('remote_file_id', '/path/to/save')
+```
+
+## API 文档
+
+### BaseDrive
+
+#### 文件操作
+
+- `mkdir(fid, name, return_if_exist=True)` - 创建目录
+- `delete(fid)` - 删除文件/目录
+- `get_file_list(fid)` - 获取文件列表
+- `get_dir_list(fid)` - 获取目录列表
+- `get_file_info(fid)` - 获取文件信息
+- `get_dir_info(fid)` - 获取目录信息
+
+#### 文件传输
+
+- `download_file(fid, filedir, **kwargs)` - 下载文件
+- `download_dir(fid, filedir, recursion=True, **kwargs)` - 下载目录
+- `upload_file(local_path, fid, **kwargs)` - 上传文件
+- `upload_dir(local_path, fid, **kwargs)` - 上传目录
+
+#### 文件分享
+
+- `share(*fids, password, expire_days=0, description="")` - 创建分享链接
+- `save_shared(shared_url, fid, password=None)` - 保存他人分享的文件
+
+
 ## 安装
 
 ### 使用 pip 安装

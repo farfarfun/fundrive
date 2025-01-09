@@ -1,19 +1,90 @@
 import os
-from typing import List, Optional
+from typing import Any, Callable, List, Optional
 
 
 class DriveFile(dict):
-    def __init__(self, fid, name, ext=None, *args, **kwargs):
-        kwargs.update({"fid": fid, "name": name, "ext": ext})
-        super().__init__(*args, **kwargs)
-        self.fid = fid
-        self.name = name
-        self.ext = ext
-        self.data = {"fid": fid, "name": name}
+    """
+    网盘文件/目录信息类
+    继承自dict，作为文件/目录属性的容器，支持字典式的属性访问
+    基础属性包括：
+        - fid: 文件/目录ID
+        - name: 文件/目录名称
+        - size: 文件大小(字节)
+        - ext: 扩展信息字典
+    """
+
+    def __init__(
+        self,
+        fid: str,
+        name: str,
+        size: Optional[int] = None,
+        ext: Optional[dict] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        """
+        初始化文件信息
+        :param fid: 文件/目录ID
+        :param name: 文件/目录名称
+        :param size: 文件大小(字节)
+        :param ext: 扩展信息字典
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        """
+        # 构建基础属性字典
+        base_dict = {
+            "fid": fid,
+            "name": name,
+            "size": size,
+        }
+
+        # 合并扩展信息
+        if ext:
+            base_dict.update(ext)
+
+        # 合并其他关键字参数
+        base_dict.update(kwargs)
+
+        # 调用父类初始化
+        super().__init__(base_dict)
 
     @property
-    def size(self):
-        return len(self.data)
+    def fid(self) -> str:
+        """文件/目录ID"""
+        return self["fid"]
+
+    @property
+    def name(self) -> str:
+        """文件/目录名称"""
+        return self["name"]
+
+    @property
+    def size(self) -> Optional[int]:
+        """文件大小(字节)"""
+        return self.get("size")
+
+    @property
+    def ext(self) -> dict:
+        """
+        扩展信息字典
+        排除基础属性后的其他所有属性
+        """
+        return {k: v for k, v in self.items() if k not in {"fid", "name", "size"}}
+
+    @property
+    def filename(self) -> str:
+        """
+        获取文件名（不含路径）
+        :return: 文件名
+        """
+        return os.path.basename(self.name)
+
+    def __repr__(self) -> str:
+        """
+        字符串表示
+        :return: 文件信息的字符串表示
+        """
+        return f"DriveFile(fid='{self.fid}', name='{self.name}', size={self.size})"
 
 
 def get_filepath(
@@ -29,140 +100,158 @@ def get_filepath(
 
 class BaseDrive:
     def __init__(self, *args, **kwargs):
+        """
+        初始化网盘基类
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        """
         pass
 
-    def login(self, *args, **kwargs) -> bool:
+    def login(self, *args: Any, **kwargs: Any) -> bool:
         """
-        登录
-        :param args:
-        :param kwargs:
-        :return:
-        """
-        raise NotImplementedError()
-
-    def mkdir(self, fid, name, return_if_exist=True, *args, **kwargs) -> str:
-        """
-        创建目录，如果目录存在则返回目录id
-        :param return_if_exist:
-        :param fid:
-        :param name:
-        :param args:
-        :param kwargs:
-        :return:
+        登录网盘
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        :return: 登录是否成功
         """
         raise NotImplementedError()
 
-    def exist(self, fid, *args, **kwargs) -> bool:
-        raise NotImplementedError()
-
-    def delete(self, fid, *args, **kwargs) -> bool:
+    def mkdir(
+        self,
+        fid: str,
+        name: str,
+        return_if_exist: bool = True,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str:
         """
-        删除
-        :param fid:
-        :param args:
-        :param kwargs:
-        :return:
-        """
-        raise NotImplementedError()
-
-    def get_file_list(self, fid, *args, **kwargs) -> List[DriveFile]:
-        """
-        获取文件列表
-        :param fid:
-        :param args:
-        :param kwargs:
-        :return:
+        创建目录
+        :param fid: 父目录ID
+        :param name: 目录名称
+        :param return_if_exist: 如果目录已存在，是否返回已存在目录的ID
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        :return: 创建的目录ID
         """
         raise NotImplementedError()
 
-    def get_dir_list(self, fid, *args, **kwargs) -> List[DriveFile]:
+    def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
-        获取目录列表
-        :param fid:
-        :param args:
-        :param kwargs:
-        :return:
-        """
-        raise NotImplementedError()
-
-    def get_file_info(self, fid, *args, **kwargs) -> DriveFile:
-        """
-        获取文件信息
-        :param fid:
-        :param args:
-        :param kwargs:
-        :return:
+        检查文件或目录是否存在
+        :param fid: 文件或目录ID
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        :return: 是否存在
         """
         raise NotImplementedError()
 
-    def get_dir_info(self, fid, *args, **kwargs) -> DriveFile:
+    def delete(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
-        获取目录信息
-        :param fid:
-        :param args:
-        :param kwargs:
-        :return:
+        删除文件或目录
+        :param fid: 文件或目录ID
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        :return: 删除是否成功
+        """
+        raise NotImplementedError()
+
+    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+        """
+        获取目录下的文件列表
+        :param fid: 目录ID
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        :return: 文件列表
+        """
+        raise NotImplementedError()
+
+    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+        """
+        获取目录下的子目录列表
+        :param fid: 目录ID
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        :return: 子目录列表
+        """
+        raise NotImplementedError()
+
+    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile:
+        """
+        获取文件详细信息
+        :param fid: 文件ID
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        :return: 文件信息对象
+        """
+        raise NotImplementedError()
+
+    def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile:
+        """
+        获取目录详细信息
+        :param fid: 目录ID
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        :return: 目录信息对象
         """
         raise NotImplementedError()
 
     def download_file(
         self,
-        fid,
-        local_dir,
-        filedir=None,
-        filename=None,
-        filepath=None,
-        overwrite=False,
-        *args,
-        **kwargs,
+        fid: str,
+        local_dir: str,
+        filedir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         下载文件
-        :param fid:
-        :param local_dir:
-        :param overwrite:
-        :param filename:
-        :param filepath:
-        :param filedir:
-        :param args:
-        :param kwargs:
-        :return:
+        :param fid: 文件ID
+        :param local_dir: 本地保存目录
+        :param filedir: 文件保存目录
+        :param filename: 文件名
+        :param filepath: 完整的文件保存路径
+        :param overwrite: 是否覆盖已存在的文件
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        :return: 下载是否成功
         """
         raise NotImplementedError()
 
     def download_dir(
         self,
-        fid,
-        local_dir,
-        recursion=True,
-        overwrite=False,
-        ignore_filter=None,
-        *args,
-        **kwargs,
+        fid: str,
+        filedir: str,
+        recursion: bool = True,
+        overwrite: bool = False,
+        ignore_filter: Optional[Callable[[str], bool]] = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         下载目录
-        :param fid:
-        :param local_dir:
-        :param recursion:
-        :param overwrite:
-        :param args:
-        :param kwargs:
-        :param ignore_filter
-        :return:
+        :param fid: 目录ID
+        :param filedir: 本地保存目录
+        :param recursion: 是否递归下载子目录
+        :param overwrite: 是否覆盖已存在的文件
+        :param ignore_filter: 忽略文件的过滤函数
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        :return: 下载是否成功
         """
         if not self.exist(fid):
             return False
-        if not os.path.exists(local_dir):
-            os.makedirs(local_dir, exist_ok=True)
+        if not os.path.exists(filedir):
+            os.makedirs(filedir, exist_ok=True)
         for file in self.get_file_list(fid):
             if ignore_filter and ignore_filter(file.name):
                 continue
             _drive_path = file.fid
             self.download_file(
                 fid=file.fid,
-                local_dir=local_dir,
-                filedir=local_dir,
+                filedir=filedir,
                 filename=os.path.basename(file.name),
                 overwrite=overwrite,
                 *args,
@@ -174,7 +263,7 @@ class BaseDrive:
         for file in self.get_dir_list(fid):
             self.download_dir(
                 fid=file.fid,
-                local_dir=os.path.join(local_dir, os.path.basename(file.name)),
+                filedir=os.path.join(filedir, os.path.basename(file.name)),
                 overwrite=overwrite,
                 recursion=recursion,
                 ignore_filter=ignore_filter,
@@ -183,36 +272,48 @@ class BaseDrive:
             )
 
     def upload_file(
-        self, local_path, fid, recursion=True, overwrite=False, *args, **kwargs
+        self,
+        filedir: str,
+        fid: str,
+        recursion: bool = True,
+        overwrite: bool = False,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         上传文件
-        :param local_path:
-        :param fid:
-        :param recursion:
-            :param overwrite:
-        :param args:
-        :param kwargs:
-        :return:
+        :param filedir: 本地文件路径
+        :param fid: 目标目录ID
+        :param recursion: 是否递归上传
+        :param overwrite: 是否覆盖已存在的文件
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        :return: 上传是否成功
         """
         raise NotImplementedError()
 
     def upload_dir(
-        self, local_path, fid, recursion=True, overwrite=False, *args, **kwargs
+        self,
+        filedir: str,
+        fid: str,
+        recursion: bool = True,
+        overwrite: bool = False,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         上传目录
-        :param local_path:
-        :param fid:
-         :param recursion:
-        :param overwrite:
-        :param args:
-        :param kwargs:
-        :return:
+        :param filedir: 本地目录路径
+        :param fid: 目标目录ID
+        :param recursion: 是否递归上传子目录
+        :param overwrite: 是否覆盖已存在的文件
+        :param args: 位置参数
+        :param kwargs: 关键字参数
+        :return: 上传是否成功
         """
         dir_map = dict([(file.name, file.fid) for file in self.get_dir_list(fid=fid)])
-        for file in os.listdir(local_path):
-            filepath = os.path.join(local_path, file)
+        for file in os.listdir(filedir):
+            filepath = os.path.join(filedir, file)
             if os.path.isfile(filepath):
                 self.upload_file(filepath, fid)
             elif os.path.isdir(filepath):
@@ -228,15 +329,34 @@ class BaseDrive:
                 )
         return True
 
-    def share(self, *fids: str, password: str, expire_days: int = 0, description=""):
+    def share(
+        self,
+        *fids: str,
+        password: str,
+        expire_days: int = 0,
+        description: str = "",
+    ) -> Any:
+        """
+        分享文件或目录
+        :param fids: 要分享的文件或目录ID列表
+        :param password: 分享密码
+        :param expire_days: 分享链接有效期（天），0表示永久有效
+        :param description: 分享描述
+        :return: 分享链接信息
+        """
         raise NotImplementedError()
 
-    def save_shared(self, shared_url: str, fid: str, password: Optional[str] = None):
+    def save_shared(
+        self,
+        shared_url: str,
+        fid: str,
+        password: Optional[str] = None,
+    ) -> bool:
         """
-        保存共享链接
-        :param shared_url:
-        :param fid:
-        :param password:
-        :return:
+        保存他人的分享内容到自己的网盘
+        :param shared_url: 分享链接
+        :param fid: 保存到的目标目录ID
+        :param password: 分享密码
+        :return: 保存是否成功
         """
         raise NotImplementedError()

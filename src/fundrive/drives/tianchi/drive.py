@@ -19,12 +19,8 @@ class TianChiDrive(BaseDrive):
         self.cookies.update(
             cookies
             or {
-                "tc": read_secret(
-                    cate1="fundrive", cate2="tianchi", cate3="cookies", cate4="tc"
-                ),
-                "_csrf": read_secret(
-                    cate1="fundrive", cate2="tianchi", cate3="cookies", cate4="_csrf"
-                ),
+                "tc": read_secret(cate1="fundrive", cate2="tianchi", cate3="cookies", cate4="tc"),
+                "_csrf": read_secret(cate1="fundrive", cate2="tianchi", cate3="cookies", cate4="_csrf"),
             }
         )
         self.headers.update(
@@ -56,13 +52,9 @@ class TianChiDrive(BaseDrive):
         *args,
         **kwargs,
     ) -> bool:
-        return simple_download(
-            url=self.__get_dataset_url(fid), filepath=os.path.join(dir_path, filename)
-        )
+        return simple_download(url=self.__get_dataset_url(fid), filepath=os.path.join(dir_path, filename))
 
-    def download_dir(
-        self, dir_path="./cache", data_id=75730, overwrite=False, *args, **kwargs
-    ) -> bool:
+    def download_dir(self, dir_path="./cache", data_id=75730, overwrite=False, *args, **kwargs) -> bool:
         data = orjson.dumps({"dataId": data_id}).decode("utf-8")
 
         response = requests.post(
@@ -74,7 +66,5 @@ class TianChiDrive(BaseDrive):
         data = response.json()["data"]["datalabFile"]
 
         for item in data:
-            self.download_file(
-                fid=item["id"], dir_path=dir_path, filename=item["filePath"]
-            )
+            self.download_file(fid=item["id"], dir_path=dir_path, filename=item["filePath"])
         return True
