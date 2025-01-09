@@ -1,79 +1,57 @@
-# 统一云存储接口
+# FunDrive
 
-## 概述
+FunDrive 是一个统一的网盘操作接口框架，旨在提供一个标准化的方式来操作不同的网盘服务。
 
-统一云存储接口（Unified Cloud Storage Interface，简称 UCSI）是一个开源工具，旨在为各种云存储服务提供统一的 API。无论您使用的是 Google Drive、Dropbox、OneDrive 还是其他任何云存储服务，UCSI 都能抽象掉不同 API 的复杂性，使开发者能够通过一个一致的接口与多个云存储服务进行交互。
+
+## 支持的云存储服务
+
+| 序号  | 网盘                                               | 支持内容       | 对应的包         |
+| :---: | :------------------------------------------------- | :------------- | :--------------- |
+|   1   | [蓝奏云](src/fundrive/drives/lanzou/README.md)     | 上传/下载/删除 | fundrive-lanzou  |
+|   2   | [OSS](src/fundrive/drives/oss/README.md)           | 上传/下载/删除 | fundrive[oss]    |
+|   3   | [github](src/fundrive/fungit/README.md)            | 上传/下载/删除 | fundrive         |
+|   4   | [gitee](src/fundrive/fungit/README.md)             | 上传/下载/删除 | fundrive         |
+|   5   | [阿里云盘](src/fundrive/drives/alipan/README.md)   | 上传/下载/删除 | fundrive[alipan] |
+|   6   | [百度网盘](src/fundrive/drives/baidu/README.md)    | 上传/下载/删除 | fundrive[baidu]  |
+|   7   | [谷歌网盘](src/fundrive/drives/google/README.md)   | TODO           | fundrive         |
+|   8   | [Dropbox](src/fundrive/drives/dropbox/README.md)   | TODO           | fundrive         |
+|   9   | [OneDrive](src/fundrive/drives/onedrive/README.md) | TODO           | fundrive         |
+|  10   | [Amazon](src/fundrive/drives/amazon/README.md)     | TODO           | fundrive         |
+
+- 更多服务即将推出...
+
 
 ## 功能特点
 
-- **统一 API**：通过一个 API 与多个云存储服务进行交互。
-- **可扩展性**：通过实现提供的接口，轻松添加对新云存储服务的支持。
-- **文件管理**：在不同的云存储服务之间上传、下载、删除和列出文件。
-- **权限管理**：统一管理不同云存储服务的权限和访问控制。
-- **跨平台支持**：支持多种编程语言和平台，方便集成到现有项目中。
+- 统一的文件操作接口
+- 支持文件和目录的基本操作
+- 灵活的文件信息管理
+- 完整的网盘功能支持
 
+## 核心功能
 
-## 功能特性
+### 文件操作
+- 文件上传/下载
+- 目录创建/删除
+- 文件移动/复制
+- 文件重命名
+- 文件搜索
 
-- 登录认证
-- 文件/目录操作
-  - 创建目录
-  - 删除文件/目录
-  - 获取文件/目录列表
-  - 获取文件/目录信息
-- 文件传输
-  - 下载文件/目录
-  - 上传文件/目录
-- 文件分享
-  - 创建分享链接
-  - 保存他人分享的文件
+### 分享功能
+- 创建分享链接
+- 保存他人分享
+- 设置分享密码
+- 控制分享有效期
 
-## 使用示例
+### 回收站管理
+- 查看回收站文件
+- 恢复已删除文件
+- 清空回收站
 
-```python
-from drive import BaseDrive
-
-class MyDrive(BaseDrive):
-    # 实现具体的云存储操作
-    pass
-
-# 初始化
-drive = MyDrive()
-
-# 登录
-drive.login()
-
-# 上传文件
-drive.upload_file('/path/to/local/file', 'remote_folder_id')
-
-# 下载文件
-drive.download_file('remote_file_id', '/path/to/save')
-```
-
-## API 文档
-
-### BaseDrive
-
-#### 文件操作
-
-- `mkdir(fid, name, return_if_exist=True)` - 创建目录
-- `delete(fid)` - 删除文件/目录
-- `get_file_list(fid)` - 获取文件列表
-- `get_dir_list(fid)` - 获取目录列表
-- `get_file_info(fid)` - 获取文件信息
-- `get_dir_info(fid)` - 获取目录信息
-
-#### 文件传输
-
-- `download_file(fid, filedir, **kwargs)` - 下载文件
-- `download_dir(fid, filedir, recursion=True, **kwargs)` - 下载目录
-- `upload_file(local_path, fid, **kwargs)` - 上传文件
-- `upload_dir(local_path, fid, **kwargs)` - 上传目录
-
-#### 文件分享
-
-- `share(*fids, password, expire_days=0, description="")` - 创建分享链接
-- `save_shared(shared_url, fid, password=None)` - 保存他人分享的文件
+### 存储管理
+- 获取存储配额
+- 获取文件下载链接
+- 获取文件上传链接
 
 
 ## 安装
@@ -81,7 +59,7 @@ drive.download_file('remote_file_id', '/path/to/save')
 ### 使用 pip 安装
 
 ```bash
-pip install fundrive
+pip install fundrive[alipan]
 ```
 
 ### 从源码安装
@@ -90,73 +68,71 @@ pip install fundrive
 python install git+https://github.com/farfarfun/fundrive.git
 ```
 
-## 快速开始
 
-以下是一个简单的示例，展示如何使用。
+## 使用方法
+
+
+### 基础文件操作示例
 
 ```python
-from fundrive import LanZouDrive, AlipanDrive, GiteeDrive, GithubDrive, OSSDrive
+# 初始化网盘实例
+drive = YourDrive()  # 替换为具体的网盘实现
 
-drive = LanZouDrive()
-drive = AlipanDrive()
-drive = GiteeDrive()
-drive = GithubDrive()
-drive = OSSDrive()
+# 上传文件
+drive.upload_file("/本地路径/文件.txt", "目标目录ID")
 
-drive.login('***每个网盘需要的东西不一样***')
-
-# 上传
-drive.upload_file(local_path="./download", fid=888666)
 # 下载文件
-drive.download_file(fid=888666, local_dir='./download')
-# 下载文件夹
-drive.download_dir(fid=888666, local_dir="./download")
-# 获取目录下的所有目录
-drive.get_dir_list(fid=888666)
-# 获取目录下的所有文件
-drive.get_file_list(fid=888666)
-# 删除某个文件
-drive.delete(fid=888666)
-# 某个文件是否存在
-drive.exist(path='upload/README.md')
-# 分享
-drive.share("root", password="123456", expire_days=1)
-# 转存
-drive.save_shared("https://www.aliyundrive.com/s/kXLX7XLXLXL", "root")
+drive.download_file(
+    fid="文件ID",
+    filedir="下载目录",
+    filename="保存的文件名"
+)
+
+# 创建目录
+new_dir_id = drive.mkdir("父目录ID", "新目录名")
+
+# 获取文件列表
+files = drive.get_file_list("目录ID")
 ```
 
-## 支持的云存储服务
+### 文件分享示例
 
-| 序号 | 网盘             | 支持内容          | 对应的包 |
-| :--: | :--------------- | :------------- | :-- | 
-|  1   | [蓝奏云](src/fundrive/drives/lanzou/README.md)     | 上传/下载/删除    |fundrive-lanzou | 
-|  2   | [OSS](src/fundrive/drives/oss/README.md)           | 上传/下载/删除   | fundrive[oss] |
-|  3   | [github](src/fundrive/fungit/README.md)            | 上传/下载/删除   | fundrive |
-|  4   | [gitee](src/fundrive/fungit/README.md)             | 上传/下载/删除   | fundrive |
-|  5   | [阿里云盘](src/fundrive/drives/alipan/README.md)     | 上传/下载/删除   | fundrive[alipan] |
-|  6   | [百度网盘](src/fundrive/drives/baidu/README.md)      | 上传/下载/删除   | fundrive[baidu] |
-|  7   | [谷歌网盘](src/fundrive/drives/google/README.md)     | TODO           | fundrive |
-|  8   | [Dropbox](src/fundrive/drives/dropbox/README.md)   | TODO            | fundrive |
-|  9   | [OneDrive](src/fundrive/drives/onedrive/README.md) | TODO            | fundrive |
-|  10  | [Amazon](src/fundrive/drives/amazon/README.md)     | TODO            | fundrive |
+```python
+# 创建分享
+share_info = drive.share(
+    "文件ID1", "文件ID2",
+    password="分享密码",
+    expire_days=7,
+    description="分享说明"
+)
 
-- 更多服务即将推出...
+# 保存他人分享
+drive.save_shared(
+    shared_url="分享链接",
+    fid="保存到的目录ID",
+    password="分享密码"
+)
+```
 
+## 扩展开发
 
+要实现新的网盘支持，只需继承 `BaseDrive` 类并实现相应的方法即可。主要需要实现以下核心方法：
 
-## 资源汇总
+- `login()`: 登录认证
+- `upload_file()`: 文件上传
+- `download_file()`: 文件下载
+- `get_file_list()`: 获取文件列表
+- `mkdir()`: 创建目录
+- `delete()`: 删除文件/目录
 
-### [acoooder/aliyunpanshare](https://github.com/acoooder/aliyunpanshare)
+## 注意事项
 
-狗狗盘搜网站：https://gogopanso.com
+- 所有文件和目录操作都基于文件ID（fid）进行
+- 文件信息通过 `DriveFile` 类进行封装
+- 建议在实现具体网盘接口时添加适当的错误处理
+- 注意遵循各网盘服务的使用限制和规范
 
-全量影视资源：https://link3.cc/alipan
-
-今日新增资源：https://link3.cc/zuixin
-
-
-
-## 贡献
+## 贡献指南
 
 我们欢迎任何形式的贡献！如果您想为 UCSI 做出贡献，请遵循以下步骤：
 
@@ -166,11 +142,6 @@ drive.save_shared("https://www.aliyundrive.com/s/kXLX7XLXLXL", "root")
 4. 推送到分支 (`git push origin feature/your-feature-name`)。
 5. 创建一个新的 Pull Request。
 
-<!-- 
-## 许可证
-
-本项目采用 MIT 许可证。有关更多信息，请参阅 [LICENSE](LICENSE) 文件。
- -->
 
 ## 联系我们
 
@@ -185,3 +156,14 @@ drive.save_shared("https://www.aliyundrive.com/s/kXLX7XLXLXL", "root")
 #参考
 百度云盘的 python-api，[官方 API](https://openapi.baidu.com/wiki/index.php?title=docs/pcs/rest/file_data_apis_list)  
 蓝奏云的 python-api [参考](https://github.com/zaxtyson/LanZouCloud-API)
+
+
+
+### [acoooder/aliyunpanshare](https://github.com/acoooder/aliyunpanshare)
+
+狗狗盘搜网站：https://gogopanso.com
+
+全量影视资源：https://link3.cc/alipan
+
+今日新增资源：https://link3.cc/zuixin
+

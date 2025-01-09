@@ -92,6 +92,17 @@ def get_filepath(
     filename: str = None,
     filepath: str = None,
 ) -> str:
+    """
+    获取文件完整路径
+
+    Args:
+        filedir: 文件目录路径
+        filename: 文件名
+        filepath: 完整的文件路径
+
+    Returns:
+        str: 文件的完整路径
+    """
     if filepath is not None:
         return filepath
     elif filedir is not None and filename is not None:
@@ -198,7 +209,6 @@ class BaseDrive:
     def download_file(
         self,
         fid: str,
-        local_dir: str,
         filedir: Optional[str] = None,
         filename: Optional[str] = None,
         filepath: Optional[str] = None,
@@ -207,16 +217,19 @@ class BaseDrive:
         **kwargs: Any,
     ) -> bool:
         """
-        下载文件
-        :param fid: 文件ID
-        :param local_dir: 本地保存目录
-        :param filedir: 文件保存目录
-        :param filename: 文件名
-        :param filepath: 完整的文件保存路径
-        :param overwrite: 是否覆盖已存在的文件
-        :param args: 位置参数
-        :param kwargs: 关键字参数
-        :return: 下载是否成功
+        下载单个文件
+
+        Args:
+            fid: 文件ID
+            filedir: 文件保存目录
+            filename: 文件名
+            filepath: 完整的文件保存路径
+            overwrite: 是否覆盖已存在的文件
+            args: 位置参数
+            kwargs: 关键字参数
+
+        Returns:
+            bool: 下载是否成功
         """
         raise NotImplementedError()
 
@@ -275,20 +288,20 @@ class BaseDrive:
         self,
         filedir: str,
         fid: str,
-        recursion: bool = True,
-        overwrite: bool = False,
         *args: Any,
         **kwargs: Any,
     ) -> bool:
         """
-        上传文件
-        :param filedir: 本地文件路径
-        :param fid: 目标目录ID
-        :param recursion: 是否递归上传
-        :param overwrite: 是否覆盖已存在的文件
-        :param args: 位置参数
-        :param kwargs: 关键字参数
-        :return: 上传是否成功
+        上传单个文件
+
+        Args:
+            filedir: 本地文件路径
+            fid: 目标目录ID
+            args: 位置参数
+            kwargs: 关键字参数
+
+        Returns:
+            bool: 上传是否成功
         """
         raise NotImplementedError()
 
@@ -338,11 +351,15 @@ class BaseDrive:
     ) -> Any:
         """
         分享文件或目录
-        :param fids: 要分享的文件或目录ID列表
-        :param password: 分享密码
-        :param expire_days: 分享链接有效期（天），0表示永久有效
-        :param description: 分享描述
-        :return: 分享链接信息
+
+        Args:
+            fids: 要分享的文件或目录ID列表
+            password: 分享密码
+            expire_days: 分享链接有效期(天),0表示永久有效
+            description: 分享描述
+
+        Returns:
+            Any: 分享链接信息
         """
         raise NotImplementedError()
 
@@ -354,9 +371,196 @@ class BaseDrive:
     ) -> bool:
         """
         保存他人的分享内容到自己的网盘
-        :param shared_url: 分享链接
-        :param fid: 保存到的目标目录ID
-        :param password: 分享密码
-        :return: 保存是否成功
+
+        Args:
+            shared_url: 分享链接
+            fid: 保存到的目标目录ID
+            password: 分享密码
+
+        Returns:
+            bool: 保存是否成功
+        """
+        raise NotImplementedError()
+
+    def search(
+        self,
+        keyword: str,
+        fid: Optional[str] = None,
+        file_type: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> List[DriveFile]:
+        """
+        搜索文件或目录
+
+        Args:
+            keyword: 搜索关键词
+            fid: 搜索的起始目录ID,默认从根目录开始
+            file_type: 文件类型筛选,如'doc','video','image'等
+            args: 位置参数
+            kwargs: 关键字参数
+
+        Returns:
+            List[DriveFile]: 符合条件的文件列表
+        """
+        raise NotImplementedError()
+
+    def move(
+        self,
+        source_fid: str,
+        target_fid: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool:
+        """
+        移动文件或目录
+
+        Args:
+            source_fid: 源文件/目录ID
+            target_fid: 目标目录ID
+            args: 位置参数
+            kwargs: 关键字参数
+
+        Returns:
+            bool: 移动是否成功
+        """
+        raise NotImplementedError()
+
+    def copy(
+        self,
+        source_fid: str,
+        target_fid: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool:
+        """
+        复制文件或目录
+
+        Args:
+            source_fid: 源文件/目录ID
+            target_fid: 目标目录ID
+            args: 位置参数
+            kwargs: 关键字参数
+
+        Returns:
+            bool: 复制是否成功
+        """
+        raise NotImplementedError()
+
+    def rename(
+        self,
+        fid: str,
+        new_name: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> bool:
+        """
+        重命名文件或目录
+
+        Args:
+            fid: 文件/目录ID
+            new_name: 新名称
+            args: 位置参数
+            kwargs: 关键字参数
+
+        Returns:
+            bool: 重命名是否成功
+        """
+        raise NotImplementedError()
+
+    def get_quota(self, *args: Any, **kwargs: Any) -> dict:
+        """
+        获取网盘空间使用情况
+
+        Args:
+            args: 位置参数
+            kwargs: 关键字参数
+
+        Returns:
+            dict: 包含总空间、已用空间等信息的字典
+        """
+        raise NotImplementedError()
+
+    def get_recycle_list(
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ) -> List[DriveFile]:
+        """
+        获取回收站文件列表
+
+        Args:
+            args: 位置参数
+            kwargs: 关键字参数
+
+        Returns:
+            List[DriveFile]: 回收站中的文件列表
+        """
+        raise NotImplementedError()
+
+    def restore(self, fid: str, *args: Any, **kwargs: Any) -> bool:
+        """
+        从回收站恢复文件
+
+        Args:
+            fid: 文件ID
+            args: 位置参数
+            kwargs: 关键字参数
+
+        Returns:
+            bool: 恢复是否成功
+        """
+        raise NotImplementedError()
+
+    def clear_recycle(self, *args: Any, **kwargs: Any) -> bool:
+        """
+        清空回收站
+
+        Args:
+            args: 位置参数
+            kwargs: 关键字参数
+
+        Returns:
+            bool: 清空是否成功
+        """
+        raise NotImplementedError()
+
+    def get_download_url(
+        self,
+        fid: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str:
+        """
+        获取文件下载链接
+
+        Args:
+            fid: 文件ID
+            args: 位置参数
+            kwargs: 关键字参数
+
+        Returns:
+            str: 下载链接
+        """
+        raise NotImplementedError()
+
+    def get_upload_url(
+        self,
+        fid: str,
+        filename: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str:
+        """
+        获取文件上传链接
+
+        Args:
+            fid: 目标目录ID
+            filename: 文件名
+            args: 位置参数
+            kwargs: 关键字参数
+
+        Returns:
+            str: 上传链接
         """
         raise NotImplementedError()
