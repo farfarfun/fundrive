@@ -1,7 +1,7 @@
-import subprocess
 from datetime import datetime, timedelta, timezone
 from typing import Any, List, Optional
 
+from aligo import Aligo
 from funsecret import read_secret
 from funutil import getLogger
 
@@ -19,9 +19,8 @@ class AlipanDrive(BaseDrive):
         :param kwargs: 关键字参数
         """
         super(AlipanDrive, self).__init__(*args, **kwargs)
-        from aligo import Aligo
 
-        self.drive = Aligo()
+        self.drive: Aligo = None
 
     def login(
         self,
@@ -39,12 +38,7 @@ class AlipanDrive(BaseDrive):
         :return: 登录是否成功
         """
         refresh_token = refresh_token or read_secret("fundrive", "drives", "alipan", "refresh_token")
-        try:
-            from aligo import Aligo
-        except Exception as e:
-            logger.error(e)
-            subprocess.check_call(["pip", "install", "fundrive-alipan"])
-            from aligo import Aligo
+
         self.drive = Aligo(refresh_token=refresh_token)
         if is_resource:
             logger.info("使用资源盘")
