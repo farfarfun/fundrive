@@ -1,51 +1,48 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, List, Optional
 
-from fundrive.core import BaseDrive, DriveFile
-from fundrive.core.base import get_filepath
-from fundrives.aliopen import AliOpenManage
+from aligo import Aligo
 from funsecret import read_secret
 from funutil import getLogger
+
+from fundrive.core import BaseDrive, DriveFile
+from fundrive.core.base import get_filepath
 
 logger = getLogger("fundrive")
 
 
-class AliopenDrive(BaseDrive):
+class AlipanDrive(BaseDrive):
     def __init__(self, *args, **kwargs):
         """
         初始化阿里云盘驱动
         :param args: 位置参数
         :param kwargs: 关键字参数
         """
-        super(AliopenDrive, self).__init__(*args, **kwargs)
+        super(AlipanDrive, self).__init__(*args, **kwargs)
 
-        self.drive: AliOpenManage = AliOpenManage()
+        self.drive: Aligo = None
 
     def login(
-            self,
-            client_id: Optional[str] = None,
-            client_secret: Optional[str] = None,
-            refresh_token: Optional[str] = None,
-            is_resource: bool = False,
-            *args,
-            **kwargs,
+        self,
+        server_url: Optional[str] = None,
+        refresh_token: Optional[str] = None,
+        is_resource: bool = False,
+        *args,
+        **kwargs,
     ) -> bool:
         """
         登录阿里云盘
+        :param server_url: 服务器URL
         :param refresh_token: 刷新令牌，如未提供则从配置文件读取
         :param is_resource: 是否使用资源盘，默认False
         :return: 登录是否成功
         """
-        refresh_token = refresh_token or read_secret(
-            "fundrive", "drives", "aliopen", "refresh_token"
-        )
-        client_id = client_id or read_secret(
-            "fundrive", "drives", "aliopen", "client_id"
-        )
-        client_secret = client_secret or read_secret("fundrive", "drives", "aliopen", "client_secret")
+        refresh_token = refresh_token or read_secret("fundrive", "drives", "alipan", "refresh_token")
 
-        self.drive.login(client_id=client_id, client_secret=client_secret, refresh_token=refresh_token,
-                         is_resource=is_resource)
+        self.drive = Aligo(refresh_token=refresh_token)
+        if is_resource:
+            logger.info("使用资源盘")
+            self.drive.default_drive_id = self.drive.v2_user_get().resource_drive_id
         return True
 
     def mkdir(self, fid: str, name: str, return_if_exist: bool = True, *args, **kwargs) -> str:
@@ -60,7 +57,7 @@ class AliopenDrive(BaseDrive):
         if name in dir_map:
             logger.info(f"name={name} exists, return fid={fid}")
             return dir_map[name]
-        return self.drive.create_file(parent_file_id=fid, name=name, type='folder')['file_id']
+        return self.drive.create_folder(parent_file_id=fid, name=name).file_id
 
     def delete(self, fid: str, *args, **kwargs) -> bool:
         """
@@ -68,7 +65,7 @@ class AliopenDrive(BaseDrive):
         :param fid: 文件或文件夹ID
         :return: 删除是否成功
         """
-        self.drive.delete_file(file_id=fid)
+        self.drive.move_file_to_trash(file_id=fid)
         return True
 
     def exist(self, fid: str, *args, **kwargs) -> bool:
@@ -77,7 +74,7 @@ class AliopenDrive(BaseDrive):
         :param fid: 文件或文件夹ID
         :return: 是否存在
         """
-        return 'file_id' in self.drive.get_file_details(file_id=fid)
+        return self.drive.get_file(file_id=fid) is not None
 
     def get_file_list(self, fid: str = "root", *args, **kwargs) -> List[DriveFile]:
         """
@@ -86,14 +83,14 @@ class AliopenDrive(BaseDrive):
         :return: 文件信息列表
         """
         result = []
-        for file in self.drive.get_file_list(parent_file_id=fid, type='file'):
-            if file['type'] == "file":
+        for file in self.drive.get_file_list(parent_file_id=fid):
+            if file.type == "file":
                 result.append(
                     DriveFile(
-                        fid=file['file_id'],
-                        name=file['name'],
-                        size=file['size'],
-                        ext=file,
+                        fid=file.file_id,
+                        name=file.name,
+                        size=file.size,
+                        ext=file.to_dict(),
                     )
                 )
         return result
@@ -105,27 +102,28 @@ class AliopenDrive(BaseDrive):
         :return: 子目录信息列表
         """
         result = []
-        for file in self.drive.get_file_list(parent_file_id=fid, type='folder'):
-            result.append(DriveFile(fid=file['file_id'], name=file['name'], size=file['size'], ext=file))
+        for file in self.drive.get_file_list(parent_file_id=fid):
+            if file.type == "folder":
+                result.append(DriveFile(fid=file.file_id, name=file.name, size=file.size))
         return result
 
     def get_file_info(self, fid, *args, **kwargs) -> DriveFile:
-        res = self.drive.get_file_details(file_id=fid)
-        return DriveFile(fid=res['file_id'], name=res['name'], size=res['size'], ext=res)
+        res = self.drive.get_file(file_id=fid)
+        return DriveFile(fid=res.file_id, name=res.name, size=res.size)
 
     def get_dir_info(self, fid, *args, **kwargs) -> DriveFile:
-        res = self.drive.get_file_details(file_id=fid)
-        return DriveFile(fid=res['file_id'], name=res['name'], size=res['size'], ext=res)
+        res = self.drive.get_file(file_id=fid)
+        return DriveFile(fid=res.file_id, name=res.name, size=res.size)
 
     def download_file(
-            self,
-            fid: str,
-            filedir: Optional[str] = None,
-            filename: Optional[str] = None,
-            filepath: Optional[str] = None,
-            overwrite: bool = False,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        fid: str,
+        filedir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         下载文件
@@ -139,17 +137,17 @@ class AliopenDrive(BaseDrive):
         save_path = get_filepath(filedir, filename, filepath)
         if not save_path:
             raise ValueError("必须提供有效的文件保存路径")
-        self.drive.download_file(file_id=fid, filepath=save_path)
+        self.drive.download_file(file_id=fid, local_folder=save_path)
         return True
 
     def upload_file(
-            self,
-            filedir: str,
-            fid: str,
-            recursion: bool = True,
-            overwrite: bool = False,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        filedir: str,
+        fid: str,
+        recursion: bool = True,
+        overwrite: bool = False,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         上传文件
@@ -160,8 +158,9 @@ class AliopenDrive(BaseDrive):
         :return: 上传是否成功
         """
         self.drive.upload_file(
-            filepath=filedir,
-            file_id=fid,
+            file_path=filedir,
+            parent_file_id=fid,
+            check_name_mode="overwrite" if overwrite else "refuse",
         )
         return True
 
@@ -176,4 +175,15 @@ class AliopenDrive(BaseDrive):
         now = datetime.now(timezone.utc) + timedelta(days=expire_days)
         expiration = now.isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
-        self.drive.create_share([fid for fid in fids], share_pwd=password, expiration=expiration)
+        self.drive.share_files([fid for fid in fids], share_pwd=password, expiration=expiration)
+
+    def save_shared(self, shared_url: str, fid: str, password: Optional[str] = None) -> None:
+        """
+        保存他人分享的文件到自己的网盘
+        :param shared_url: 分享链接
+        :param fid: 保存到的目标目录ID
+        :param password: 分享密码，如果未提供则尝试自动获取
+        """
+        r = self.drive.share_link_extract_code(shared_url)
+        r.share_pwd = password or r.share_pwd
+        self.drive.share_file_save_all_to_drive(share_token=r, to_parent_file_id=fid)
