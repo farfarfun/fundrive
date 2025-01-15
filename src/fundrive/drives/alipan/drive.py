@@ -22,13 +22,13 @@ class AliopenDrive(BaseDrive):
         self.drive: AliOpenManage = AliOpenManage()
 
     def login(
-            self,
-            client_id: Optional[str] = None,
-            client_secret: Optional[str] = None,
-            refresh_token: Optional[str] = None,
-            is_resource: bool = False,
-            *args,
-            **kwargs,
+        self,
+        client_id: Optional[str] = None,
+        client_secret: Optional[str] = None,
+        refresh_token: Optional[str] = None,
+        is_resource: bool = False,
+        *args,
+        **kwargs,
     ) -> bool:
         """
         登录阿里云盘
@@ -42,13 +42,21 @@ class AliopenDrive(BaseDrive):
         client_id = client_id or read_secret(
             "fundrive", "drives", "aliopen", "client_id"
         )
-        client_secret = client_secret or read_secret("fundrive", "drives", "aliopen", "client_secret")
+        client_secret = client_secret or read_secret(
+            "fundrive", "drives", "aliopen", "client_secret"
+        )
 
-        self.drive.login(client_id=client_id, client_secret=client_secret, refresh_token=refresh_token,
-                         is_resource=is_resource)
+        self.drive.login(
+            client_id=client_id,
+            client_secret=client_secret,
+            refresh_token=refresh_token,
+            is_resource=is_resource,
+        )
         return True
 
-    def mkdir(self, fid: str, name: str, return_if_exist: bool = True, *args, **kwargs) -> str:
+    def mkdir(
+        self, fid: str, name: str, return_if_exist: bool = True, *args, **kwargs
+    ) -> str:
         """
         在指定目录下创建文件夹
         :param fid: 父目录ID
@@ -60,7 +68,9 @@ class AliopenDrive(BaseDrive):
         if name in dir_map:
             logger.info(f"name={name} exists, return fid={fid}")
             return dir_map[name]
-        return self.drive.create_file(parent_file_id=fid, name=name, type='folder')['file_id']
+        return self.drive.create_file(parent_file_id=fid, name=name, type="folder")[
+            "file_id"
+        ]
 
     def delete(self, fid: str, *args, **kwargs) -> bool:
         """
@@ -77,7 +87,7 @@ class AliopenDrive(BaseDrive):
         :param fid: 文件或文件夹ID
         :return: 是否存在
         """
-        return 'file_id' in self.drive.get_file_details(file_id=fid)
+        return "file_id" in self.drive.get_file_details(file_id=fid)
 
     def get_file_list(self, fid: str = "root", *args, **kwargs) -> List[DriveFile]:
         """
@@ -86,13 +96,13 @@ class AliopenDrive(BaseDrive):
         :return: 文件信息列表
         """
         result = []
-        for file in self.drive.get_file_list(parent_file_id=fid, type='file'):
-            if file['type'] == "file":
+        for file in self.drive.get_file_list(parent_file_id=fid, type="file"):
+            if file["type"] == "file":
                 result.append(
                     DriveFile(
-                        fid=file['file_id'],
-                        name=file['name'],
-                        size=file['size'],
+                        fid=file["file_id"],
+                        name=file["name"],
+                        size=file["size"],
                         ext=file,
                     )
                 )
@@ -105,27 +115,35 @@ class AliopenDrive(BaseDrive):
         :return: 子目录信息列表
         """
         result = []
-        for file in self.drive.get_file_list(parent_file_id=fid, type='folder'):
-            result.append(DriveFile(fid=file['file_id'], name=file['name'], size=file['size'], ext=file))
+        for file in self.drive.get_file_list(parent_file_id=fid, type="folder"):
+            result.append(
+                DriveFile(
+                    fid=file["file_id"], name=file["name"], size=file["size"], ext=file
+                )
+            )
         return result
 
     def get_file_info(self, fid, *args, **kwargs) -> DriveFile:
         res = self.drive.get_file_details(file_id=fid)
-        return DriveFile(fid=res['file_id'], name=res['name'], size=res['size'], ext=res)
+        return DriveFile(
+            fid=res["file_id"], name=res["name"], size=res["size"], ext=res
+        )
 
     def get_dir_info(self, fid, *args, **kwargs) -> DriveFile:
         res = self.drive.get_file_details(file_id=fid)
-        return DriveFile(fid=res['file_id'], name=res['name'], size=res['size'], ext=res)
+        return DriveFile(
+            fid=res["file_id"], name=res["name"], size=res["size"], ext=res
+        )
 
     def download_file(
-            self,
-            fid: str,
-            filedir: Optional[str] = None,
-            filename: Optional[str] = None,
-            filepath: Optional[str] = None,
-            overwrite: bool = False,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        fid: str,
+        filedir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         下载文件
@@ -143,13 +161,13 @@ class AliopenDrive(BaseDrive):
         return True
 
     def upload_file(
-            self,
-            filedir: str,
-            fid: str,
-            recursion: bool = True,
-            overwrite: bool = False,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        filedir: str,
+        fid: str,
+        recursion: bool = True,
+        overwrite: bool = False,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         上传文件
@@ -165,7 +183,9 @@ class AliopenDrive(BaseDrive):
         )
         return True
 
-    def share(self, *fids: str, password: str, expire_days: int = 0, description: str = "") -> None:
+    def share(
+        self, *fids: str, password: str, expire_days: int = 0, description: str = ""
+    ) -> None:
         """
         分享文件或文件夹
         :param fids: 要分享的文件或文件夹ID列表
@@ -176,4 +196,6 @@ class AliopenDrive(BaseDrive):
         now = datetime.now(timezone.utc) + timedelta(days=expire_days)
         expiration = now.isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
-        self.drive.create_share([fid for fid in fids], share_pwd=password, expiration=expiration)
+        self.drive.create_share(
+            [fid for fid in fids], share_pwd=password, expiration=expiration
+        )

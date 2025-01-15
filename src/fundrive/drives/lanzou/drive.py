@@ -80,11 +80,15 @@ class LanZouDrive(BaseDrive):
             return
         self.drive = LanZouCloud()
 
-    def login(self, cookie=None, ylogin=None, phpdisk_info=None, *args, **kwargs) -> bool:
+    def login(
+        self, cookie=None, ylogin=None, phpdisk_info=None, *args, **kwargs
+    ) -> bool:
         self.instance()
         if cookie is None:
             ylogin = ylogin or read_secret("fundrive", "drives", "funlanzou", "ylogin")
-            phpdisk_info = phpdisk_info or read_secret("fundrive", "drives", "funlanzou", "phpdisk_info")
+            phpdisk_info = phpdisk_info or read_secret(
+                "fundrive", "drives", "funlanzou", "phpdisk_info"
+            )
             cookie = {
                 "ylogin": ylogin,
                 "phpdisk_info": phpdisk_info,
@@ -116,7 +120,9 @@ class LanZouDrive(BaseDrive):
             result.append(DriveFile(fid=item.id, name=item.name, desc=item.desc))
         return result
 
-    def get_file_list(self, fid, url=None, pwd=None, *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(
+        self, fid, url=None, pwd=None, *args, **kwargs
+    ) -> List[DriveFile]:
         result = []
         if fid is not None:
             for item in self.drive.get_file_list(folder_id=fid):
@@ -208,9 +214,16 @@ class LanZouDrive(BaseDrive):
         def clb():
             wrap.update(task.now_size)
 
-        return self.drive.down_file_by_url(share_url=file_info["url"], task=task, callback=clb) == 0
+        return (
+            self.drive.down_file_by_url(
+                share_url=file_info["url"], task=task, callback=clb
+            )
+            == 0
+        )
 
-    def download_dir(self, fid, filedir, recursion=True, overwrite=False, *args, **kwargs) -> bool:
+    def download_dir(
+        self, fid, filedir, recursion=True, overwrite=False, *args, **kwargs
+    ) -> bool:
         """
         下载文件夹
 

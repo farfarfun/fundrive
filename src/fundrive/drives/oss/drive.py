@@ -15,7 +15,9 @@ from tqdm import tqdm
 from fundrive.core import BaseDrive, DriveFile
 
 
-def public_oss_url(bucket_name="nm-algo", endpoint="oss-cn-hangzhou.aliyuncs.com", path=""):
+def public_oss_url(
+    bucket_name="nm-algo", endpoint="oss-cn-hangzhou.aliyuncs.com", path=""
+):
     """生成OSS公共访问URL
 
     声明:
@@ -78,10 +80,18 @@ class OSSDrive(BaseDrive):
         """
         import oss2
 
-        access_key = access_key or read_secret(cate1="fundrive", cate2="oss", cate3="access_key")
-        access_secret = access_secret or read_secret(cate1="fundrive", cate2="oss", cate3="access_secret")
-        bucket_name = bucket_name or read_secret(cate1="fundrive", cate2="oss", cate3="bucket_name")
-        endpoint = endpoint or read_secret(cate1="fundrive", cate2="oss", cate3="endpoint")
+        access_key = access_key or read_secret(
+            cate1="fundrive", cate2="oss", cate3="access_key"
+        )
+        access_secret = access_secret or read_secret(
+            cate1="fundrive", cate2="oss", cate3="access_secret"
+        )
+        bucket_name = bucket_name or read_secret(
+            cate1="fundrive", cate2="oss", cate3="bucket_name"
+        )
+        endpoint = endpoint or read_secret(
+            cate1="fundrive", cate2="oss", cate3="endpoint"
+        )
         self.bucket = oss2.Bucket(
             oss2.Auth(access_key, access_secret),
             endpoint,
@@ -242,7 +252,11 @@ class OSSDrive(BaseDrive):
         filename = os.path.basename(oss_path)
         file_path = os.path.join(save_path, filename)
 
-        if not overwrite and os.path.exists(file_path) and size == os.path.getsize(file_path):
+        if (
+            not overwrite
+            and os.path.exists(file_path)
+            and size == os.path.getsize(file_path)
+        ):
             return False
 
         bar = tqdm(
@@ -258,7 +272,9 @@ class OSSDrive(BaseDrive):
             bar.update(consumed_bytes - bar.n)
 
         if not os.path.exists(file_path):
-            self.bucket.get_object_to_file(oss_path, file_path, progress_callback=progress_callback)
+            self.bucket.get_object_to_file(
+                oss_path, file_path, progress_callback=progress_callback
+            )
         return True
 
     def download_file(self, fid, filepath, overwrite=False, *args, **kwargs) -> bool:
@@ -274,7 +290,9 @@ class OSSDrive(BaseDrive):
         Returns:
             bool: 下载是否成功
         """
-        save_dir = os.path.dirname(filepath) if os.path.splitext(filepath)[1] else filepath
+        save_dir = (
+            os.path.dirname(filepath) if os.path.splitext(filepath)[1] else filepath
+        )
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
@@ -286,7 +304,9 @@ class OSSDrive(BaseDrive):
             overwrite=overwrite,
         )
 
-    def upload_file(self, filepath, fid, recursion=True, overwrite=False, *args, **kwargs) -> bool:
+    def upload_file(
+        self, filepath, fid, recursion=True, overwrite=False, *args, **kwargs
+    ) -> bool:
         """上传单个文件
 
         声明:

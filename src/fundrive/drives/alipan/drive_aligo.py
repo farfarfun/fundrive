@@ -37,7 +37,9 @@ class AlipanDrive(BaseDrive):
         :param is_resource: 是否使用资源盘，默认False
         :return: 登录是否成功
         """
-        refresh_token = refresh_token or read_secret("fundrive", "drives", "alipan", "refresh_token")
+        refresh_token = refresh_token or read_secret(
+            "fundrive", "drives", "alipan", "refresh_token"
+        )
 
         self.drive = Aligo(refresh_token=refresh_token)
         if is_resource:
@@ -45,7 +47,9 @@ class AlipanDrive(BaseDrive):
             self.drive.default_drive_id = self.drive.v2_user_get().resource_drive_id
         return True
 
-    def mkdir(self, fid: str, name: str, return_if_exist: bool = True, *args, **kwargs) -> str:
+    def mkdir(
+        self, fid: str, name: str, return_if_exist: bool = True, *args, **kwargs
+    ) -> str:
         """
         在指定目录下创建文件夹
         :param fid: 父目录ID
@@ -104,7 +108,9 @@ class AlipanDrive(BaseDrive):
         result = []
         for file in self.drive.get_file_list(parent_file_id=fid):
             if file.type == "folder":
-                result.append(DriveFile(fid=file.file_id, name=file.name, size=file.size))
+                result.append(
+                    DriveFile(fid=file.file_id, name=file.name, size=file.size)
+                )
         return result
 
     def get_file_info(self, fid, *args, **kwargs) -> DriveFile:
@@ -164,7 +170,9 @@ class AlipanDrive(BaseDrive):
         )
         return True
 
-    def share(self, *fids: str, password: str, expire_days: int = 0, description: str = "") -> None:
+    def share(
+        self, *fids: str, password: str, expire_days: int = 0, description: str = ""
+    ) -> None:
         """
         分享文件或文件夹
         :param fids: 要分享的文件或文件夹ID列表
@@ -175,9 +183,13 @@ class AlipanDrive(BaseDrive):
         now = datetime.now(timezone.utc) + timedelta(days=expire_days)
         expiration = now.isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
-        self.drive.share_files([fid for fid in fids], share_pwd=password, expiration=expiration)
+        self.drive.share_files(
+            [fid for fid in fids], share_pwd=password, expiration=expiration
+        )
 
-    def save_shared(self, shared_url: str, fid: str, password: Optional[str] = None) -> None:
+    def save_shared(
+        self, shared_url: str, fid: str, password: Optional[str] = None
+    ) -> None:
         """
         保存他人分享的文件到自己的网盘
         :param shared_url: 分享链接

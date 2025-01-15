@@ -36,7 +36,9 @@ class BaiDuDrive(BaseDrive):
         super(BaiDuDrive, self).__init__(*args, **kwargs)
         self.drive: BaiduPCSApi = None
 
-    def login(self, bduss=None, stoken=None, ptoken=None, *args: Any, **kwargs: Any) -> bool:
+    def login(
+        self, bduss=None, stoken=None, ptoken=None, *args: Any, **kwargs: Any
+    ) -> bool:
         """
         登录百度网盘
         :param bduss: 百度用户身份标识
@@ -195,7 +197,8 @@ class BaiDuDrive(BaseDrive):
             filepath = get_filepath(filedir, filename, filepath)
             download(
                 link,
-                filepath=filepath or os.path.join(filedir, filename or os.path.basename(fid)),
+                filepath=filepath
+                or os.path.join(filedir, filename or os.path.basename(fid)),
                 headers=headers,
                 overwrite=overwrite,
                 *args,
@@ -257,7 +260,9 @@ class BaiDuDrive(BaseDrive):
             )
         return True
 
-    def share(self, *fids: str, password: str, expire_days: int = 0, description: str = ""):
+    def share(
+        self, *fids: str, password: str, expire_days: int = 0, description: str = ""
+    ):
         """
         分享文件或目录
         :param fids: 要分享的文件或目录ID列表
@@ -267,7 +272,9 @@ class BaiDuDrive(BaseDrive):
         """
         self.drive.share(*fids, password=password, period=expire_days)
 
-    def save_shared(self, shared_url: str, remote_dir: str, password: Optional[str] = None):
+    def save_shared(
+        self, shared_url: str, remote_dir: str, password: Optional[str] = None
+    ):
         """
         保存他人的分享内容到自己的网盘
         :param shared_url: 分享链接
