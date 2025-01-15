@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, List, Optional
 
-from fundrive.core import BaseDrive, DriveFile
-from fundrive.core.base import get_filepath
 from fundrives.aliopen import AliOpenManage
 from funsecret import read_secret
 from funutil import getLogger
+
+from fundrive.core import BaseDrive, DriveFile
+from fundrive.core.base import get_filepath
 
 logger = getLogger("fundrive")
 
@@ -96,7 +97,7 @@ class AliopenDrive(BaseDrive):
         :return: 文件信息列表
         """
         result = []
-        for file in self.drive.get_file_list(parent_file_id=fid, type="file"):
+        for file in self.drive.get_file_list(parent_file_id=fid, type="file")["items"]:
             if file["type"] == "file":
                 result.append(
                     DriveFile(
@@ -115,7 +116,9 @@ class AliopenDrive(BaseDrive):
         :return: 子目录信息列表
         """
         result = []
-        for file in self.drive.get_file_list(parent_file_id=fid, type="folder"):
+        for file in self.drive.get_file_list(parent_file_id=fid, type="folder")[
+            "items"
+        ]:
             result.append(
                 DriveFile(
                     fid=file["file_id"], name=file["name"], size=file["size"], ext=file
