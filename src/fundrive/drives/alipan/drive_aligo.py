@@ -143,7 +143,7 @@ class AlipanDrive(BaseDrive):
         save_path = get_filepath(filedir, filename, filepath)
         if not save_path:
             raise ValueError("必须提供有效的文件保存路径")
-        self.drive.download_file(file_id=fid, file_path=os.path.dirname(save_path))
+        self.drive.download_file(file_id=fid, local_folder=os.path.dirname(save_path))
         return True
 
     def upload_file(
