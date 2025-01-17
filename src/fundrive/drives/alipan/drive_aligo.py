@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, List, Optional
-
+import os
 from aligo import Aligo
 from funsecret import read_secret
 from funutil import getLogger
@@ -143,7 +143,7 @@ class AlipanDrive(BaseDrive):
         save_path = get_filepath(filedir, filename, filepath)
         if not save_path:
             raise ValueError("必须提供有效的文件保存路径")
-        self.drive.download_file(file_id=fid, file_path=save_path)
+        self.drive.download_file(file_id=fid, file_path=os.path.dirname(save_path))
         return True
 
     def upload_file(
