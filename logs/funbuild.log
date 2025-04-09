@@ -1,9 +1,4 @@
-2025-01-17 10:36:09.794 |INFO    | funbuild.core.core : core:  99 | funbuild | - fundrive build
-2025-01-17 10:36:09.808 |INFO    | funbuild.core.core : core:  84 | funbuild | - fundrive pull
-2025-01-17 10:36:19.789 |INFO    | funbuild.core.core : core:  89 | funbuild | - fundrive push
-2025-01-17 10:59:48.340 |INFO    | funbuild.core.core : core:  99 | funbuild | - fundrive build
-2025-01-17 10:59:48.341 |INFO    | funbuild.core.core : core:  84 | funbuild | - fundrive pull
-2025-01-17 10:59:58.923 |INFO    | funbuild.core.core : core:  89 | funbuild | - fundrive push
-2025-01-17 11:01:24.059 |INFO    | funbuild.core.core : core:  99 | funbuild | - fundrive build
-2025-01-17 11:01:24.059 |INFO    | funbuild.core.core : core:  84 | funbuild | - fundrive pull
-2025-01-17 11:01:31.960 |INFO    | funbuild.core.core : core:  89 | funbuild | - fundrive push
+2025-04-09 16:09:56.274 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-04-09 16:09:56.283 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-04-09 16:10:03.279 |INFO    | funbuild.core.core : core: 111 | funbuild | - fundrive push
+2025-04-09 16:10:06.693 |ERROR   | funbuild.core.core : core:  35 | funbuild | - aigc_commit_message with error:litellm.ContextWindowExceededError: litellm.BadRequestError: ContextWindowExceededError: DeepseekException - {"error":{"message":"This model's maximum context length is 65536 tokens. However, you requested 135007 tokens (135007 in the messages, 0 in the completion). Please reduce the length of the messages or completion.","type":"invalid_request_error","param":null,"code":"invalid_request_error"}}

@@ -171,7 +171,7 @@ class Uploader:
         )
         rsp = r.json()
         if rsp["code"] == 1021:
-            raise Exception(f'操作太快啦！请{rsp["message"]}秒后重试')
+            raise Exception(f"操作太快啦！请{rsp['message']}秒后重试")
 
         data = rsp["data"]
         logger.info(f"data: {data}")
@@ -346,7 +346,7 @@ class Downloader:
         logger.info(f"文件过期时间:{days}天{hours}时{minutes}分{seconds}秒")
 
         file_size = rsp["data"]["file_size"]
-        logger.info(f"文件大小:{round(int(file_size) / 1024 ** 2, 2)}MB")
+        logger.info(f"文件大小:{round(int(file_size) / 1024**2, 2)}MB")
         return rsp["data"]["boxid"], rsp["data"]["ufileid"]  # pid
 
     def sign_url(self, fid):

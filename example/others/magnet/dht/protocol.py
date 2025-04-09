@@ -150,7 +150,7 @@ class KRPCProtocol(DatagramProtocol):
         if func is None or not callable(func):
             msg_args = (self.__class__.__name__, func_name)
             self.logger.info(
-                "%s has no callable method " "rpc_%s; ignoring request", *msg_args
+                "%s has no callable method rpc_%s; ignoring request", *msg_args
             )
             return
 
@@ -186,12 +186,10 @@ class KRPCProtocol(DatagramProtocol):
         """
         msg_args = (b64encode(transaction_id), addr)
         if transaction_id not in self._outstanding:
-            self.logger.info(
-                "received unknown message %s " "from %s; ignoring", *msg_args
-            )
+            self.logger.info("received unknown message %s from %s; ignoring", *msg_args)
             return
         self.logger.debug(
-            "received response %s for message " "id %s from %s", args, *msg_args
+            "received response %s for message id %s from %s", args, *msg_args
         )
         future, timeout = self._outstanding[transaction_id]
         timeout.cancel()
@@ -215,7 +213,7 @@ class KRPCProtocol(DatagramProtocol):
     def _timeout(self, transaction_id):
         args = (b64encode(transaction_id), self._wait_timeout)
         self.logger.info(
-            "Did not received reply for msg " "id %s within %i seconds", *args
+            "Did not received reply for msg id %s within %i seconds", *args
         )
         future = self._outstanding[transaction_id][0]
         if not future.cancelled():

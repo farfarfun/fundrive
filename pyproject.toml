@@ -1,12 +1,24 @@
 [project]
 name = "fundrive"
-version = "2.0.7"
+version = "2.0.8"
 description = "fundrive"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [ "funget>=1.0.34", "funsecret>=1.4.49", "orjson>=3.10.10", "tqdm>=4.67.1",]
 [[project.authors]]
-name = "niuliangtao"
+name = "牛哥"
+email = "niuliangtao@qq.com"
+
+[[project.authors]]
+name = "farfarfun"
+email = "farfarfun@qq.com"
+
+[[project.maintainers]]
+name = "牛哥"
+email = "niuliangtao@qq.com"
+
+[[project.maintainers]]
+name = "farfarfun"
 email = "farfarfun@qq.com"
 
 [project.optional-dependencies]
@@ -16,6 +28,11 @@ webdav = [ "webdav4>=0.10.0",]
 wenshushu = [ "base58>=2.1.1", "pycryptodomex>=3.21.0",]
 baidu = [ "fundrive-baidu",]
 lanzou = [ "fundrive-lanzou",]
+
+[project.urls]
+Organization = "https://github.com/farfarfun"
+Repository = "https://github.com/farfarfun/fundrive"
+Releases = "https://github.com/farfarfun/fundrive/releases"
 
 [tool.setuptools]
 license-files = []
