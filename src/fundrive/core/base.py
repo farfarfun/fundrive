@@ -1,8 +1,11 @@
 import os
-from typing import Any, Callable, List, Optional
+from pathlib import Path
+from typing import Any, Callable, List, Optional, Dict, TypeVar, Generic
+
+T = TypeVar("T")
 
 
-class DriveFile(dict):
+class DriveFile(dict, Generic[T]):
     """
     网盘文件/目录信息类
     继承自dict，作为文件/目录属性的容器，支持字典式的属性访问
@@ -11,6 +14,12 @@ class DriveFile(dict):
         - name: 文件/目录名称
         - size: 文件大小(字节)
         - ext: 扩展信息字典
+
+    Args:
+        fid (str): 文件/目录ID
+        name (str): 文件/目录名称
+        size (Optional[int], optional): 文件大小(字节). Defaults to None.
+        ext (Optional[dict], optional): 扩展信息字典. Defaults to None.
     """
 
     def __init__(
@@ -18,19 +27,28 @@ class DriveFile(dict):
         fid: str,
         name: str,
         size: Optional[int] = None,
-        ext: Optional[dict] = None,
+        ext: Optional[Dict[str, Any]] = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         """
         初始化文件信息
-        :param fid: 文件/目录ID
-        :param name: 文件/目录名称
-        :param size: 文件大小(字节)
-        :param ext: 扩展信息字典
-        :param args: 位置参数
-        :param kwargs: 关键字参数
+
+        Args:
+            fid (str): 文件/目录ID
+            name (str): 文件/目录名称
+            size (Optional[int], optional): 文件大小(字节). Defaults to None.
+            ext (Optional[Dict[str, Any]], optional): 扩展信息字典. Defaults to None.
+
+        Raises:
+            ValueError: 如果fid或name为空
         """
+        if not fid or not name:
+            raise ValueError("fid and name must not be empty")
+
+        if size is not None and size < 0:
+            raise ValueError("size must be non-negative")
+
         # 构建基础属性字典
         base_dict = {
             "fid": fid,
@@ -47,6 +65,27 @@ class DriveFile(dict):
 
         # 调用父类初始化
         super().__init__(base_dict)
+
+    def __getitem__(self, key: str) -> Any:
+        """支持通过下标访问属性"""
+        return super().__getitem__(key)
+
+    def __getattr__(self, name: str) -> Any:
+        """支持通过点语法访问属性"""
+        return self.get(name)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        """支持通过点语法设置属性"""
+        self[name] = value
+
+    def __delattr__(self, name: str) -> None:
+        """支持通过点语法删除属性"""
+        if name in self:
+            del self[name]
+        else:
+            raise AttributeError(
+                f"'{type(self).__name__}' object has no attribute '{name}'"
+            )
 
     @property
     def fid(self) -> str:
@@ -88,35 +127,225 @@ class DriveFile(dict):
 
 
 def get_filepath(
-    filedir: str = None,
-    filename: str = None,
-    filepath: str = None,
+    filedir: Optional[str] = None,
+    filename: Optional[str] = None,
+    filepath: Optional[str] = None,
 ) -> str:
     """
     获取文件完整路径
 
     Args:
-        filedir: 文件目录路径
-        filename: 文件名
-        filepath: 完整的文件路径
+        filedir (Optional[str], optional): 文件目录路径. Defaults to None.
+        filename (Optional[str], optional): 文件名. Defaults to None.
+        filepath (Optional[str], optional): 完整的文件路径. Defaults to None.
 
     Returns:
         str: 文件的完整路径
+
+    Raises:
+        ValueError: 如果参数组合无效
     """
-    if filepath is not None:
-        return filepath
-    elif filedir is not None and filename is not None:
-        return os.path.join(filedir, filename)
+    if filepath:
+        return str(Path(filepath).resolve())
+    elif filedir and filename:
+        return str(Path(filedir).joinpath(filename).resolve())
+    else:
+        raise ValueError("Either filepath or (filedir and filename) must be provided")
 
 
 class BaseDrive:
-    def __init__(self, *args, **kwargs):
+    """
+    网盘操作基类
+
+    提供网盘操作的基本接口定义
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
         初始化网盘基类
-        :param args: 位置参数
-        :param kwargs: 关键字参数
+
+        Args:
+            *args: 位置参数
+            **kwargs: 关键字参数
         """
-        pass
+        self._is_logged_in = False
+        self._root_fid = None
+        super().__init__(*args, **kwargs)
+
+    @property
+    def is_logged_in(self) -> bool:
+        """是否已登录"""
+        return self._is_logged_in
+
+    @property
+    def root_fid(self) -> Optional[str]:
+        """根目录ID"""
+        return self._root_fid
+
+    def login(self, *args: Any, **kwargs: Any) -> bool:
+        """
+        登录网盘
+
+        Args:
+            *args: 位置参数
+            **kwargs: 关键字参数
+
+        Returns:
+            bool: 登录是否成功
+
+        Raises:
+            NotImplementedError: 子类必须实现此方法
+        """
+        raise NotImplementedError()
+
+    def mkdir(
+        self,
+        fid: str,
+        name: str,
+        return_if_exist: bool = True,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str:
+        """
+        创建目录
+
+        Args:
+            fid (str): 父目录ID
+            name (str): 目录名称
+            return_if_exist (bool, optional): 如果目录已存在，是否返回已存在目录的ID. Defaults to True.
+            *args: 位置参数
+            **kwargs: 关键字参数
+
+        Returns:
+            str: 创建的目录ID
+
+        Raises:
+            ValueError: 如果fid为空
+            NotImplementedError: 子类必须实现此方法
+        """
+        if not fid:
+            raise ValueError("fid must not be empty")
+        raise NotImplementedError()
+
+    def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
+        """
+        检查文件或目录是否存在
+
+        Args:
+            fid (str): 文件或目录ID
+            *args: 位置参数
+            **kwargs: 关键字参数
+
+        Returns:
+            bool: 是否存在
+
+        Raises:
+            ValueError: 如果fid为空
+            NotImplementedError: 子类必须实现此方法
+        """
+        if not fid:
+            raise ValueError("fid must not be empty")
+        raise NotImplementedError()
+
+    def delete(self, fid: str, *args: Any, **kwargs: Any) -> bool:
+        """
+        删除文件或目录
+
+        Args:
+            fid (str): 文件或目录ID
+            *args: 位置参数
+            **kwargs: 关键字参数
+
+        Returns:
+            bool: 删除是否成功
+
+        Raises:
+            ValueError: 如果fid为空
+            NotImplementedError: 子类必须实现此方法
+        """
+        if not fid:
+            raise ValueError("fid must not be empty")
+        raise NotImplementedError()
+
+    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+        """
+        获取目录下的文件列表
+
+        Args:
+            fid (str): 目录ID
+            *args: 位置参数
+            **kwargs: 关键字参数
+
+        Returns:
+            List[DriveFile]: 文件列表
+
+        Raises:
+            ValueError: 如果fid为空
+            NotImplementedError: 子类必须实现此方法
+        """
+        if not fid:
+            raise ValueError("fid must not be empty")
+        raise NotImplementedError()
+
+    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+        """
+        获取目录下的子目录列表
+
+        Args:
+            fid (str): 目录ID
+            *args: 位置参数
+            **kwargs: 关键字参数
+
+        Returns:
+            List[DriveFile]: 子目录列表
+
+        Raises:
+            ValueError: 如果fid为空
+            NotImplementedError: 子类必须实现此方法
+        """
+        if not fid:
+            raise ValueError("fid must not be empty")
+        raise NotImplementedError()
+
+    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile:
+        """
+        获取文件详细信息
+
+        Args:
+            fid (str): 文件ID
+            *args: 位置参数
+            **kwargs: 关键字参数
+
+        Returns:
+            DriveFile: 文件信息对象
+
+        Raises:
+            ValueError: 如果fid为空
+            NotImplementedError: 子类必须实现此方法
+        """
+        if not fid:
+            raise ValueError("fid must not be empty")
+        raise NotImplementedError()
+
+    def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile:
+        """
+        获取目录详细信息
+
+        Args:
+            fid (str): 目录ID
+            *args: 位置参数
+            **kwargs: 关键字参数
+
+        Returns:
+            DriveFile: 目录信息对象
+
+        Raises:
+            ValueError: 如果fid为空
+            NotImplementedError: 子类必须实现此方法
+        """
+        if not fid:
+            raise ValueError("fid must not be empty")
+        raise NotImplementedError()
 
     def login(self, *args: Any, **kwargs: Any) -> bool:
         """
