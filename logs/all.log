@@ -26,3 +26,13 @@ refactor: 重构DriveFile类并增强类型安全
 - 添加更多属性操作方法
 
 此次重构提高了代码的类型安全性和可维护性，为后续开发提供了更好的基础。
+2025-05-22 01:14:46.078 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-22 01:14:46.079 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-22 01:14:55.540 |INFO    | funbuild.core.core : core: 111 | funbuild | - fundrive push
+2025-05-22 01:15:08.634 |INFO    | funbuild.core.core : core:  31 | funbuild | - [Generated commit message]
+release: 升级版本号至2.0.11
+
+- 更新pyproject.toml中的版本号
+- 添加fundrive操作日志记录
+
+此次更新为常规版本迭代，包含fundrive相关操作的日志记录功能。
