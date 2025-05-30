@@ -104,3 +104,11 @@ fix: 优化OSSDrive文件处理逻辑并更新版本
 - 添加build/pull/push操作日志记录
 
 此次变更优化了OSS文件系统的处理能力，特别是对多级目录结构的支持，同时更新了项目版本号。
+2025-05-30 15:48:31.227 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-30 15:48:31.228 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-30 15:48:55.007 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-30 15:48:55.007 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-30 15:49:26.741 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-30 15:49:26.741 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-30 15:52:44.173 |INFO    | funbuild.core.core : core: 111 | funbuild | - fundrive push
+2025-05-30 15:52:55.674 |ERROR   | funbuild.core.core : core:  35 | funbuild | - aigc_commit_message with error:litellm.APIError: APIError: DeepseekException - 
