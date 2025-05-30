@@ -17,3 +17,14 @@ chore: 更新项目配置和版本号
 - 项目版本号从2.0.13升级到2.0.14
 
 这些变更为项目维护性更新，不影响核心功能。
+2025-05-30 11:16:47.947 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-30 11:16:47.948 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-30 11:16:59.391 |INFO    | funbuild.core.core : core: 111 | funbuild | - fundrive push
+2025-05-30 11:17:15.888 |INFO    | funbuild.core.core : core:  31 | funbuild | - [Generated commit message]
+fix: 优化OSSDrive的exist方法实现
+
+- 将object_exists方法替换为list_objects检查
+- 提高文件存在性检查的准确性
+
+新实现通过检查对象列表长度来判断文件是否存在，
+相比直接使用object_exists方法更加可靠。

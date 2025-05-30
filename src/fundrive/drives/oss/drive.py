@@ -34,7 +34,8 @@ class OSSDrive(BaseDrive):
     """
 
     def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
-        return self.bucket.object_exists(fid)
+        # return self.bucket.object_exists(fid)
+        return len(self.bucket.list_objects(fid).object_list) > 0
 
     def __init__(self, *args, **kwargs):
         """初始化OSS驱动
