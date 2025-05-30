@@ -40,3 +40,19 @@ refactor: 优化OSSDrive文件下载逻辑并更新版本号
 - 日志文件中添加build/pull/push操作记录
 
 这些变更主要优化了代码结构，提高了代码可维护性，没有引入功能变更。
+2025-05-30 11:30:10.901 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-30 11:30:10.902 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-30 11:30:20.353 |INFO    | funbuild.core.core : core: 111 | funbuild | - fundrive push
+2025-05-30 11:31:28.824 |INFO    | funbuild.core.core : core:  31 | funbuild | - [Generated commit message]
+fix: 修复OSSDrive文件名处理问题
+
+- 修正OSSDrive中文件名的basename处理逻辑
+- 确保文件路径和名称正确对应
+
+refactor: 更新项目版本号至2.0.17
+
+- 更新pyproject.toml中的版本号
+
+chore: 添加build/pull/push操作日志记录
+
+- 在日志文件中记录fundrive的build/pull/push操作
