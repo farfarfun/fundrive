@@ -136,3 +136,14 @@ chore: 更新日志记录并提升版本号至2.0.24
 - 添加fundrive操作日志记录（build/pull/push）
 
 这些变更为常规维护更新，包含版本号提升和操作日志记录。
+2025-05-30 16:03:38.969 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-30 16:03:38.970 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-30 16:03:48.163 |INFO    | funbuild.core.core : core: 111 | funbuild | - fundrive push
+2025-05-30 16:04:00.646 |INFO    | funbuild.core.core : core:  31 | funbuild | - [Generated commit message]
+chore: 更新版本号至2.0.25并添加日志记录
+
+- 将fundrive版本从2.0.24提升至2.0.25
+- 在all.log和funbuild.log中添加fundrive操作日志记录
+- 移除pyproject.toml中不再需要的uv配置项
+
+这些变更为常规维护更新，包含版本号提升和操作日志记录。
