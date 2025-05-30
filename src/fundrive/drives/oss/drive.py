@@ -116,10 +116,6 @@ class OSSDrive(BaseDrive):
             solve_size = len(solve_path.split("/"))
             solve_name = paths[0]
 
-            # 二级目录下的文件
-            if solve_size > 1:
-                continue
-
             if solve_name is None or len(solve_name) == 0:
                 continue
 
@@ -133,17 +129,18 @@ class OSSDrive(BaseDrive):
                         size=file.size,
                     )
                 )
-            elif solve_name not in dir_name:
-                dir_name.append(solve_name)
-                result.append(
-                    DriveFile(
-                        isfile=False,
-                        fid=os.path.join(oss_path, solve_name),
-                        name=solve_name,
-                        path=os.path.join(oss_path, solve_name),
-                        size=file.size,
+            if file.key.endswith("/") or solve_size > 1:
+                if solve_name not in dir_name:
+                    dir_name.append(solve_name)
+                    result.append(
+                        DriveFile(
+                            isfile=False,
+                            fid=os.path.join(oss_path, solve_name),
+                            name=solve_name,
+                            path=os.path.join(oss_path, solve_name),
+                            size=file.size,
+                        )
                     )
-                )
 
         return result
 

@@ -92,3 +92,15 @@ fix: 修复OSSDrive二级目录文件处理问题
 - 优化dir_name判断逻辑
 
 此次变更解决了OSS路径处理中二级目录文件可能被错误处理的问题，确保文件列表正确生成。
+2025-05-30 14:36:28.992 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-30 14:36:28.993 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-30 14:36:57.608 |INFO    | funbuild.core.core : core: 111 | funbuild | - fundrive push
+2025-05-30 14:37:13.983 |INFO    | funbuild.core.core : core:  31 | funbuild | - [Generated commit message]
+fix: 优化OSSDrive文件处理逻辑并更新版本
+
+- 移除对二级目录文件的跳过处理，允许处理多级目录结构
+- 调整目录判断条件，更准确地识别目录文件
+- 更新项目版本号至2.0.21
+- 添加build/pull/push操作日志记录
+
+此次变更优化了OSS文件系统的处理能力，特别是对多级目录结构的支持，同时更新了项目版本号。
