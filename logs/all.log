@@ -56,3 +56,14 @@ refactor: 更新项目版本号至2.0.17
 chore: 添加build/pull/push操作日志记录
 
 - 在日志文件中记录fundrive的build/pull/push操作
+2025-05-30 11:32:16.176 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-30 11:32:16.177 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-30 11:32:26.862 |INFO    | funbuild.core.core : core: 111 | funbuild | - fundrive push
+2025-05-30 11:32:52.825 |INFO    | funbuild.core.core : core:  31 | funbuild | - [Generated commit message]
+chore: 更新项目版本号至2.0.18
+
+- 更新pyproject.toml中的版本号
+- 修复OSSDrive路径处理问题，去除末尾斜杠
+- 在日志文件中记录具体的build/pull/push操作详情
+
+此次更新主要为版本号迭代，同时包含一些功能优化和日志完善。

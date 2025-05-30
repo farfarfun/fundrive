@@ -132,7 +132,9 @@ class OSSDrive(BaseDrive):
                     DriveFile(
                         isfile=False,
                         fid=os.path.join(oss_path, solve_name),
-                        name=os.path.basename(os.path.join(oss_path, solve_name)),
+                        name=os.path.basename(
+                            os.path.join(oss_path, solve_name).strip("/")
+                        ),
                         path=os.path.join(oss_path, solve_name),
                         size=file.size,
                     )
