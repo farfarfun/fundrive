@@ -6,6 +6,7 @@ from funsecret import read_secret
 from tqdm import tqdm
 
 from fundrive.core import BaseDrive, DriveFile
+from fundrive.core.base import get_filepath
 
 
 def public_oss_url(
@@ -222,15 +223,7 @@ class OSSDrive(BaseDrive):
                 result.append(file)
         return result
 
-    def __download_file(
-        self,
-        save_path="./cache",
-        oss_path=None,
-        size=0,
-        overwrite=False,
-        *args,
-        **kwargs,
-    ) -> bool:
+    def __download_file(self, save_path, oss_path, size=0, overwrite=False) -> bool:
         """下载单个文件的内部实现
 
         声明:
@@ -244,23 +237,17 @@ class OSSDrive(BaseDrive):
         Returns:
             bool: 下载是否成功
         """
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-
-        filename = os.path.basename(oss_path)
-        file_path = os.path.join(save_path, filename)
-
         if (
             not overwrite
-            and os.path.exists(file_path)
-            and size == os.path.getsize(file_path)
+            and os.path.exists(save_path)
+            and size == os.path.getsize(save_path)
         ):
             return False
 
         bar = tqdm(
             total=size,
             ncols=120,
-            desc=filename,
+            desc=os.path.basename(save_path),
             unit="B",
             unit_scale=True,
             unit_divisor=1024,
@@ -269,9 +256,9 @@ class OSSDrive(BaseDrive):
         def progress_callback(consumed_bytes, total_bytes):
             bar.update(consumed_bytes - bar.n)
 
-        if not os.path.exists(file_path):
+        if not os.path.exists(save_path):
             self.bucket.get_object_to_file(
-                oss_path, file_path, progress_callback=progress_callback
+                oss_path, save_path, progress_callback=progress_callback
             )
         return True
 
@@ -285,15 +272,12 @@ class OSSDrive(BaseDrive):
         *args,
         **kwargs,
     ) -> bool:
-        save_dir = (
-            os.path.dirname(filepath) if os.path.splitext(filepath)[1] else filepath
-        )
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
+        save_path = get_filepath(filedir, filename, filepath)
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
         file_info = self.get_file_info(fid=fid)
         return self.__download_file(
-            save_path=save_dir,
+            save_path=save_path,
             oss_path=fid,
             size=file_info["size"],
             overwrite=overwrite,

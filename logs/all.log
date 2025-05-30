@@ -28,3 +28,15 @@ fix: 优化OSSDrive的exist方法实现
 
 新实现通过检查对象列表长度来判断文件是否存在，
 相比直接使用object_exists方法更加可靠。
+2025-05-30 11:24:24.597 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-30 11:24:24.598 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-30 11:24:31.903 |INFO    | funbuild.core.core : core: 111 | funbuild | - fundrive push
+2025-05-30 11:24:48.164 |INFO    | funbuild.core.core : core:  31 | funbuild | - [Generated commit message]
+refactor: 优化OSSDrive文件下载逻辑并更新版本号
+
+- 简化__download_file方法参数，移除冗余参数
+- 使用新的get_filepath函数统一处理文件路径
+- 更新项目版本号至2.0.16
+- 日志文件中添加build/pull/push操作记录
+
+这些变更主要优化了代码结构，提高了代码可维护性，没有引入功能变更。
