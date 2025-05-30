@@ -1,14 +1,7 @@
-"""
-OSS云存储驱动
-
-声明:
-本模块实现了阿里云OSS存储服务的驱动接口。
-主要功能包括文件的上传、下载、删除等基本操作。
-"""
-
 import os
-from typing import List
+from typing import List, Any, Optional
 
+import oss2
 from funsecret import read_secret
 from tqdm import tqdm
 
@@ -16,7 +9,7 @@ from fundrive.core import BaseDrive, DriveFile
 
 
 def public_oss_url(
-    bucket_name="nm-algo", endpoint="oss-cn-hangzhou.aliyuncs.com", path=""
+        bucket_name="nm-algo", endpoint="oss-cn-hangzhou.aliyuncs.com", path=""
 ):
     """生成OSS公共访问URL
 
@@ -40,6 +33,9 @@ class OSSDrive(BaseDrive):
     此类实现了阿里云OSS存储服务的基本操作接口，包括文件上传下载、目录管理等功能。
     """
 
+    def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
+        return self.bucket.object_exists(fid)
+
     def __init__(self, *args, **kwargs):
         """初始化OSS驱动
 
@@ -51,17 +47,17 @@ class OSSDrive(BaseDrive):
             **kwargs: 可变关键字参数
         """
         super(OSSDrive, self).__init__(*args, **kwargs)
-        self.bucket = None
+        self.bucket: oss2.Bucket = None
 
     def login(
-        self,
-        access_key=None,
-        access_secret=None,
-        bucket_name=None,
-        endpoint=None,
-        connect_timeout=3600,
-        *args,
-        **kwargs,
+            self,
+            access_key=None,
+            access_secret=None,
+            bucket_name=None,
+            endpoint=None,
+            connect_timeout=3600,
+            *args,
+            **kwargs,
     ) -> bool:
         """
         登录OSS服务
@@ -78,7 +74,6 @@ class OSSDrive(BaseDrive):
         Returns:
             bool: 登录是否成功
         """
-        import oss2
 
         access_key = access_key or read_secret(
             cate1="fundrive", cate2="oss", cate3="access_key"
@@ -102,7 +97,7 @@ class OSSDrive(BaseDrive):
         )
         return True
 
-    def __get_file_list(self, oss_path) -> List[DriveFile]:
+    def __get_file_list(self, oss_path: str) -> List[DriveFile]:
         """获取指定路径下的文件列表
 
         Args:
@@ -166,7 +161,7 @@ class OSSDrive(BaseDrive):
         self.bucket.delete_object(key=fid)
         return True
 
-    def get_file_info(self, fid, *args, **kwargs) -> DriveFile:
+    def get_file_info(self, fid, *args, **kwargs) -> Optional[DriveFile]:
         """获取文件信息
 
         Args:
@@ -182,8 +177,9 @@ class OSSDrive(BaseDrive):
                 path=file.key,
                 size=file.size,
             )
+        return None
 
-    def get_dir_info(self, fid, *args, **kwargs) -> DriveFile:
+    def get_dir_info(self, fid, *args, **kwargs) -> Optional[DriveFile]:
         """获取目录信息
 
         Args:
@@ -195,6 +191,7 @@ class OSSDrive(BaseDrive):
         for file in files:
             if file["path"] == fid:
                 return file
+        return None
 
     def get_file_list(self, fid, *args, **kwargs) -> List[DriveFile]:
         """获取目录下的文件列表
@@ -225,13 +222,13 @@ class OSSDrive(BaseDrive):
         return result
 
     def __download_file(
-        self,
-        save_path="./cache",
-        oss_path=None,
-        size=0,
-        overwrite=False,
-        *args,
-        **kwargs,
+            self,
+            save_path="./cache",
+            oss_path=None,
+            size=0,
+            overwrite=False,
+            *args,
+            **kwargs,
     ) -> bool:
         """下载单个文件的内部实现
 
@@ -253,9 +250,9 @@ class OSSDrive(BaseDrive):
         file_path = os.path.join(save_path, filename)
 
         if (
-            not overwrite
-            and os.path.exists(file_path)
-            and size == os.path.getsize(file_path)
+                not overwrite
+                and os.path.exists(file_path)
+                and size == os.path.getsize(file_path)
         ):
             return False
 
@@ -277,19 +274,13 @@ class OSSDrive(BaseDrive):
             )
         return True
 
-    def download_file(self, fid, filepath, overwrite=False, *args, **kwargs) -> bool:
-        """下载单个文件
+    def download_file(self,
+                      fid: str,
+                      filedir: Optional[str] = None,
+                      filename: Optional[str] = None,
+                      filepath: Optional[str] = None,
+                      overwrite: bool = False, *args, **kwargs) -> bool:
 
-        声明:
-        从OSS下载指定文件到本地。
-
-        Args:
-            fid (str): 文件ID(OSS路径)
-            save_path (str): 保存路径(文件路径或目录路径)
-            overwrite (bool): 是否覆盖已存在文件
-        Returns:
-            bool: 下载是否成功
-        """
         save_dir = (
             os.path.dirname(filepath) if os.path.splitext(filepath)[1] else filepath
         )
@@ -305,7 +296,7 @@ class OSSDrive(BaseDrive):
         )
 
     def upload_file(
-        self, filepath, fid, recursion=True, overwrite=False, *args, **kwargs
+            self, filepath, fid, recursion=True, overwrite=False, *args, **kwargs
     ) -> bool:
         """上传单个文件
 

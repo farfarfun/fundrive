@@ -1,4 +1,5 @@
 import os
+from abc import abstractmethod
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Dict, TypeVar, Generic
 
@@ -23,13 +24,13 @@ class DriveFile(dict, Generic[T]):
     """
 
     def __init__(
-        self,
-        fid: str,
-        name: str,
-        size: Optional[int] = None,
-        ext: Optional[Dict[str, Any]] = None,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            fid: str,
+            name: str,
+            size: Optional[int] = None,
+            ext: Optional[Dict[str, Any]] = None,
+            *args: Any,
+            **kwargs: Any,
     ) -> None:
         """
         初始化文件信息
@@ -127,9 +128,9 @@ class DriveFile(dict, Generic[T]):
 
 
 def get_filepath(
-    filedir: Optional[str] = None,
-    filename: Optional[str] = None,
-    filepath: Optional[str] = None,
+        filedir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
 ) -> str:
     """
     获取文件完整路径
@@ -199,12 +200,12 @@ class BaseDrive:
         raise NotImplementedError()
 
     def mkdir(
-        self,
-        fid: str,
-        name: str,
-        return_if_exist: bool = True,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            fid: str,
+            name: str,
+            return_if_exist: bool = True,
+            *args: Any,
+            **kwargs: Any,
     ) -> str:
         """
         创建目录
@@ -227,6 +228,7 @@ class BaseDrive:
             raise ValueError("fid must not be empty")
         raise NotImplementedError()
 
+    @abstractmethod
     def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
         检查文件或目录是否存在
@@ -307,7 +309,7 @@ class BaseDrive:
             raise ValueError("fid must not be empty")
         raise NotImplementedError()
 
-    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile:
+    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
         """
         获取文件详细信息
 
@@ -347,103 +349,15 @@ class BaseDrive:
             raise ValueError("fid must not be empty")
         raise NotImplementedError()
 
-    def login(self, *args: Any, **kwargs: Any) -> bool:
-        """
-        登录网盘
-        :param args: 位置参数
-        :param kwargs: 关键字参数
-        :return: 登录是否成功
-        """
-        raise NotImplementedError()
-
-    def mkdir(
-        self,
-        fid: str,
-        name: str,
-        return_if_exist: bool = True,
-        *args: Any,
-        **kwargs: Any,
-    ) -> str:
-        """
-        创建目录
-        :param fid: 父目录ID
-        :param name: 目录名称
-        :param return_if_exist: 如果目录已存在，是否返回已存在目录的ID
-        :param args: 位置参数
-        :param kwargs: 关键字参数
-        :return: 创建的目录ID
-        """
-        raise NotImplementedError()
-
-    def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
-        """
-        检查文件或目录是否存在
-        :param fid: 文件或目录ID
-        :param args: 位置参数
-        :param kwargs: 关键字参数
-        :return: 是否存在
-        """
-        raise NotImplementedError()
-
-    def delete(self, fid: str, *args: Any, **kwargs: Any) -> bool:
-        """
-        删除文件或目录
-        :param fid: 文件或目录ID
-        :param args: 位置参数
-        :param kwargs: 关键字参数
-        :return: 删除是否成功
-        """
-        raise NotImplementedError()
-
-    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
-        """
-        获取目录下的文件列表
-        :param fid: 目录ID
-        :param args: 位置参数
-        :param kwargs: 关键字参数
-        :return: 文件列表
-        """
-        raise NotImplementedError()
-
-    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
-        """
-        获取目录下的子目录列表
-        :param fid: 目录ID
-        :param args: 位置参数
-        :param kwargs: 关键字参数
-        :return: 子目录列表
-        """
-        raise NotImplementedError()
-
-    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile:
-        """
-        获取文件详细信息
-        :param fid: 文件ID
-        :param args: 位置参数
-        :param kwargs: 关键字参数
-        :return: 文件信息对象
-        """
-        raise NotImplementedError()
-
-    def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile:
-        """
-        获取目录详细信息
-        :param fid: 目录ID
-        :param args: 位置参数
-        :param kwargs: 关键字参数
-        :return: 目录信息对象
-        """
-        raise NotImplementedError()
-
     def download_file(
-        self,
-        fid: str,
-        filedir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
-        overwrite: bool = False,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            fid: str,
+            filedir: Optional[str] = None,
+            filename: Optional[str] = None,
+            filepath: Optional[str] = None,
+            overwrite: bool = False,
+            *args: Any,
+            **kwargs: Any,
     ) -> bool:
         """
         下载单个文件
@@ -463,14 +377,14 @@ class BaseDrive:
         raise NotImplementedError()
 
     def download_dir(
-        self,
-        fid: str,
-        filedir: str,
-        recursion: bool = True,
-        overwrite: bool = False,
-        ignore_filter: Optional[Callable[[str], bool]] = None,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            fid: str,
+            filedir: str,
+            recursion: bool = True,
+            overwrite: bool = False,
+            ignore_filter: Optional[Callable[[str], bool]] = None,
+            *args: Any,
+            **kwargs: Any,
     ) -> bool:
         """
         下载目录
@@ -512,13 +426,14 @@ class BaseDrive:
                 *args,
                 **kwargs,
             )
+        return True
 
     def upload_file(
-        self,
-        filedir: str,
-        fid: str,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            filedir: str,
+            fid: str,
+            *args: Any,
+            **kwargs: Any,
     ) -> bool:
         """
         上传单个文件
@@ -535,13 +450,13 @@ class BaseDrive:
         raise NotImplementedError()
 
     def upload_dir(
-        self,
-        filedir: str,
-        fid: str,
-        recursion: bool = True,
-        overwrite: bool = False,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            filedir: str,
+            fid: str,
+            recursion: bool = True,
+            overwrite: bool = False,
+            *args: Any,
+            **kwargs: Any,
     ) -> bool:
         """
         上传目录
@@ -572,11 +487,11 @@ class BaseDrive:
         return True
 
     def share(
-        self,
-        *fids: str,
-        password: str,
-        expire_days: int = 0,
-        description: str = "",
+            self,
+            *fids: str,
+            password: str,
+            expire_days: int = 0,
+            description: str = "",
     ) -> Any:
         """
         分享文件或目录
@@ -593,10 +508,10 @@ class BaseDrive:
         raise NotImplementedError()
 
     def save_shared(
-        self,
-        shared_url: str,
-        fid: str,
-        password: Optional[str] = None,
+            self,
+            shared_url: str,
+            fid: str,
+            password: Optional[str] = None,
     ) -> bool:
         """
         保存他人的分享内容到自己的网盘
@@ -612,12 +527,12 @@ class BaseDrive:
         raise NotImplementedError()
 
     def search(
-        self,
-        keyword: str,
-        fid: Optional[str] = None,
-        file_type: Optional[str] = None,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            keyword: str,
+            fid: Optional[str] = None,
+            file_type: Optional[str] = None,
+            *args: Any,
+            **kwargs: Any,
     ) -> List[DriveFile]:
         """
         搜索文件或目录
@@ -635,11 +550,11 @@ class BaseDrive:
         raise NotImplementedError()
 
     def move(
-        self,
-        source_fid: str,
-        target_fid: str,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            source_fid: str,
+            target_fid: str,
+            *args: Any,
+            **kwargs: Any,
     ) -> bool:
         """
         移动文件或目录
@@ -656,11 +571,11 @@ class BaseDrive:
         raise NotImplementedError()
 
     def copy(
-        self,
-        source_fid: str,
-        target_fid: str,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            source_fid: str,
+            target_fid: str,
+            *args: Any,
+            **kwargs: Any,
     ) -> bool:
         """
         复制文件或目录
@@ -677,11 +592,11 @@ class BaseDrive:
         raise NotImplementedError()
 
     def rename(
-        self,
-        fid: str,
-        new_name: str,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            fid: str,
+            new_name: str,
+            *args: Any,
+            **kwargs: Any
     ) -> bool:
         """
         重命名文件或目录
@@ -700,7 +615,6 @@ class BaseDrive:
     def get_quota(self, *args: Any, **kwargs: Any) -> dict:
         """
         获取网盘空间使用情况
-
         Args:
             args: 位置参数
             kwargs: 关键字参数
@@ -711,9 +625,9 @@ class BaseDrive:
         raise NotImplementedError()
 
     def get_recycle_list(
-        self,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            *args: Any,
+            **kwargs: Any,
     ) -> List[DriveFile]:
         """
         获取回收站文件列表
@@ -755,10 +669,10 @@ class BaseDrive:
         raise NotImplementedError()
 
     def get_download_url(
-        self,
-        fid: str,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            fid: str,
+            *args: Any,
+            **kwargs: Any,
     ) -> str:
         """
         获取文件下载链接
@@ -774,11 +688,11 @@ class BaseDrive:
         raise NotImplementedError()
 
     def get_upload_url(
-        self,
-        fid: str,
-        filename: str,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            fid: str,
+            filename: str,
+            *args: Any,
+            **kwargs: Any,
     ) -> str:
         """
         获取文件上传链接
