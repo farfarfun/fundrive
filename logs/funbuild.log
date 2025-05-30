@@ -79,3 +79,16 @@ fix: 修复OSSDrive路径处理问题并更新版本号
 - 在日志中添加build/pull/push操作记录
 
 此次变更主要解决了OSS路径处理中的潜在问题，同时进行了版本迭代和日志完善。
+2025-05-30 14:26:22.755 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-30 14:26:22.756 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-30 14:27:13.320 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-30 14:27:13.321 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-30 14:28:52.870 |INFO    | funbuild.core.core : core: 111 | funbuild | - fundrive push
+2025-05-30 14:29:14.716 |INFO    | funbuild.core.core : core:  31 | funbuild | - [Generated commit message]
+fix: 修复OSSDrive二级目录文件处理问题
+
+- 修正OSSDrive中二级目录下的文件处理逻辑
+- 添加对solve_size>1情况的跳过处理
+- 优化dir_name判断逻辑
+
+此次变更解决了OSS路径处理中二级目录文件可能被错误处理的问题，确保文件列表正确生成。
