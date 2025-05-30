@@ -112,3 +112,15 @@ fix: 优化OSSDrive文件处理逻辑并更新版本
 2025-05-30 15:49:26.741 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
 2025-05-30 15:52:44.173 |INFO    | funbuild.core.core : core: 111 | funbuild | - fundrive push
 2025-05-30 15:52:55.674 |ERROR   | funbuild.core.core : core:  35 | funbuild | - aigc_commit_message with error:litellm.APIError: APIError: DeepseekException - 
+2025-05-30 15:56:39.837 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-30 15:56:39.838 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-30 15:58:28.347 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-30 15:58:28.347 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-30 15:59:44.186 |INFO    | funbuild.core.core : core: 111 | funbuild | - fundrive push
+2025-05-30 15:59:58.794 |INFO    | funbuild.core.core : core:  31 | funbuild | - [Generated commit message]
+chore: 更新日志记录并提升版本号至2.0.23
+
+- 在all.log和funbuild.log中添加新的fundrive操作日志记录
+- 将pyproject.toml中的版本号从2.0.22更新至2.0.23
+
+这些变更为常规维护更新，不涉及功能修改或问题修复。
