@@ -115,6 +115,8 @@ class OSSDrive(BaseDrive):
 
             solve_size = len(solve_path.split("/"))
             solve_name = paths[0]
+            if solve_name is None or len(solve_name) == 0:
+                continue
 
             if not file.key.endswith("/") and solve_size == 1:
                 result.append(
@@ -132,9 +134,7 @@ class OSSDrive(BaseDrive):
                     DriveFile(
                         isfile=False,
                         fid=os.path.join(oss_path, solve_name),
-                        name=os.path.basename(
-                            os.path.join(oss_path, solve_name).strip("/")
-                        ),
+                        name=solve_name,
                         path=os.path.join(oss_path, solve_name),
                         size=file.size,
                     )
