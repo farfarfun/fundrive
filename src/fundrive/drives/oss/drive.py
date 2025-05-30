@@ -9,7 +9,7 @@ from fundrive.core import BaseDrive, DriveFile
 
 
 def public_oss_url(
-        bucket_name="nm-algo", endpoint="oss-cn-hangzhou.aliyuncs.com", path=""
+    bucket_name="nm-algo", endpoint="oss-cn-hangzhou.aliyuncs.com", path=""
 ):
     """生成OSS公共访问URL
 
@@ -50,14 +50,14 @@ class OSSDrive(BaseDrive):
         self.bucket: oss2.Bucket = None
 
     def login(
-            self,
-            access_key=None,
-            access_secret=None,
-            bucket_name=None,
-            endpoint=None,
-            connect_timeout=3600,
-            *args,
-            **kwargs,
+        self,
+        access_key=None,
+        access_secret=None,
+        bucket_name=None,
+        endpoint=None,
+        connect_timeout=3600,
+        *args,
+        **kwargs,
     ) -> bool:
         """
         登录OSS服务
@@ -222,13 +222,13 @@ class OSSDrive(BaseDrive):
         return result
 
     def __download_file(
-            self,
-            save_path="./cache",
-            oss_path=None,
-            size=0,
-            overwrite=False,
-            *args,
-            **kwargs,
+        self,
+        save_path="./cache",
+        oss_path=None,
+        size=0,
+        overwrite=False,
+        *args,
+        **kwargs,
     ) -> bool:
         """下载单个文件的内部实现
 
@@ -250,9 +250,9 @@ class OSSDrive(BaseDrive):
         file_path = os.path.join(save_path, filename)
 
         if (
-                not overwrite
-                and os.path.exists(file_path)
-                and size == os.path.getsize(file_path)
+            not overwrite
+            and os.path.exists(file_path)
+            and size == os.path.getsize(file_path)
         ):
             return False
 
@@ -274,13 +274,16 @@ class OSSDrive(BaseDrive):
             )
         return True
 
-    def download_file(self,
-                      fid: str,
-                      filedir: Optional[str] = None,
-                      filename: Optional[str] = None,
-                      filepath: Optional[str] = None,
-                      overwrite: bool = False, *args, **kwargs) -> bool:
-
+    def download_file(
+        self,
+        fid: str,
+        filedir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
+        *args,
+        **kwargs,
+    ) -> bool:
         save_dir = (
             os.path.dirname(filepath) if os.path.splitext(filepath)[1] else filepath
         )
@@ -296,7 +299,7 @@ class OSSDrive(BaseDrive):
         )
 
     def upload_file(
-            self, filepath, fid, recursion=True, overwrite=False, *args, **kwargs
+        self, filepath, fid, recursion=True, overwrite=False, *args, **kwargs
     ) -> bool:
         """上传单个文件
 

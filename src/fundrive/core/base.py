@@ -24,13 +24,13 @@ class DriveFile(dict, Generic[T]):
     """
 
     def __init__(
-            self,
-            fid: str,
-            name: str,
-            size: Optional[int] = None,
-            ext: Optional[Dict[str, Any]] = None,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        fid: str,
+        name: str,
+        size: Optional[int] = None,
+        ext: Optional[Dict[str, Any]] = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         """
         初始化文件信息
@@ -128,9 +128,9 @@ class DriveFile(dict, Generic[T]):
 
 
 def get_filepath(
-        filedir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+    filedir: Optional[str] = None,
+    filename: Optional[str] = None,
+    filepath: Optional[str] = None,
 ) -> str:
     """
     获取文件完整路径
@@ -200,12 +200,12 @@ class BaseDrive:
         raise NotImplementedError()
 
     def mkdir(
-            self,
-            fid: str,
-            name: str,
-            return_if_exist: bool = True,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        fid: str,
+        name: str,
+        return_if_exist: bool = True,
+        *args: Any,
+        **kwargs: Any,
     ) -> str:
         """
         创建目录
@@ -350,14 +350,14 @@ class BaseDrive:
         raise NotImplementedError()
 
     def download_file(
-            self,
-            fid: str,
-            filedir: Optional[str] = None,
-            filename: Optional[str] = None,
-            filepath: Optional[str] = None,
-            overwrite: bool = False,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        fid: str,
+        filedir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         下载单个文件
@@ -377,14 +377,14 @@ class BaseDrive:
         raise NotImplementedError()
 
     def download_dir(
-            self,
-            fid: str,
-            filedir: str,
-            recursion: bool = True,
-            overwrite: bool = False,
-            ignore_filter: Optional[Callable[[str], bool]] = None,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        fid: str,
+        filedir: str,
+        recursion: bool = True,
+        overwrite: bool = False,
+        ignore_filter: Optional[Callable[[str], bool]] = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         下载目录
@@ -429,11 +429,11 @@ class BaseDrive:
         return True
 
     def upload_file(
-            self,
-            filedir: str,
-            fid: str,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        filedir: str,
+        fid: str,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         上传单个文件
@@ -450,13 +450,13 @@ class BaseDrive:
         raise NotImplementedError()
 
     def upload_dir(
-            self,
-            filedir: str,
-            fid: str,
-            recursion: bool = True,
-            overwrite: bool = False,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        filedir: str,
+        fid: str,
+        recursion: bool = True,
+        overwrite: bool = False,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         上传目录
@@ -487,11 +487,11 @@ class BaseDrive:
         return True
 
     def share(
-            self,
-            *fids: str,
-            password: str,
-            expire_days: int = 0,
-            description: str = "",
+        self,
+        *fids: str,
+        password: str,
+        expire_days: int = 0,
+        description: str = "",
     ) -> Any:
         """
         分享文件或目录
@@ -508,10 +508,10 @@ class BaseDrive:
         raise NotImplementedError()
 
     def save_shared(
-            self,
-            shared_url: str,
-            fid: str,
-            password: Optional[str] = None,
+        self,
+        shared_url: str,
+        fid: str,
+        password: Optional[str] = None,
     ) -> bool:
         """
         保存他人的分享内容到自己的网盘
@@ -527,12 +527,12 @@ class BaseDrive:
         raise NotImplementedError()
 
     def search(
-            self,
-            keyword: str,
-            fid: Optional[str] = None,
-            file_type: Optional[str] = None,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        keyword: str,
+        fid: Optional[str] = None,
+        file_type: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> List[DriveFile]:
         """
         搜索文件或目录
@@ -550,11 +550,11 @@ class BaseDrive:
         raise NotImplementedError()
 
     def move(
-            self,
-            source_fid: str,
-            target_fid: str,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        source_fid: str,
+        target_fid: str,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         移动文件或目录
@@ -571,11 +571,11 @@ class BaseDrive:
         raise NotImplementedError()
 
     def copy(
-            self,
-            source_fid: str,
-            target_fid: str,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        source_fid: str,
+        target_fid: str,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         复制文件或目录
@@ -591,13 +591,7 @@ class BaseDrive:
         """
         raise NotImplementedError()
 
-    def rename(
-            self,
-            fid: str,
-            new_name: str,
-            *args: Any,
-            **kwargs: Any
-    ) -> bool:
+    def rename(self, fid: str, new_name: str, *args: Any, **kwargs: Any) -> bool:
         """
         重命名文件或目录
 
@@ -625,9 +619,9 @@ class BaseDrive:
         raise NotImplementedError()
 
     def get_recycle_list(
-            self,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        *args: Any,
+        **kwargs: Any,
     ) -> List[DriveFile]:
         """
         获取回收站文件列表
@@ -669,10 +663,10 @@ class BaseDrive:
         raise NotImplementedError()
 
     def get_download_url(
-            self,
-            fid: str,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        fid: str,
+        *args: Any,
+        **kwargs: Any,
     ) -> str:
         """
         获取文件下载链接
@@ -688,11 +682,11 @@ class BaseDrive:
         raise NotImplementedError()
 
     def get_upload_url(
-            self,
-            fid: str,
-            filename: str,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        fid: str,
+        filename: str,
+        *args: Any,
+        **kwargs: Any,
     ) -> str:
         """
         获取文件上传链接

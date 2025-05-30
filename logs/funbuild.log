@@ -2,3 +2,7 @@
 2025-05-30 10:38:32.397 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
 2025-05-30 10:39:00.082 |INFO    | funbuild.core.core : core: 111 | funbuild | - fundrive push
 2025-05-30 10:39:00.113 |ERROR   | funbuild.core.core : core:  35 | funbuild | - aigc_commit_message with error:No module named 'gcop'
+2025-05-30 10:42:42.698 |INFO    | funbuild.core.core : core: 127 | funbuild | - fundrive build
+2025-05-30 10:42:42.699 |INFO    | funbuild.core.core : core: 106 | funbuild | - fundrive pull
+2025-05-30 10:42:52.776 |INFO    | funbuild.core.core : core: 111 | funbuild | - fundrive push
+2025-05-30 10:42:54.509 |ERROR   | funbuild.core.core : core:  35 | funbuild | - aigc_commit_message with error:ModelConfig.__init__() missing 1 required positional argument: 'model_name'
