@@ -1,4 +1,3 @@
-# 文档地址 https://docs.pcloud.com/methods/folder/listfolder.html
 import json
 import requests
 from typing import Any, List, Optional, Dict
@@ -11,7 +10,7 @@ from funget import download
 from fundrive.core import BaseDrive, DriveFile
 from funutil import getLogger
 
-logger = getLogger("fundrive")
+logger = getLogger("pcloud_drive")
 
 
 class PCloudDrive(BaseDrive):
@@ -826,3 +825,89 @@ class PCloudDrive(BaseDrive):
                 f"分享失败, fids={fids}, password={password}, expire_days={expire_days}: {e}"
             )
             return None
+
+    def get_recycle_list(self, *args: Any, **kwargs: Any) -> List[DriveFile]:
+        """
+        获取回收站文件列表
+
+        注意：pCloud 不支持回收站功能
+
+        Args:
+            *args: 位置参数
+            **kwargs: 关键字参数
+
+        Returns:
+            List[DriveFile]: 空列表（pCloud 不支持回收站）
+        """
+        logger.warning("pCloud 不支持回收站功能")
+        return []
+
+    def restore(self, fid: str, *args: Any, **kwargs: Any) -> bool:
+        """
+        从回收站恢复文件
+
+        注意：pCloud 不支持回收站功能
+
+        Args:
+            fid (str): 文件ID
+            *args: 位置参数
+            **kwargs: 关键字参数
+
+        Returns:
+            bool: False（pCloud 不支持回收站）
+        """
+        logger.warning("pCloud 不支持回收站恢复功能")
+        return False
+
+    def clear_recycle(self, *args: Any, **kwargs: Any) -> bool:
+        """
+        清空回收站
+
+        注意：pCloud 不支持回收站功能
+
+        Args:
+            *args: 位置参数
+            **kwargs: 关键字参数
+
+        Returns:
+            bool: False（pCloud 不支持回收站）
+        """
+        logger.warning("pCloud 不支持回收站清空功能")
+        return False
+
+    def get_upload_url(self, fid: str, filename: str, *args: Any, **kwargs: Any) -> str:
+        """
+        获取文件上传链接
+
+        注意：pCloud 使用直接上传 API，不提供预签名上传 URL
+
+        Args:
+            fid (str): 目标目录ID
+            filename (str): 文件名
+            *args: 位置参数
+            **kwargs: 关键字参数
+
+        Returns:
+            str: 空字符串（pCloud 不支持预签名上传URL）
+        """
+        logger.warning("pCloud 不支持预签名上传URL，请使用 upload_file 方法")
+        return ""
+
+    def save_shared(
+        self, shared_url: str, fid: str, password: Optional[str] = None
+    ) -> bool:
+        """
+        保存分享的文件到网盘
+
+        注意：pCloud 不直接支持通过分享链接保存文件的 API
+
+        Args:
+            shared_url (str): 分享链接
+            fid (str): 保存到的目录ID
+            password (Optional[str]): 分享密码
+
+        Returns:
+            bool: False（pCloud 不支持此功能）
+        """
+        logger.warning("pCloud 不支持通过分享链接直接保存文件功能")
+        return False
