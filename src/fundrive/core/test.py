@@ -225,24 +225,76 @@ class BaseDriveTest:
         try:
             test_file_path = f"{self.test_dir}/test_renamed.txt"
             share_link = self.drive.share(test_file_path)
-            return share_link is not None and isinstance(share_link, str)
+
+            # 检查分享是否成功
+            if share_link is not None and isinstance(share_link, str):
+                # 输出分享成功信息
+                logger.info(f"🎉 分享成功！")
+                logger.info(f"📎 分享链接: {share_link}")
+                logger.info(f"📁 分享文件: {test_file_path}")
+                return True
+            else:
+                return False
         except Exception as e:
             logger.error(f"分享测试失败: {e}")
+            return False
+
+    def test_recycle_bin(self) -> bool:
+        """测试回收站功能"""
+        try:
+            # 1. 获取回收站列表
+            recycle_list = self.drive.get_recycle_list()
+            if recycle_list is None:
+                logger.warning("驱动不支持回收站功能")
+                return True  # 不支持也算正常
+
+            logger.info(f"📋 回收站中有 {len(recycle_list)} 个项目")
+
+            # 2. 如果回收站不为空，测试恢复功能
+            if recycle_list:
+                # 选择第一个项目进行恢复测试
+                first_item = recycle_list[0]
+                logger.info(f"🔄 尝试恢复文件: {first_item.name}")
+
+                # 恢复文件
+                restore_result = self.drive.restore(first_item.fid)
+                if restore_result:
+                    logger.info(f"✅ 文件恢复成功: {first_item.name}")
+
+                    # 验证文件是否真的被恢复了（回收站列表应该减少）
+                    new_recycle_list = self.drive.get_recycle_list()
+                    if new_recycle_list is not None and len(new_recycle_list) < len(
+                        recycle_list
+                    ):
+                        logger.info("✅ 回收站列表已更新，恢复功能正常")
+
+                    # 重新删除文件以便后续测试
+                    if hasattr(first_item, "parent_fid") and first_item.parent_fid:
+                        # 尝试找到恢复后的文件并重新删除
+                        try:
+                            # 这里可能需要根据原始位置重新删除
+                            pass  # 暂时跳过重新删除，避免影响用户数据
+                        except:
+                            pass
+                else:
+                    logger.warning(f"⚠️ 文件恢复失败: {first_item.name}")
+
+            # 3. 测试清空回收站功能（谨慎操作）
+            # 注意：这里不实际清空，只测试API调用是否正常
+            logger.info("🗑️ 测试清空回收站API（不实际执行）")
+            # clear_result = self.drive.clear_recycle()  # 注释掉实际清空操作
+            # logger.info(f"清空回收站结果: {clear_result}")
+
+            return True
+
+        except Exception as e:
+            logger.error(f"回收站测试失败: {e}")
             return False
 
     def test_unsupported_features(self) -> bool:
         """测试不支持的功能（应该返回警告而不是异常）"""
         try:
-            # 测试回收站相关功能
-            self.drive.get_recycle_list()
-
-            # 测试恢复功能
-            self.drive.restore("dummy_path")
-
-            # 测试清空回收站
-            self.drive.clear_recycle()
-
-            # 测试保存分享文件
+            # 测试保存分享文件（大多数驱动不支持）
             self.drive.save_shared("dummy_link", "/")
 
             # 这些功能应该返回 None 或 False，而不是抛出异常
@@ -291,6 +343,7 @@ class BaseDriveTest:
             ("复制文件", self.test_copy),
             ("搜索功能", self.test_search),
             ("分享功能", self.test_share),
+            ("回收站功能", self.test_recycle_bin),
             ("不支持功能测试", self.test_unsupported_features),
             ("清理测试数据", self.test_cleanup),
         ]

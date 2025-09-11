@@ -75,6 +75,10 @@ class PCloudDrive(BaseDrive):
         if path == "/" or path == "":
             return self._root_fid
 
+        # 检查路径是否可能是文件路径（包含文件扩展名）
+        if "." in path.split("/")[-1]:
+            logger.debug(f"警告：路径 {path} 可能是文件路径，不是目录路径")
+
         # 分解路径
         path_parts = [part for part in path.strip("/").split("/") if part]
         current_fid = self._root_fid
@@ -98,13 +102,17 @@ class PCloudDrive(BaseDrive):
                             break
 
                     if not found:
-                        # 如果找不到，返回当前层级的 ID
-                        return current_fid
+                        # 如果找不到目标目录，记录警告并返回根目录 ID
+                        logger.debug(f"未找到目录: {part}，路径: {path}")
+                        return self._root_fid
                 else:
-                    return current_fid
+                    # API 调用失败，记录错误并返回根目录 ID
+                    logger.error(f"获取目录内容失败，路径: {path}")
+                    return self._root_fid
 
-            except Exception:
-                return current_fid
+            except Exception as e:
+                logger.error(f"查找目录时发生异常，路径: {path}, 错误: {e}")
+                return self._root_fid
 
         return current_fid
 
@@ -132,6 +140,9 @@ class PCloudDrive(BaseDrive):
         try:
             # 获取父目录的文件夹 ID
             parent_fid = self._get_folder_id_by_path(dir_path)
+            logger.debug(
+                f"分享调试: 查找文件 {filename}，父目录路径 {dir_path}，父目录ID {parent_fid}"
+            )
 
             # 在父目录中查找文件
             params = {"folderid": parent_fid}
@@ -147,7 +158,7 @@ class PCloudDrive(BaseDrive):
                         file_id = str(item.get("fileid", ""))
                         return file_id
 
-                logger.warning(f"在目录 {dir_path} 中未找到文件 {filename}")
+                logger.debug(f"在目录 {dir_path} 中未找到文件 {filename}")
 
         except Exception as e:
             logger.error(f"通过路径获取文件 ID 失败, path={path}: {e}")
@@ -1022,11 +1033,8 @@ class PCloudDrive(BaseDrive):
             result = self._make_request(api_method, params)
 
             if result.get("result") == 0:
-                return {
-                    "link": result.get("link", ""),
-                    "linkid": result.get("linkid", ""),
-                    "code": result.get("code", ""),
-                }
+                # 返回分享链接字符串，符合测试框架期望
+                return result.get("link", "")
             else:
                 return None
 
@@ -1040,50 +1048,152 @@ class PCloudDrive(BaseDrive):
         """
         获取回收站文件列表
 
-        注意：pCloud 不支持回收站功能
+        API 文档: https://docs.pcloud.com/methods/trash/trash_list.html
 
         Args:
             *args: 位置参数
             **kwargs: 关键字参数
 
         Returns:
-            List[DriveFile]: 空列表（pCloud 不支持回收站）
+            List[DriveFile]: 回收站中的文件列表
         """
-        logger.warning("pCloud 不支持回收站功能")
-        return []
+        try:
+            # 使用 trash_list API 获取回收站内容
+            params = {"folderid": "0"}  # 回收站根目录 ID 为 '0'
+            result = self._make_request("trash_list", params)
+
+            if result.get("result") == 0:
+                metadata = result.get("metadata", {})
+                contents = metadata.get("contents", [])
+
+                files = []
+                for item in contents:
+                    # 创建 DriveFile 对象
+                    file_info = DriveFile(
+                        fid=item.get("id", ""),
+                        name=item.get("name", ""),
+                        type="folder" if item.get("isfolder", False) else "file",
+                        size=item.get("size", 0),
+                        create_time=item.get("created", ""),
+                        update_time=item.get("modified", ""),
+                        parent_fid=str(
+                            item.get("origparentfolderid", "")
+                        ),  # 原始父目录 ID
+                        download_url="",
+                        extra_data={
+                            "isdeleted": True,
+                            "origparentfolderid": item.get("origparentfolderid", ""),
+                            "parentfolderid": item.get("parentfolderid", ""),
+                        },
+                    )
+                    files.append(file_info)
+
+                logger.debug(f"获取回收站文件列表成功，共 {len(files)} 个项目")
+                return files
+            else:
+                logger.error(f"获取回收站文件列表失败: {result}")
+                return []
+
+        except Exception as e:
+            logger.error(f"获取回收站文件列表异常: {e}")
+            return []
 
     def restore(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
         从回收站恢复文件
 
-        注意：pCloud 不支持回收站功能
+        API 文档: https://docs.pcloud.com/methods/trash/trash_restore.html
 
         Args:
-            fid (str): 文件ID
+            fid (str): 文件或文件夹ID（支持 'f123' 或 'd123' 格式）
             *args: 位置参数
-            **kwargs: 关键字参数
+            **kwargs: 关键字参数，可包含 restoreto 指定恢复目标目录
 
         Returns:
-            bool: False（pCloud 不支持回收站）
+            bool: 恢复是否成功
         """
-        logger.warning("pCloud 不支持回收站恢复功能")
-        return False
+        try:
+            normalized_fid = self._normalize_fid(fid)
+
+            # 构建请求参数
+            params = {}
+
+            # 判断是文件还是文件夹
+            if normalized_fid.startswith("f"):
+                params["fileid"] = normalized_fid[1:]  # 移除 'f' 前缀
+            elif normalized_fid.startswith("d"):
+                params["folderid"] = normalized_fid[1:]  # 移除 'd' 前缀
+            else:
+                # 尝试作为文件夹 ID 处理
+                params["folderid"] = normalized_fid
+
+            # 检查是否指定了恢复目标目录
+            restoreto = kwargs.get("restoreto")
+            if restoreto:
+                params["restoreto"] = self._normalize_fid(restoreto)
+
+            result = self._make_request("trash_restore", params)
+
+            if result.get("result") == 0:
+                logger.info(f"文件恢复成功: {fid}")
+                return True
+            else:
+                logger.error(f"文件恢复失败: {result}")
+                return False
+
+        except Exception as e:
+            logger.error(f"恢复文件异常, fid={fid}: {e}")
+            return False
 
     def clear_recycle(self, *args: Any, **kwargs: Any) -> bool:
         """
         清空回收站
 
-        注意：pCloud 不支持回收站功能
+        API 文档: https://docs.pcloud.com/methods/trash/trash_clear.html
 
         Args:
             *args: 位置参数
-            **kwargs: 关键字参数
+            **kwargs: 关键字参数，可包含 fid 指定要删除的特定文件/文件夹
 
         Returns:
-            bool: False（pCloud 不支持回收站）
+            bool: 清空是否成功
         """
-        logger.warning("pCloud 不支持回收站清空功能")
-        return False
+        try:
+            # 构建请求参数
+            params = {}
+
+            # 检查是否指定了特定的文件或文件夹 ID
+            fid = kwargs.get("fid")
+            if fid:
+                normalized_fid = self._normalize_fid(fid)
+
+                # 判断是文件还是文件夹
+                if normalized_fid.startswith("f"):
+                    params["fileid"] = normalized_fid[1:]  # 移除 'f' 前缀
+                elif normalized_fid.startswith("d"):
+                    params["folderid"] = normalized_fid[1:]  # 移除 'd' 前缀
+                else:
+                    # 尝试作为文件夹 ID 处理
+                    params["folderid"] = normalized_fid
+            else:
+                # 清空整个回收站
+                params["folderid"] = "0"
+
+            result = self._make_request("trash_clear", params)
+
+            if result.get("result") == 0:
+                if fid:
+                    logger.info(f"永久删除文件成功: {fid}")
+                else:
+                    logger.info("清空回收站成功")
+                return True
+            else:
+                logger.error(f"清空回收站失败: {result}")
+                return False
+
+        except Exception as e:
+            logger.error(f"清空回收站异常: {e}")
+            return False
 
     def get_upload_url(self, fid: str, filename: str, *args: Any, **kwargs: Any) -> str:
         """
