@@ -38,6 +38,122 @@ class PCloudDrive(BaseDrive):
         self.session = requests.Session()
         self._root_fid = "0"  # pCloud 根目录 ID 为 0
 
+    def _normalize_fid(self, fid: str) -> str:
+        """
+        标准化文件夹 ID，将路径格式转换为 pCloud 文件夹 ID 格式
+
+        Args:
+            fid (str): 文件夹 ID 或路径
+
+        Returns:
+            str: 标准化的文件夹 ID
+        """
+        # 如果是根路径，返回根目录 ID
+        if fid == "/" or fid == "root":
+            return self._root_fid
+
+        # 如果已经是数字 ID，直接返回
+        if fid.isdigit():
+            return fid
+
+        # 如果是路径格式，尝试通过路径查找对应的文件夹 ID
+        if fid.startswith("/"):
+            return self._get_folder_id_by_path(fid)
+
+        return fid
+
+    def _get_folder_id_by_path(self, path: str) -> str:
+        """
+        通过路径获取文件夹 ID
+
+        Args:
+            path (str): 文件夹路径
+
+        Returns:
+            str: 文件夹 ID，如果不存在则返回根目录 ID
+        """
+        if path == "/" or path == "":
+            return self._root_fid
+
+        # 分解路径
+        path_parts = [part for part in path.strip("/").split("/") if part]
+        current_fid = self._root_fid
+
+        # 逐级查找文件夹
+        for part in path_parts:
+            try:
+                params = {"folderid": current_fid}
+                result = self._make_request("listfolder", params)
+
+                if result.get("result") == 0:
+                    metadata = result.get("metadata", {})
+                    contents = metadata.get("contents", [])
+
+                    # 查找匹配的文件夹
+                    found = False
+                    for item in contents:
+                        if item.get("isfolder", False) and item.get("name") == part:
+                            current_fid = str(item.get("folderid", ""))
+                            found = True
+                            break
+
+                    if not found:
+                        # 如果找不到，返回当前层级的 ID
+                        return current_fid
+                else:
+                    return current_fid
+
+            except Exception:
+                return current_fid
+
+        return current_fid
+
+    def _get_file_id_by_path(self, path: str) -> Optional[str]:
+        """
+        通过文件路径获取文件 ID
+
+        Args:
+            path (str): 文件路径，如 "/fundrive_pcloud_测试/test_upload.txt"
+
+        Returns:
+            Optional[str]: 文件 ID，如果不存在则返回 None
+        """
+        if not path or not path.startswith("/"):
+            return None
+
+        # 分解路径获取目录和文件名
+        path_parts = path.strip("/").split("/")
+        if len(path_parts) == 0:
+            return None
+
+        filename = path_parts[-1]  # 最后一部分是文件名
+        dir_path = "/" + "/".join(path_parts[:-1]) if len(path_parts) > 1 else "/"
+
+        try:
+            # 获取父目录的文件夹 ID
+            parent_fid = self._get_folder_id_by_path(dir_path)
+
+            # 在父目录中查找文件
+            params = {"folderid": parent_fid}
+            result = self._make_request("listfolder", params)
+
+            if result.get("result") == 0:
+                metadata = result.get("metadata", {})
+                contents = metadata.get("contents", [])
+
+                # 查找匹配的文件
+                for item in contents:
+                    if not item.get("isfolder", False) and item.get("name") == filename:
+                        file_id = str(item.get("fileid", ""))
+                        return file_id
+
+                logger.warning(f"在目录 {dir_path} 中未找到文件 {filename}")
+
+        except Exception as e:
+            logger.error(f"通过路径获取文件 ID 失败, path={path}: {e}")
+
+        return None
+
     def _make_request(
         self, method: str, params: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
@@ -176,7 +292,7 @@ class PCloudDrive(BaseDrive):
         API 文档: https://docs.pcloud.com/methods/file/stat.html
 
         Args:
-            fid (str): 文件或目录 ID
+            fid (str): 文件或目录 ID 或路径
             *args: 位置参数
             **kwargs: 关键字参数
 
@@ -184,7 +300,12 @@ class PCloudDrive(BaseDrive):
             bool: 是否存在
         """
         try:
-            params = {"folderid": fid} if fid != "0" else {"folderid": 0}
+            normalized_fid = self._normalize_fid(fid)
+            params = (
+                {"folderid": normalized_fid}
+                if normalized_fid != "0"
+                else {"folderid": 0}
+            )
             result = self._make_request("stat", params)
             return result.get("result") == 0
         except Exception as e:
@@ -205,7 +326,7 @@ class PCloudDrive(BaseDrive):
         API 文档: https://docs.pcloud.com/methods/folder/createfolder.html
 
         Args:
-            fid (str): 父目录 ID
+            fid (str): 父目录 ID 或路径
             name (str): 目录名称
             return_if_exist (bool): 如果目录已存在，是否返回已存在目录的 ID
             *args: 位置参数
@@ -214,6 +335,8 @@ class PCloudDrive(BaseDrive):
         Returns:
             str: 创建的目录 ID
         """
+        normalized_fid = self._normalize_fid(fid)
+
         if return_if_exist:
             # 检查目录是否已存在
             dir_list = self.get_dir_list(fid)
@@ -222,7 +345,7 @@ class PCloudDrive(BaseDrive):
                     return dir_item.fid
 
         try:
-            params = {"folderid": fid, "name": name}
+            params = {"folderid": normalized_fid, "name": name}
             result = self._make_request("createfolder", params)
 
             if result.get("result") == 0:
@@ -244,7 +367,7 @@ class PCloudDrive(BaseDrive):
         - 删除目录: https://docs.pcloud.com/methods/folder/deletefolderrecursive.html
 
         Args:
-            fid (str): 文件或目录 ID
+            fid (str): 文件或目录 ID 或路径
             *args: 位置参数
             **kwargs: 关键字参数
 
@@ -252,16 +375,30 @@ class PCloudDrive(BaseDrive):
             bool: 删除是否成功
         """
         try:
-            # 先判断是文件还是目录
-            file_info = self.get_file_info(fid)
-            if file_info:
-                # 是文件
-                params = {"fileid": fid}
-                result = self._make_request("deletefile", params)
+            # 转换文件/目录 ID
+            if fid.startswith("/"):
+                # 尝试获取文件 ID
+                file_id = self._get_file_id_by_path(fid)
+                if file_id:
+                    # 是文件
+                    params = {"fileid": file_id}
+                    result = self._make_request("deletefile", params)
+                else:
+                    # 是目录
+                    folder_id = self._get_folder_id_by_path(fid)
+                    params = {"folderid": folder_id}
+                    result = self._make_request("deletefolderrecursive", params)
             else:
-                # 是目录
-                params = {"folderid": fid}
-                result = self._make_request("deletefolderrecursive", params)
+                # 直接使用 ID，通过 get_file_info 判断是否为文件
+                file_info = self.get_file_info(fid)
+                if file_info:
+                    # 是文件
+                    params = {"fileid": fid}
+                    result = self._make_request("deletefile", params)
+                else:
+                    # 是目录
+                    params = {"folderid": fid}
+                    result = self._make_request("deletefolderrecursive", params)
 
             return result.get("result") == 0
 
@@ -276,7 +413,7 @@ class PCloudDrive(BaseDrive):
         API 文档: https://docs.pcloud.com/methods/folder/listfolder.html
 
         Args:
-            fid (str): 目录 ID
+            fid (str): 目录 ID 或路径
             *args: 位置参数
             **kwargs: 关键字参数
 
@@ -284,7 +421,8 @@ class PCloudDrive(BaseDrive):
             List[DriveFile]: 文件列表
         """
         try:
-            params = {"folderid": fid}
+            normalized_fid = self._normalize_fid(fid)
+            params = {"folderid": normalized_fid}
             result = self._make_request("listfolder", params)
 
             if result.get("result") == 0:
@@ -302,7 +440,7 @@ class PCloudDrive(BaseDrive):
                 return []
 
         except Exception as e:
-            logger.error("get file list error", e)
+            logger.error(f"获取目录列表失败, fid={fid}: {e}")
             return []
 
     def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
@@ -312,7 +450,7 @@ class PCloudDrive(BaseDrive):
         API 文档: https://docs.pcloud.com/methods/folder/listfolder.html
 
         Args:
-            fid (str): 目录 ID
+            fid (str): 目录 ID 或路径
             *args: 位置参数
             **kwargs: 关键字参数
 
@@ -320,7 +458,8 @@ class PCloudDrive(BaseDrive):
             List[DriveFile]: 子目录列表
         """
         try:
-            params = {"folderid": fid}
+            normalized_fid = self._normalize_fid(fid)
+            params = {"folderid": normalized_fid}
             result = self._make_request("listfolder", params)
 
             if result.get("result") == 0:
@@ -348,7 +487,7 @@ class PCloudDrive(BaseDrive):
         API 文档: https://docs.pcloud.com/methods/file/stat.html
 
         Args:
-            fid (str): 文件 ID
+            fid (str): 文件 ID 或路径
             *args: 位置参数
             **kwargs: 关键字参数
 
@@ -356,7 +495,16 @@ class PCloudDrive(BaseDrive):
             Optional[DriveFile]: 文件信息对象，如果不存在则返回 None
         """
         try:
-            params = {"fileid": fid}
+            # 对于文件路径，需要先获取文件 ID
+            if fid.startswith("/"):
+                file_id = self._get_file_id_by_path(fid)
+                if not file_id:
+                    logger.error(f"无法找到文件, path={fid}")
+                    return None
+                params = {"fileid": file_id}
+            else:
+                params = {"fileid": fid}
+
             result = self._make_request("stat", params)
 
             if result.get("result") == 0:
@@ -426,6 +574,7 @@ class PCloudDrive(BaseDrive):
         Returns:
             bool: 下载是否成功
         """
+        save_path = None
         try:
             # 获取文件信息
             file_info = self.get_file_info(fid)
@@ -444,7 +593,7 @@ class PCloudDrive(BaseDrive):
 
             # 检查文件是否已存在
             if save_path.exists() and not overwrite:
-                print(f"文件 {save_path} 已存在，跳过下载")
+                logger.info(f"文件 {save_path} 已存在，跳过下载")
                 return True
 
             # 创建保存目录
@@ -461,13 +610,15 @@ class PCloudDrive(BaseDrive):
             return True
 
         except Exception as e:
-            logger.error(f"下载文件失败, fid={fid}, save_path={save_path}: {e}")
+            save_path_str = str(save_path) if save_path else "未知路径"
+            logger.error(f"下载文件失败, fid={fid}, save_path={save_path_str}: {e}")
             return False
 
     def upload_file(
         self,
         filepath: str,
         fid: str,
+        filename: Optional[str] = None,
         *args: Any,
         **kwargs: Any,
     ) -> bool:
@@ -479,6 +630,7 @@ class PCloudDrive(BaseDrive):
         Args:
             filepath (str): 本地文件路径
             fid (str): 目标目录 ID
+            filename (str, optional): 目标文件名，如果不指定则使用本地文件名
             *args: 位置参数
             **kwargs: 关键字参数
 
@@ -490,21 +642,27 @@ class PCloudDrive(BaseDrive):
             if not file_path.exists():
                 raise Exception(f"文件 {filepath} 不存在")
 
+            # 规范化目标目录 ID
+            normalized_fid = self._normalize_fid(fid)
+
             # 构建上传 URL
             url = urljoin(self.api_server, "uploadfile")
 
             # 准备参数
             params = {
-                "folderid": fid,
+                "folderid": normalized_fid,
                 "renameifexists": 1,  # 如果文件已存在则重命名
             }
             if self.auth_token:
                 params["auth"] = self.auth_token
 
+            # 确定上传文件名：优先使用指定的文件名，否则使用本地文件名
+            upload_filename = filename if filename else file_path.name
+
             # 准备文件数据
             files = {
                 "file": (
-                    file_path.name,
+                    upload_filename,
                     open(file_path, "rb"),
                     "application/octet-stream",
                 )
@@ -549,7 +707,11 @@ class PCloudDrive(BaseDrive):
             str: 下载链接
         """
         try:
-            params = {"fileid": fid}
+            # 对于文件路径，我们需要使用 path 参数而不是 fileid
+            if fid.startswith("/"):
+                params = {"path": fid}
+            else:
+                params = {"fileid": fid}
             result = self._make_request("getfilelink", params)
 
             if result.get("result") == 0:
@@ -590,12 +752,19 @@ class PCloudDrive(BaseDrive):
             # 先判断是文件还是目录
             file_info = self.get_file_info(fid)
             if file_info:
-                # 是文件
-                params = {"fileid": fid, "toname": new_name}
+                # 是文件，需要获取文件 ID
+                if fid.startswith("/"):
+                    file_id = self._get_file_id_by_path(fid)
+                    if not file_id:
+                        raise Exception(f"无法找到文件, path={fid}")
+                    params = {"fileid": file_id, "toname": new_name}
+                else:
+                    params = {"fileid": fid, "toname": new_name}
                 result = self._make_request("renamefile", params)
             else:
-                # 是目录
-                params = {"folderid": fid, "toname": new_name}
+                # 是目录，使用文件夹 ID
+                normalized_fid = self._normalize_fid(fid)
+                params = {"folderid": normalized_fid, "toname": new_name}
                 result = self._make_request("renamefolder", params)
 
             return result.get("result") == 0
@@ -650,8 +819,8 @@ class PCloudDrive(BaseDrive):
         - 复制目录: https://docs.pcloud.com/methods/folder/copyfolder.html
 
         Args:
-            source_fid (str): 源文件/目录 ID
-            target_fid (str): 目标目录 ID
+            source_fid (str): 源文件/目录 ID 或路径
+            target_fid (str): 目标目录 ID 或路径
             *args: 位置参数
             **kwargs: 关键字参数
 
@@ -659,15 +828,36 @@ class PCloudDrive(BaseDrive):
             bool: 复制是否成功
         """
         try:
-            # 先判断是文件还是目录
-            file_info = self.get_file_info(source_fid)
-            if file_info:
-                # 是文件
-                params = {"fileid": source_fid, "tofolderid": target_fid}
+            # 转换源文件/目录 ID
+            if source_fid.startswith("/"):
+                # 尝试获取文件 ID
+                source_file_id = self._get_file_id_by_path(source_fid)
+                if source_file_id:
+                    # 是文件
+                    source_id = source_file_id
+                    is_file = True
+                else:
+                    # 是目录
+                    source_id = self._get_folder_id_by_path(source_fid)
+                    is_file = False
+            else:
+                # 直接使用 ID，通过 get_file_info 判断是否为文件
+                source_id = source_fid
+                file_info = self.get_file_info(source_fid)
+                is_file = file_info is not None
+
+            # 转换目标目录 ID
+            if target_fid.startswith("/"):
+                target_id = self._get_folder_id_by_path(target_fid)
+            else:
+                target_id = target_fid
+
+            # 根据类型调用相应的 API
+            if is_file:
+                params = {"fileid": source_id, "tofolderid": target_id}
                 result = self._make_request("copyfile", params)
             else:
-                # 是目录
-                params = {"folderid": source_fid, "tofolderid": target_fid}
+                params = {"folderid": source_id, "tofolderid": target_id}
                 result = self._make_request("copyfolder", params)
 
             return result.get("result") == 0
@@ -735,7 +925,13 @@ class PCloudDrive(BaseDrive):
         try:
             params = {"query": keyword}
             if fid:
-                params["folderid"] = fid
+                # 对于搜索功能，如果是路径格式，需要转换为文件夹ID
+                if fid.startswith("/"):
+                    # 对于路径格式的搜索，我们暂时使用根目录ID
+                    # 在实际使用中，可能需要通过API查找路径对应的文件夹ID
+                    params["folderid"] = self._normalize_fid(fid)
+                else:
+                    params["folderid"] = fid
 
             result = self._make_request("search", params)
 
@@ -792,16 +988,30 @@ class PCloudDrive(BaseDrive):
 
             fid = fids[0]  # 只处理第一个文件
 
-            # 检查是文件还是文件夹
-            file_info = self.get_file_info(fid)
-            if file_info:
-                # 是文件，使用 getfilepublink
-                params = {"fileid": fid}
-                api_method = "getfilepublink"
+            # 转换文件/目录 ID
+            if fid.startswith("/"):
+                # 尝试获取文件 ID
+                file_id = self._get_file_id_by_path(fid)
+                if file_id:
+                    # 是文件，使用 getfilepublink
+                    params = {"fileid": file_id}
+                    api_method = "getfilepublink"
+                else:
+                    # 是文件夹，使用 getfolderpublink
+                    folder_id = self._get_folder_id_by_path(fid)
+                    params = {"folderid": folder_id}
+                    api_method = "getfolderpublink"
             else:
-                # 是文件夹，使用 getfolderpublink
-                params = {"folderid": fid}
-                api_method = "getfolderpublink"
+                # 直接使用 ID，通过 get_file_info 判断是否为文件
+                file_info = self.get_file_info(fid)
+                if file_info:
+                    # 是文件，使用 getfilepublink
+                    params = {"fileid": fid}
+                    api_method = "getfilepublink"
+                else:
+                    # 是文件夹，使用 getfolderpublink
+                    params = {"folderid": fid}
+                    api_method = "getfolderpublink"
 
             # 添加可选参数
             if password:
