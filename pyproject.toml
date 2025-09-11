@@ -1,6 +1,6 @@
 [project]
 name = "fundrive"
-version = "2.0.30"
+version = "2.0.31"
 description = "fundrive"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -31,6 +31,7 @@ webdav = [ "webdav4>=0.10.0",]
 wenshushu = [ "base58>=2.1.1", "pycryptodomex>=3.21.0",]
 baidu = [ "fundrive-baidu",]
 lanzou = [ "fundrive-lanzou",]
+plcoud = [ "httpx",]
 
 [project.urls]
 Organization = "https://github.com/farfarfun"
