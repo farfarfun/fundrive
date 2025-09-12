@@ -59,9 +59,8 @@ drive = GoogleDrive(
 )
 
 # 方法2: 使用funsecret配置
-from funsecret import save_secret
-save_secret("fundrive.google_drive.credentials_file", "/path/to/credentials.json", namespace="fundrive")
-save_secret("fundrive.google_drive.token_file", "/path/to/token.json", namespace="fundrive")
+funsecret set fundrive google_drive credentials_file "/path/to/credentials.json"
+funsecret set fundrive google_drive token_file "/path/to/token.json"
 
 # 方法3: 环境变量
 export GOOGLE_DRIVE_CREDENTIALS_FILE="/path/to/credentials.json"

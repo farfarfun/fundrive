@@ -1,10 +1,8 @@
 # 标准库导入
 import os
 import io
-from typing import List, Any, Optional, Dict
-from pathlib import Path
+from typing import List, Optional, Any
 
-# 第三方库导入
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from google.auth.transport.requests import Request
@@ -14,10 +12,10 @@ from googleapiclient.errors import HttpError
 from funsecret import read_secret
 from funutil import getLogger
 
-# 项目内部导入
+
 from fundrive.core import BaseDrive, DriveFile
 
-logger = getLogger("fundrive.google_drive")
+logger = getLogger("fundrive")
 
 
 class GoogleDrive(BaseDrive):
@@ -59,11 +57,11 @@ class GoogleDrive(BaseDrive):
 
         # 配置管理 - 优先使用传入参数，然后尝试从配置读取
         self.credentials_file = credentials_file or read_secret(
-            "fundrive.google_drive.credentials_file", namespace="fundrive"
+            "fundrive", "google_drive", "credentials_file"
         )
         self.token_file = (
             token_file
-            or read_secret("fundrive.google_drive.token_file", namespace="fundrive")
+            or read_secret("fundrive", "google_drive", "token_file")
             or "token.json"
         )
 
@@ -347,7 +345,7 @@ class GoogleDrive(BaseDrive):
             logger.error(f"获取文件信息失败: {e}")
             return None
 
-    def get_dir_info(self, fid: str, *args, **kwargs) -> DriveFile:
+    def get_dir_info(self, fid: str, *args, **kwargs) -> DriveFile[Any] | None:
         """
         获取目录详细信息
 
@@ -711,11 +709,7 @@ class GoogleDrive(BaseDrive):
             }
 
             # 执行复制
-            copied_file = (
-                self.service.files()
-                .copy(fileId=source_fid, body=copy_metadata)
-                .execute()
-            )
+            self.service.files().copy(fileId=source_fid, body=copy_metadata).execute()
 
             logger.info(f"文件复制成功: {copy_metadata['name']}")
             return True
@@ -785,11 +779,9 @@ class GoogleDrive(BaseDrive):
             # 更新文件名
             file_metadata = {"name": new_name}
 
-            updated_file = (
-                self.service.files()
-                .update(fileId=fid, body=file_metadata, fields="name")
-                .execute()
-            )
+            self.service.files().update(
+                fileId=fid, body=file_metadata, fields="name"
+            ).execute()
 
             logger.info(f"文件重命名成功: {new_name}")
             return True

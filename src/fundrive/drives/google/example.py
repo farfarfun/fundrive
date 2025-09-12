@@ -5,8 +5,8 @@ Google Drive 网盘驱动测试和示例
 使用通用测试框架进行标准化测试。
 
 使用方法:
-    python example.py --demo    # 运行快速演示
     python example.py --test    # 运行完整测试
+    python example.py --interactive  # 交互式演示
 """
 
 import argparse
@@ -44,7 +44,7 @@ def create_test_drive():
             logger.error("2. 完成OAuth2授权流程")
             logger.error("3. 使用funsecret配置凭据文件路径:")
             logger.error(
-                "   funsecret set fundrive.google_drive.credentials_file '/path/to/credentials.json'"
+                "   funsecret set fundrive google_drive credentials_file '/path/to/credentials.json'"
             )
             return None
 
@@ -95,44 +95,6 @@ def comprehensive_test():
     else:
         logger.warning("⚠️ 部分测试未通过，请检查相关功能")
         logger.info("💡 建议查看详细日志，修复问题后重新测试")
-
-    return success
-
-
-def quick_demo():
-    """
-    运行快速演示
-
-    演示Google Drive驱动的核心功能
-
-    Returns:
-        bool: 演示是否成功
-    """
-    logger.info("🚀 开始Google Drive驱动快速演示")
-
-    # 1. 创建驱动实例
-    drive = create_test_drive()
-    if not drive:
-        logger.error("❌ 无法创建驱动实例，演示终止")
-        return False
-
-    # 2. 创建测试器
-    demo_dir = "/fundrive_google_demo"  # 演示目录
-    tester = create_drive_tester(drive, demo_dir)
-
-    # 3. 运行快速演示
-    logger.info(f"📂 演示目录: {demo_dir}")
-    logger.info("📋 开始执行5项核心功能演示...")
-
-    success = tester.quick_demo()
-
-    # 4. 输出演示结果
-    if success:
-        logger.success("🎉 Google Drive驱动快速演示成功！")
-        logger.info("✅ 核心功能正常，驱动可以使用")
-    else:
-        logger.warning("⚠️ 演示过程中出现问题")
-        logger.info("💡 请检查网络连接和API配置")
 
     return success
 
@@ -248,7 +210,6 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例用法:
-  python example.py --demo     # 运行快速演示
   python example.py --test     # 运行完整测试
   python example.py --interactive  # 交互式演示
   
@@ -259,7 +220,7 @@ def main():
      - 创建OAuth2凭据并下载credentials.json
   
   2. 配置凭据文件路径:
-     funsecret set fundrive.google_drive.credentials_file "/path/to/credentials.json"
+     funsecret set fundrive google_drive credentials_file "/path/to/credentials.json"
   
   3. 首次运行时会自动打开浏览器进行OAuth授权
         """,
@@ -267,9 +228,6 @@ def main():
 
     parser.add_argument(
         "--test", action="store_true", help="运行完整的综合功能测试 (14项测试)"
-    )
-    parser.add_argument(
-        "--demo", action="store_true", help="运行快速功能演示 (5项核心测试)"
     )
     parser.add_argument("--interactive", action="store_true", help="运行交互式演示")
 
@@ -290,16 +248,11 @@ def main():
             # 运行交互式演示
             interactive_demo()
 
-        elif args.demo:
-            # 运行快速演示
-            success = quick_demo()
-            sys.exit(0 if success else 1)
-
         else:
-            # 默认运行快速演示
-            logger.info("💡 未指定参数，运行快速演示")
+            # 默认运行完整测试
+            logger.info("💡 未指定参数，运行完整测试")
             logger.info("💡 使用 --help 查看所有可用选项")
-            success = quick_demo()
+            success = comprehensive_test()
             sys.exit(0 if success else 1)
 
     except KeyboardInterrupt:

@@ -74,37 +74,32 @@ def comprehensive_test():
     tester = create_drive_tester(drive, "/test_dir")
     return tester.comprehensive_test()
 
-def quick_demo():
-    """运行快速演示"""
-    drive = create_test_drive()
-    if not drive:
-        return False
-    
-    tester = create_drive_tester(drive, "/demo_dir")
-    return tester.quick_demo()
-
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="你的网盘驱动示例")
     parser.add_argument("--test", action="store_true", help="运行综合功能测试")
-    parser.add_argument("--demo", action="store_true", help="运行快速演示")
+    parser.add_argument("--interactive", action="store_true", help="运行交互式演示")
     
     args = parser.parse_args()
     
     if args.test:
         comprehensive_test()
+    elif args.interactive:
+        # 可选的交互式演示
+        pass
     else:
-        quick_demo()
+        # 默认运行完整测试
+        comprehensive_test()
 ```
 
 #### 步骤 4: 测试你的驱动
 
 ```bash
-# 运行快速演示
-python example.py --demo
-
 # 运行完整测试
 python example.py --test
+
+# 运行交互式演示（可选）
+python example.py --interactive
 ```
 
 🎉 恭喜！你已经创建了一个基础的网盘驱动！
@@ -145,7 +140,7 @@ src/fundrive/drives/{drive_name}/
 2. **`example.py`** - 使用示例文件
    - 包含驱动的使用示例和综合测试代码
    - 必须提供 `comprehensive_test()` 函数，按优先级测试所有核心接口
-   - 支持 `--test` 参数运行完整测试，`--demo` 参数运行快速演示
+   - 支持 `--test` 参数运行完整测试，可选支持 `--interactive` 参数运行交互式演示
    - 提供清晰的使用说明和测试结果统计
 
 3. **`README.md`** - 驱动说明文档
@@ -305,19 +300,13 @@ def comprehensive_test():
     # 3. 运行测试
     return tester.comprehensive_test()
 
-def quick_demo():
-    """运行快速演示"""
-    drive = YourDrive(api_key="your_api_key")
-    tester = create_drive_tester(drive, "/demo_directory")
-    return tester.quick_demo()
 ```
 
 #### 测试框架功能
 
 | 测试类型 | 包含测试项 | 适用场景 |
 |:--------|:----------|:---------|
-| **comprehensive_test()** | 14个完整测试项 | 开发验证、CI/CD |
-| **quick_demo()** | 5个核心测试项 | 快速验证、演示 |
+| **comprehensive_test()** | 14个完整测试项 | 开发验证、CI/CD、日常测试 |
 
 #### 测试项目详情
 
@@ -441,11 +430,11 @@ files = drive.get_file_list("/")
 ## 🧪 测试
 
 ```bash
-# 快速演示
-python example.py --demo
-
 # 完整测试
 python example.py --test
+
+# 交互式演示（可选）
+python example.py --interactive
 ```
 ```
 
@@ -835,14 +824,14 @@ logger = getLogger("fundrive.your_drive")
 ### 测试验证
 
 ```bash
-# 1. 运行快速演示
-python example.py --demo
-
-# 2. 运行完整测试
+# 1. 运行完整测试
 python example.py --test
 
-# 3. 检查成功率
+# 2. 检查成功率
 # 目标：成功率 >= 70%（良好），>= 90%（优秀）
+
+# 3. 可选：运行交互式演示
+python example.py --interactive
 ```
 
 ---
