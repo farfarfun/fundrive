@@ -24,7 +24,7 @@ FunDrive 是一个统一的网盘操作接口框架，旨在提供一个标准�
 | 12 | **天池** | ⚠️ 部分 | ❌ 缺失 | ❌ 缺失 | ❌ 不符合 | 🚧 开发中 | `fundrive` |
 | 13 | **清华云盘** | ⚠️ 部分 | ❌ 缺失 | ❌ 缺失 | ❌ 不符合 | 🚧 开发中 | `fundrive` |
 | 14 | **文叔叔** | ⚠️ 部分 | ❌ 缺失 | ❌ 缺失 | ❌ 不符合 | 🚧 开发中 | `fundrive` |
-| 15 | **Google Drive** | ❌ 未实现 | ❌ 未实现 | ❌ 缺失 | ❌ 不符合 | 📋 计划中 | `fundrive` |
+| 15 | **Google Drive** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive[google]` |
 | 16 | **OneDrive** | ❌ 未实现 | ❌ 未实现 | ❌ 缺失 | ❌ 不符合 | 📋 计划中 | `fundrive` |
 | 17 | **Amazon S3** | ❌ 未实现 | ❌ 未实现 | ❌ 缺失 | ❌ 不符合 | 📋 计划中 | `fundrive` |
 
@@ -64,6 +64,7 @@ FunDrive 是一个统一的网盘操作接口框架，旨在提供一个标准�
 2. **阿里云OSS** - 企业级存储，性能稳定
 3. **pCloud** - 个人云存储，API 友好
 4. **Zenodo** - 学术数据存储，开放获取
+5. **Google Drive** - 全球最大云存储服务，OAuth2认证，功能完整
 
 ### 🔧 需要优化的驱动
 以下驱动功能基本完整但需要按开发规范进行优化：
@@ -78,7 +79,7 @@ FunDrive 是一个统一的网盘操作接口框架，旨在提供一个标准�
 ### 📋 计划开发的驱动
 以下驱动在开发计划中：
 
-- Google Drive、OneDrive、Amazon S3
+- OneDrive、Amazon S3
 
 
 ## 功能特点
@@ -140,8 +141,11 @@ pip install fundrive
 # 安装特定驱动（以 Dropbox 为例）
 pip install fundrive[dropbox]
 
+# 安装 Google Drive 驱动
+pip install fundrive[google]
+
 # 安装多个驱动
-pip install fundrive[dropbox,oss,pcloud]
+pip install fundrive[dropbox,oss,pcloud,google]
 ```
 
 ### 基本使用
@@ -169,7 +173,41 @@ for file in files:
     print(f"文件名: {file.name}, 大小: {file.size}")
 ```
 
-#### 2. 阿里云 OSS 示例
+#### 2. Google Drive 示例（推荐）
+
+```python
+from fundrive.drives.google import GoogleDrive
+
+# 初始化驱动
+drive = GoogleDrive(
+    credentials_file="/path/to/credentials.json",
+    token_file="/path/to/token.json"
+)
+
+# 登录（首次会打开浏览器进行OAuth授权）
+drive.login()
+
+# 上传文件
+drive.upload_file("/本地路径/文件.txt", "root", filename="上传文件.txt")
+
+# 下载文件
+drive.download_file("file_id", filedir="/本地下载路径", filename="下载文件.txt")
+
+# 获取存储配额
+quota = drive.get_quota()
+print(f"总空间: {quota['total']/(1024**3):.2f} GB")
+print(f"已使用: {quota['used']/(1024**3):.2f} GB")
+
+# 搜索文件
+results = drive.search("关键词", file_type="pdf")
+print(f"找到 {len(results)} 个PDF文件")
+
+# 创建分享链接
+share_link = drive.share("file_id")
+print(f"分享链接: {share_link}")
+```
+
+#### 3. 阿里云 OSS 示例
 
 ```python
 from fundrive.drives.oss import OssDrive
@@ -182,19 +220,27 @@ drive = OssDrive(
     endpoint="oss-cn-hangzhou.aliyuncs.com"
 )
 
-# 使用方法与 Dropbox 相同
+# 使用方法与其他驱动相同
 drive.login()
 drive.upload_file("/本地文件.txt", "/", "远程文件.txt")
 ```
 
-#### 3. 使用配置管理（推荐）
+#### 4. 使用配置管理（推荐）
 
 ```python
-# 使用 funsecret 管理配置
+# 使用 funsecret 管理配置 - Dropbox
 from fundrive.drives.dropbox import DropboxDrive
 
 # 自动从配置中读取 access_token
 drive = DropboxDrive()
+drive.login()
+
+# 使用 funsecret 管理配置 - Google Drive
+from fundrive.drives.google import GoogleDrive
+
+# 预先配置凭据文件路径
+# funsecret set fundrive.google_drive.credentials_file "/path/to/credentials.json"
+drive = GoogleDrive()  # 自动从配置读取凭据文件路径
 drive.login()
 ```
 
@@ -203,7 +249,7 @@ drive.login()
 每个生产就绪的驱动都提供了标准化的测试功能：
 
 ```bash
-# 进入驱动目录
+# 进入驱动目录 - Dropbox
 cd src/fundrive/drives/dropbox
 
 # 运行完整测试
@@ -211,6 +257,18 @@ python example.py --test
 
 # 运行快速演示
 python example.py --demo
+
+# 进入驱动目录 - Google Drive
+cd src/fundrive/drives/google
+
+# 运行完整测试（14项测试）
+python example.py --test
+
+# 运行快速演示（5项核心测试）
+python example.py --demo
+
+# 运行交互式演示
+python example.py --interactive
 ```
 
 ## 使用方法
