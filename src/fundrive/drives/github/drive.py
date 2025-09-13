@@ -1,0 +1,769 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+GitHub驱动实现
+
+GitHub是全球最大的代码托管平台，本驱动将GitHub仓库作为云存储来操作，
+支持文件的上传、下载、管理等功能。特别适合存储代码、文档、配置文件等。
+
+主要功能:
+- 仓库文件管理
+- 文件上传下载
+- 目录操作
+- 版本控制
+- 分支管理
+
+作者: FunDrive Team
+"""
+
+import base64
+import os
+from typing import Any, Dict, List, Optional
+
+import requests
+from funsecret import read_secret
+from funutil import getLogger
+
+from fundrive.core import BaseDrive, DriveFile
+
+logger = getLogger("fundrive")
+
+
+class GitHubDrive(BaseDrive):
+    """
+    GitHub驱动
+
+    基于GitHub REST API实现的代码仓库云存储驱动，将GitHub仓库作为云存储来操作。
+    支持完整的文件管理功能和版本控制。
+    """
+
+    def __init__(
+        self,
+        access_token: Optional[str] = None,
+        repo_owner: Optional[str] = None,
+        repo_name: Optional[str] = None,
+        branch: str = "main",
+        **kwargs,
+    ):
+        """
+        初始化GitHub驱动
+
+        Args:
+            access_token: GitHub访问令牌
+            repo_owner: 仓库所有者
+            repo_name: 仓库名称
+            branch: 默认分支名称
+            **kwargs: 其他参数
+        """
+        super().__init__(**kwargs)
+
+        # 从配置或环境变量获取认证信息
+        self.access_token = (
+            access_token
+            or read_secret("fundrive", "github", "access_token")
+            or os.getenv("GITHUB_ACCESS_TOKEN")
+        )
+        self.repo_owner = (
+            repo_owner
+            or read_secret("fundrive", "github", "repo_owner")
+            or os.getenv("GITHUB_REPO_OWNER")
+        )
+        self.repo_name = (
+            repo_name
+            or read_secret("fundrive", "github", "repo_name")
+            or os.getenv("GITHUB_REPO_NAME")
+        )
+        self.branch = branch
+
+        # API配置
+        self.base_url = "https://api.github.com"
+        self.headers = {}
+        self.repo_str = None
+
+    def login(
+        self,
+        access_token: Optional[str] = None,
+        repo_owner: Optional[str] = None,
+        repo_name: Optional[str] = None,
+        branch: Optional[str] = None,
+        **kwargs,
+    ) -> bool:
+        """
+        登录GitHub
+
+        Args:
+            access_token: GitHub访问令牌
+            repo_owner: 仓库所有者
+            repo_name: 仓库名称
+            branch: 分支名称
+
+        Returns:
+            登录是否成功
+        """
+        try:
+            logger.info("正在连接GitHub...")
+
+            # 更新认证信息
+            if access_token:
+                self.access_token = access_token
+            if repo_owner:
+                self.repo_owner = repo_owner
+            if repo_name:
+                self.repo_name = repo_name
+            if branch:
+                self.branch = branch
+
+            # 检查必需的认证信息
+            if not self.access_token:
+                logger.error("缺少GitHub访问令牌")
+                return False
+
+            if not self.repo_owner or not self.repo_name:
+                logger.error("缺少GitHub仓库信息")
+                return False
+
+            # 设置请求头
+            self.headers = {
+                "Authorization": f"token {self.access_token}",
+                "Accept": "application/vnd.github.v3+json",
+                "User-Agent": "FunDrive-GitHub-Driver",
+            }
+            self.repo_str = f"{self.repo_owner}/{self.repo_name}"
+
+            # 验证仓库访问权限
+            response = requests.get(
+                f"{self.base_url}/repos/{self.repo_str}", headers=self.headers
+            )
+
+            if response.status_code == 200:
+                repo_info = response.json()
+                logger.info(f"✅ 成功连接到GitHub仓库: {self.repo_str}")
+                logger.info(f"   仓库描述: {repo_info.get('description', '无')}")
+                logger.info(f"   默认分支: {repo_info.get('default_branch', 'main')}")
+                return True
+            elif response.status_code == 404:
+                logger.error(f"仓库不存在或无访问权限: {self.repo_str}")
+                return False
+            else:
+                logger.error(f"GitHub API错误: {response.status_code}")
+                return False
+
+        except Exception as e:
+            logger.error(f"❌ GitHub连接失败: {e}")
+            return False
+
+    def exist(self, fid: str, filename: str = None) -> bool:
+        """
+        检查文件是否存在
+
+        Args:
+            fid: 文件路径
+            filename: 文件名（可选）
+
+        Returns:
+            文件是否存在
+        """
+        try:
+            if filename:
+                path = f"{fid.rstrip('/')}/{filename}" if fid else filename
+            else:
+                path = fid
+
+            response = requests.get(
+                f"{self.base_url}/repos/{self.repo_str}/contents/{path}",
+                headers=self.headers,
+                params={"ref": self.branch},
+            )
+
+            return response.status_code == 200
+
+        except Exception as e:
+            logger.error(f"检查文件存在性失败: {e}")
+            return False
+
+    def mkdir(self, fid: str, dirname: str) -> bool:
+        """
+        创建目录（通过创建.gitkeep文件）
+
+        Args:
+            fid: 父目录路径
+            dirname: 目录名
+
+        Returns:
+            创建是否成功
+        """
+        try:
+            logger.info(f"正在创建目录: {fid}/{dirname}")
+
+            # 构建目录路径
+            dir_path = f"{fid.rstrip('/')}/{dirname}" if fid else dirname
+            gitkeep_path = f"{dir_path}/.gitkeep"
+
+            # 创建.gitkeep文件来表示目录
+            success = self.upload_file(
+                filepath=None,
+                fid=dir_path,
+                filename=".gitkeep",
+                content="# This file keeps the directory in git\n",
+                commit_message=f"Create directory: {dir_path}",
+            )
+
+            if success:
+                logger.info(f"✅ 目录创建成功: {dir_path}")
+            return success
+
+        except Exception as e:
+            logger.error(f"创建目录失败: {e}")
+            return False
+
+    def delete(self, fid: str) -> bool:
+        """
+        删除文件
+
+        Args:
+            fid: 文件路径
+
+        Returns:
+            删除是否成功
+        """
+        try:
+            logger.info(f"正在删除文件: {fid}")
+
+            # 获取文件信息以获取SHA
+            file_info = self.get_file_info(fid)
+            if not file_info:
+                logger.warning(f"文件不存在: {fid}")
+                return False
+
+            # 删除文件
+            data = {
+                "message": f"Delete file: {fid}",
+                "sha": file_info.ext.get("sha"),
+                "branch": self.branch,
+            }
+
+            response = requests.delete(
+                f"{self.base_url}/repos/{self.repo_str}/contents/{fid}",
+                headers=self.headers,
+                json=data,
+            )
+
+            if response.status_code in (200, 204):
+                logger.info(f"✅ 文件删除成功: {fid}")
+                return True
+            else:
+                logger.error(f"删除文件失败: {response.status_code}")
+                return False
+
+        except Exception as e:
+            logger.error(f"删除文件失败: {e}")
+            return False
+
+    def get_file_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
+        """
+        获取文件列表
+
+        Args:
+            fid: 目录路径
+
+        Returns:
+            文件列表
+        """
+        try:
+            logger.info(f"正在获取文件列表: {fid}")
+
+            response = requests.get(
+                f"{self.base_url}/repos/{self.repo_str}/contents/{fid}",
+                headers=self.headers,
+                params={"ref": self.branch},
+            )
+
+            if response.status_code != 200:
+                logger.error(f"获取文件列表失败: {response.status_code}")
+                return []
+
+            files = []
+            for item in response.json():
+                if item["type"] == "file":
+                    drive_file = DriveFile(
+                        fid=item["path"],
+                        name=item["name"],
+                        size=item["size"],
+                        ext={
+                            "type": "file",
+                            "sha": item["sha"],
+                            "download_url": item["download_url"],
+                            "git_url": item["git_url"],
+                            "html_url": item["html_url"],
+                        },
+                    )
+                    files.append(drive_file)
+
+            logger.info(f"✅ 获取到 {len(files)} 个文件")
+            return files
+
+        except Exception as e:
+            logger.error(f"获取文件列表失败: {e}")
+            return []
+
+    def get_dir_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
+        """
+        获取目录列表
+
+        Args:
+            fid: 目录路径
+
+        Returns:
+            目录列表
+        """
+        try:
+            logger.info(f"正在获取目录列表: {fid}")
+
+            response = requests.get(
+                f"{self.base_url}/repos/{self.repo_str}/contents/{fid}",
+                headers=self.headers,
+                params={"ref": self.branch},
+            )
+
+            if response.status_code != 200:
+                logger.error(f"获取目录列表失败: {response.status_code}")
+                return []
+
+            dirs = []
+            for item in response.json():
+                if item["type"] == "dir":
+                    drive_file = DriveFile(
+                        fid=item["path"],
+                        name=item["name"],
+                        size=0,
+                        ext={
+                            "type": "folder",
+                            "sha": item["sha"],
+                            "git_url": item["git_url"],
+                            "html_url": item["html_url"],
+                        },
+                    )
+                    dirs.append(drive_file)
+
+            logger.info(f"✅ 获取到 {len(dirs)} 个目录")
+            return dirs
+
+        except Exception as e:
+            logger.error(f"获取目录列表失败: {e}")
+            return []
+
+    def get_file_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+        """
+        获取文件信息
+
+        Args:
+            fid: 文件路径
+
+        Returns:
+            文件信息
+        """
+        try:
+            logger.info(f"正在获取文件信息: {fid}")
+
+            response = requests.get(
+                f"{self.base_url}/repos/{self.repo_str}/contents/{fid}",
+                headers=self.headers,
+                params={"ref": self.branch},
+            )
+
+            if response.status_code != 200:
+                logger.warning(f"文件不存在: {fid}")
+                return None
+
+            data = response.json()
+            if data["type"] != "file":
+                logger.warning(f"路径不是文件: {fid}")
+                return None
+
+            drive_file = DriveFile(
+                fid=data["path"],
+                name=data["name"],
+                size=data["size"],
+                ext={
+                    "type": "file",
+                    "sha": data["sha"],
+                    "download_url": data["download_url"],
+                    "git_url": data["git_url"],
+                    "html_url": data["html_url"],
+                    "encoding": data.get("encoding", "base64"),
+                },
+            )
+
+            return drive_file
+
+        except Exception as e:
+            logger.error(f"获取文件信息失败: {e}")
+            return None
+
+    def get_dir_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+        """
+        获取目录信息
+
+        Args:
+            fid: 目录路径
+
+        Returns:
+            目录信息
+        """
+        try:
+            logger.info(f"正在获取目录信息: {fid}")
+
+            if fid == "" or fid == "/":
+                # 根目录
+                return DriveFile(fid="", name="root", size=0, ext={"type": "folder"})
+
+            response = requests.get(
+                f"{self.base_url}/repos/{self.repo_str}/contents/{fid}",
+                headers=self.headers,
+                params={"ref": self.branch},
+            )
+
+            if response.status_code != 200:
+                logger.warning(f"目录不存在: {fid}")
+                return None
+
+            # GitHub API返回数组表示目录内容
+            if isinstance(response.json(), list):
+                return DriveFile(
+                    fid=fid, name=os.path.basename(fid), size=0, ext={"type": "folder"}
+                )
+
+            return None
+
+        except Exception as e:
+            logger.error(f"获取目录信息失败: {e}")
+            return None
+
+    def upload_file(
+        self,
+        filepath: str = None,
+        fid: str = "",
+        filename: str = None,
+        content: str = None,
+        commit_message: str = None,
+        callback: callable = None,
+        **kwargs,
+    ) -> bool:
+        """
+        上传文件到GitHub
+
+        Args:
+            filepath: 本地文件路径
+            fid: 目标目录路径
+            filename: 上传后的文件名
+            content: 文件内容（如果不提供filepath）
+            commit_message: 提交信息
+            callback: 进度回调函数
+
+        Returns:
+            上传是否成功
+        """
+        try:
+            logger.info(f"正在上传文件: {filepath or filename}")
+
+            # 确定文件名和路径
+            if filepath and os.path.exists(filepath):
+                filename = filename or os.path.basename(filepath)
+                with open(filepath, "rb") as f:
+                    file_content = f.read()
+            elif content:
+                if not filename:
+                    logger.error("必须提供文件名")
+                    return False
+                file_content = (
+                    content.encode("utf-8") if isinstance(content, str) else content
+                )
+            else:
+                logger.error("必须提供文件路径或内容")
+                return False
+
+            # 构建GitHub路径
+            github_path = f"{fid.rstrip('/')}/{filename}" if fid else filename
+
+            # 检查文件是否已存在
+            existing_file = self.get_file_info(github_path)
+
+            # 准备上传数据
+            data = {
+                "message": commit_message or f"Upload file: {filename}",
+                "content": base64.b64encode(file_content).decode("utf-8"),
+                "branch": self.branch,
+            }
+
+            # 如果文件已存在，需要提供SHA
+            if existing_file:
+                data["sha"] = existing_file.ext.get("sha")
+                logger.info(f"更新已存在文件: {github_path}")
+            else:
+                logger.info(f"创建新文件: {github_path}")
+
+            # 上传文件
+            response = requests.put(
+                f"{self.base_url}/repos/{self.repo_str}/contents/{github_path}",
+                headers=self.headers,
+                json=data,
+            )
+
+            if response.status_code in (200, 201):
+                logger.info(f"✅ 文件上传成功: {github_path}")
+                if callback:
+                    callback(len(file_content), len(file_content))
+                return True
+            else:
+                logger.error(f"上传文件失败: {response.status_code} - {response.text}")
+                return False
+
+        except Exception as e:
+            logger.error(f"上传文件失败: {e}")
+            return False
+
+    def download_file(
+        self,
+        fid: str,
+        filedir: str = ".",
+        filename: str = None,
+        callback: callable = None,
+        **kwargs,
+    ) -> bool:
+        """
+        从GitHub下载文件
+
+        Args:
+            fid: 文件路径
+            filedir: 下载目录
+            filename: 保存的文件名
+            callback: 进度回调函数
+
+        Returns:
+            下载是否成功
+        """
+        try:
+            logger.info(f"正在下载文件: {fid}")
+
+            # 获取文件信息
+            file_info = self.get_file_info(fid)
+            if not file_info:
+                logger.error(f"文件不存在: {fid}")
+                return False
+
+            # 确定保存路径
+            filename = filename or os.path.basename(fid)
+            os.makedirs(filedir, exist_ok=True)
+            filepath = os.path.join(filedir, filename)
+
+            # 下载文件
+            download_url = file_info.ext.get("download_url")
+            if download_url:
+                response = requests.get(download_url)
+                if response.status_code == 200:
+                    with open(filepath, "wb") as f:
+                        f.write(response.content)
+
+                    logger.info(f"✅ 文件下载成功: {filepath}")
+                    if callback:
+                        callback(len(response.content), len(response.content))
+                    return True
+
+            logger.error("下载文件失败: 无法获取下载链接")
+            return False
+
+        except Exception as e:
+            logger.error(f"下载文件失败: {e}")
+            return False
+
+    def download_dir(
+        self, fid: str, filedir: str = "./cache", overwrite: bool = False, **kwargs
+    ) -> bool:
+        """
+        下载整个目录
+
+        Args:
+            fid: 目录路径
+            filedir: 下载目录
+            overwrite: 是否覆盖已存在的文件
+
+        Returns:
+            下载是否成功
+        """
+        try:
+            logger.info(f"正在下载目录: {fid}")
+
+            success_count = 0
+            total_count = 0
+
+            # 递归下载目录内容
+            def download_recursive(path: str, local_dir: str):
+                nonlocal success_count, total_count
+
+                # 获取文件列表
+                files = self.get_file_list(path)
+                dirs = self.get_dir_list(path)
+
+                # 下载文件
+                for file in files:
+                    total_count += 1
+                    try:
+                        relative_path = (
+                            file.fid[len(fid) :].lstrip("/") if fid else file.fid
+                        )
+                        local_path = os.path.join(local_dir, relative_path)
+                        local_file_dir = os.path.dirname(local_path)
+
+                        # 创建目录
+                        os.makedirs(local_file_dir, exist_ok=True)
+
+                        # 检查是否需要覆盖
+                        if os.path.exists(local_path) and not overwrite:
+                            logger.info(f"跳过已存在文件: {local_path}")
+                            success_count += 1
+                            continue
+
+                        # 下载文件
+                        if self.download_file(
+                            file.fid, local_file_dir, os.path.basename(local_path)
+                        ):
+                            success_count += 1
+                            logger.info(f"下载进度: {success_count}/{total_count}")
+
+                    except Exception as e:
+                        logger.error(f"下载文件失败 {file.fid}: {e}")
+
+                # 递归处理子目录
+                for dir_item in dirs:
+                    download_recursive(dir_item.fid, local_dir)
+
+            download_recursive(fid, filedir)
+
+            logger.info(f"✅ 目录下载完成: {success_count}/{total_count} 个文件成功")
+            return success_count > 0 or total_count == 0
+
+        except Exception as e:
+            logger.error(f"下载目录失败: {e}")
+            return False
+
+    # 高级功能实现
+    def search(self, keyword: str, fid: str = "", **kwargs) -> List[DriveFile]:
+        """
+        搜索文件
+
+        Args:
+            keyword: 搜索关键词
+            fid: 搜索范围（目录路径）
+
+        Returns:
+            搜索结果列表
+        """
+        try:
+            logger.info(f"正在搜索文件: {keyword}")
+
+            # GitHub搜索API
+            query = f"repo:{self.repo_str} filename:{keyword}"
+            if fid:
+                query += f" path:{fid}"
+
+            response = requests.get(
+                f"{self.base_url}/search/code",
+                headers=self.headers,
+                params={"q": query},
+            )
+
+            results = []
+            if response.status_code == 200:
+                data = response.json()
+                for item in data.get("items", []):
+                    drive_file = DriveFile(
+                        fid=item["path"],
+                        name=item["name"],
+                        size=0,  # 搜索API不返回大小
+                        ext={
+                            "type": "file",
+                            "sha": item["sha"],
+                            "html_url": item["html_url"],
+                            "repository": item["repository"]["full_name"],
+                        },
+                    )
+                    results.append(drive_file)
+
+            logger.info(f"搜索完成，找到 {len(results)} 个结果")
+            return results
+
+        except Exception as e:
+            logger.error(f"搜索失败: {e}")
+            return []
+
+    def get_quota(self) -> Dict[str, Any]:
+        """
+        获取仓库信息（GitHub没有存储配额限制）
+
+        Returns:
+            仓库信息
+        """
+        try:
+            response = requests.get(
+                f"{self.base_url}/repos/{self.repo_str}", headers=self.headers
+            )
+
+            if response.status_code == 200:
+                repo_data = response.json()
+                return {
+                    "repo_name": repo_data["full_name"],
+                    "description": repo_data.get("description", ""),
+                    "size": repo_data["size"],  # KB
+                    "size_mb": round(repo_data["size"] / 1024, 2),
+                    "default_branch": repo_data["default_branch"],
+                    "language": repo_data.get("language", ""),
+                    "stars": repo_data["stargazers_count"],
+                    "forks": repo_data["forks_count"],
+                    "open_issues": repo_data["open_issues_count"],
+                    "created_at": repo_data["created_at"],
+                    "updated_at": repo_data["updated_at"],
+                    "unlimited": True,  # GitHub仓库没有硬性大小限制
+                }
+
+            return {}
+
+        except Exception as e:
+            logger.error(f"获取仓库信息失败: {e}")
+            return {}
+
+    def create_share_link(self, fid: str) -> str:
+        """
+        创建文件分享链接
+
+        Args:
+            fid: 文件路径
+
+        Returns:
+            分享链接URL
+        """
+        try:
+            # GitHub文件的公开链接
+            url = f"https://github.com/{self.repo_str}/blob/{self.branch}/{fid}"
+            logger.info(f"生成分享链接: {fid}")
+            return url
+
+        except Exception as e:
+            logger.error(f"生成分享链接失败: {e}")
+            return ""
+
+    def get_raw_url(self, fid: str) -> str:
+        """
+        获取文件原始内容链接
+
+        Args:
+            fid: 文件路径
+
+        Returns:
+            原始内容链接
+        """
+        return f"https://raw.githubusercontent.com/{self.repo_str}/{self.branch}/{fid}"
+
+
+# 向后兼容的别名
+GithubDrive = GitHubDrive

@@ -1,6 +1,6 @@
 [project]
 name = "fundrive"
-version = "2.0.38"
+version = "2.0.39"
 description = "fundrive"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -22,7 +22,7 @@ name = "farfarfun"
 email = "farfarfun@qq.com"
 
 [dependency-groups]
-all = [ "fundrive[oss]", "fundrive[alipan]", "fundrive[webdav]", "fundrive[baidu]", "fundrive[lanzou]", "fundrive[google]", "fundrive[onedrive]",]
+all = [ "fundrive[oss]", "fundrive[alipan]", "fundrive[webdav]", "fundrive[baidu]", "fundrive[lanzou]", "fundrive[google]", "fundrive[onedrive]", "fundrive[wenshushu]", "fundrive[amazon]", "fundrive[tsinghua]", "fundrive[dropbox]",]
 
 [project.optional-dependencies]
 alipan = [ "aligo>=6.2.4", "fundrive-alipan",]
@@ -35,6 +35,8 @@ plcoud = [ "requests",]
 dropbox = [ "dropbox>=12.0.2",]
 google = [ "google-api-python-client>=2.0.0", "google-auth-httplib2>=0.1.0", "google-auth-oauthlib>=1.0.0",]
 onedrive = [ "requests>=2.25.0",]
+amazon = [ "boto3>=1.34.0",]
+tsinghua = [ "requests>=2.32.4",]
 
 [project.urls]
 Organization = "https://github.com/farfarfun"

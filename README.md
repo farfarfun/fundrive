@@ -10,23 +10,24 @@ FunDrive 是一个统一的网盘操作接口框架，旨在提供一个标准�
 
 | 序号 | 网盘服务 | 核心功能 | 高级功能 | 示例文件 | 开发规范 |   状态   | 包名 |
 |:---:|:--------|:-------:|:-------:|:-------:|:-------:|:------:|:-----|
-| 1 | **Dropbox** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪  | `fundrive[dropbox]` |
-| 2 | **阿里云OSS** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪  | `fundrive[oss]` |
-| 3 | **pCloud** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪  | `fundrive[pcloud]` |
-| 4 | **Zenodo** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪  | `fundrive[zenodo]` |
-| 5 | **阿里云盘 (Aligo)** | ✅ 完整 | ⚠️ 部分 | ❌ 缺失 | ⚠️ 部分 | 🔧 需优化 | `fundrive[alipan]` |
-| 6 | **阿里云盘 (Open)** | ✅ 完整 | ⚠️ 部分 | ❌ 缺失 | ⚠️ 部分 | 🔧 需优化 | `fundrive[alipan]` |
-| 7 | **百度网盘** | ✅ 完整 | ⚠️ 部分 | ❌ 缺失 | ⚠️ 部分 | 🔧 需优化 | `fundrive[baidu]` |
-| 8 | **蓝奏云** | ✅ 完整 | ⚠️ 部分 | ❌ 缺失 | ⚠️ 部分 | 🔧 需优化 | `fundrive[lanzou]` |
-| 9 | **本地文件系统** | ✅ 完整 | ⚠️ 部分 | ❌ 缺失 | ⚠️ 部分 | 🔧 需优化 | `fundrive` |
-| 10 | **WebDAV** | ✅ 完整 | ⚠️ 部分 | ❌ 缺失 | ⚠️ 部分 | 🔧 需优化 | `fundrive[webdav]` |
-| 11 | **OpenXLab** | ⚠️ 部分 | ❌ 缺失 | ❌ 缺失 | ❌ 不符合 | 🚧 开发中 | `fundrive` |
-| 12 | **天池** | ⚠️ 部分 | ❌ 缺失 | ❌ 缺失 | ❌ 不符合 | 🚧 开发中 | `fundrive` |
-| 13 | **清华云盘** | ⚠️ 部分 | ❌ 缺失 | ❌ 缺失 | ❌ 不符合 | 🚧 开发中 | `fundrive` |
-| 14 | **文叔叔** | ⚠️ 部分 | ❌ 缺失 | ❌ 缺失 | ❌ 不符合 | 🚧 开发中 | `fundrive` |
-| 15 | **Google Drive** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive[google]` |
-| 16 | **OneDrive** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive[onedrive]` |
-| 17 | **Amazon S3** | ❌ 未实现 | ❌ 未实现 | ❌ 缺失 | ❌ 不符合 | 📋 计划中 | `fundrive` |
+| 1 | **[Dropbox](src/fundrive/drives/dropbox/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪  | `fundrive[dropbox]` |
+| 2 | **[阿里云OSS](src/fundrive/drives/oss/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪  | `fundrive[oss]` |
+| 3 | **[pCloud](src/fundrive/drives/pcloud/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪  | `fundrive[pcloud]` |
+| 4 | **[Zenodo](src/fundrive/drives/zenodo/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪  | `fundrive[zenodo]` |
+| 5 | **[Google Drive](src/fundrive/drives/google/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive[google]` |
+| 6 | **[OneDrive](src/fundrive/drives/onedrive/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive[onedrive]` |
+| 7 | **[Amazon S3](src/fundrive/drives/amazon/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive[amazon]` |
+| 8 | **[阿里云盘 (Aligo)](src/fundrive/drives/alipan/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive[alipan]` |
+| 9 | **[阿里云盘 (Open)](src/fundrive/drives/alipan/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive[alipan]` |
+| 10 | **[百度网盘](src/fundrive/drives/baidu/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive[baidu]` |
+| 11 | **[蓝奏云](src/fundrive/drives/lanzou/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive[lanzou]` |
+| 12 | **[本地文件系统](src/fundrive/drives/os/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive` |
+| 13 | **[WebDAV](src/fundrive/drives/webdav/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive[webdav]` |
+| 14 | **[OpenXLab](src/fundrive/drives/openxlab/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive` |
+| 15 | **[天池](src/fundrive/drives/tianchi/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive` |
+| 16 | **[清华云盘](src/fundrive/drives/tsinghua/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive[tsinghua]` |
+| 17 | **[文叔叔](src/fundrive/drives/wenshushu/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive[wenshushu]` |
+| 18 | **[MediaFire](src/fundrive/drives/mediafire/README.md)** | ✅ 完整 | ✅ 完整 | ✅ 标准 | ✅ 符合 | 🎉 就绪 | `fundrive` |
 
 ### 📋 功能实现详情
 
@@ -57,30 +58,36 @@ FunDrive 是一个统一的网盘操作接口框架，旨在提供一个标准�
 - ⚠️ **部分符合**: 基本功能实现但缺少示例文件或文档
 - ❌ **不符合**: 缺少关键组件或不遵循开发规范
 
-### 🎯 推荐使用 (生产就绪)
-以下驱动已完全实现并符合开发规范，推荐在生产环境使用：
+### 🎉 生产就绪驱动 (全部完成！)
+所有驱动已完全实现并符合开发规范，推荐在生产环境使用：
 
-1. **Dropbox** - 功能完整，文档齐全，测试覆盖率高
-2. **阿里云OSS** - 企业级存储，性能稳定
-3. **pCloud** - 个人云存储，API 友好
-4. **Zenodo** - 学术数据存储，开放获取
-5. **Google Drive** - 全球最大云存储服务，OAuth2认证，功能完整
-6. **OneDrive** - Microsoft云存储服务，与Office深度集成，支持大文件上传
+#### 🌟 国际主流服务
+1. **[Dropbox](src/fundrive/drives/dropbox/README.md)** - 功能完整，文档齐全，测试覆盖率高
+2. **[Google Drive](src/fundrive/drives/google/README.md)** - 全球最大云存储服务，OAuth2认证，功能完整
+3. **[OneDrive](src/fundrive/drives/onedrive/README.md)** - Microsoft云存储服务，与Office深度集成，支持大文件上传
+4. **[Amazon S3](src/fundrive/drives/amazon/README.md)** - 企业级对象存储，支持无限扩展，兼容多种S3服务
 
-### 🔧 需要优化的驱动
-以下驱动功能基本完整但需要按开发规范进行优化：
+#### 🏢 企业级存储
+5. **[阿里云OSS](src/fundrive/drives/oss/README.md)** - 企业级存储，性能稳定，支持多种存储类别
+6. **[WebDAV](src/fundrive/drives/webdav/README.md)** - 通用协议，支持多种WebDAV服务器
 
-- 阿里云盘、百度网盘、蓝奏云、本地文件系统、WebDAV
+#### 🔬 学术和专业服务
+7. **[Zenodo](src/fundrive/drives/zenodo/README.md)** - 学术数据存储，开放获取，DOI支持
+8. **[pCloud](src/fundrive/drives/pcloud/README.md)** - 个人云存储，API友好，加密存储
+9. **[清华云盘](src/fundrive/drives/tsinghua/README.md)** - 学术共享平台，只读访问
+10. **[OpenXLab](src/fundrive/drives/openxlab/README.md)** - AI模型和数据集平台
+11. **[天池](src/fundrive/drives/tianchi/README.md)** - 阿里云大数据竞赛平台
 
-### 🚧 开发中的驱动
-以下驱动正在开发中，功能不完整：
+#### 🇨🇳 国内主流服务
+12. **[阿里云盘 (Aligo)](src/fundrive/drives/alipan/README.md)** - 个人云存储，大容量免费
+13. **[阿里云盘 (Open)](src/fundrive/drives/alipan/README.md)** - 开放API版本
+14. **[百度网盘](src/fundrive/drives/baidu/README.md)** - 国内最大个人云存储
+15. **[蓝奏云](src/fundrive/drives/lanzou/README.md)** - 轻量级文件分享
 
-- OpenXLab、天池、清华云盘、文叔叔
-
-### 📋 计划开发的驱动
-以下驱动在开发计划中：
-
-- Amazon S3
+#### 🔧 实用工具
+16. **[本地文件系统](src/fundrive/drives/os/README.md)** - 本地文件操作统一接口
+17. **[文叔叔](src/fundrive/drives/wenshushu/README.md)** - 临时文件分享，匿名上传
+18. **[MediaFire](src/fundrive/drives/mediafire/README.md)** - 国外文件分享平台
 
 
 ## 功能特点
@@ -148,8 +155,20 @@ pip install fundrive[google]
 # 安装 OneDrive 驱动
 pip install fundrive[onedrive]
 
+# 安装 Amazon S3 驱动
+pip install fundrive[amazon]
+
+# 安装清华云盘驱动
+pip install fundrive[tsinghua]
+
+# 安装文叔叔驱动
+pip install fundrive[wenshushu]
+
 # 安装多个驱动
-pip install fundrive[dropbox,oss,pcloud,google,onedrive]
+pip install fundrive[dropbox,oss,google,onedrive,amazon,alipan,baidu,lanzou,webdav,wenshushu,tsinghua]
+
+# 安装全部驱动
+pip install fundrive[all]
 ```
 
 ### 基本使用
@@ -246,7 +265,100 @@ share_link = drive.share("file_id")
 print(f"分享链接: {share_link}")
 ```
 
-#### 4. 阿里云 OSS 示例
+#### 4. Amazon S3 示例（推荐）
+
+```python
+from fundrive.drives.amazon import S3Drive
+
+# 初始化驱动
+drive = S3Drive(
+    access_key_id="your_access_key_id",
+    secret_access_key="your_secret_access_key",
+    region_name="us-east-1",
+    bucket_name="your_bucket_name"
+)
+
+# 登录
+drive.login()
+
+# 上传文件（支持大文件分片上传）
+drive.upload_file("/本地路径/文件.txt", "documents", filename="上传文件.txt")
+
+# 下载文件
+drive.download_file("documents/上传文件.txt", filedir="/本地下载路径", filename="下载文件.txt")
+
+# 获取存储桶信息
+quota = drive.get_quota()
+print(f"存储桶: {quota['bucket_name']}")
+print(f"对象数量: {quota['object_count']}")
+print(f"总大小: {quota['total_size_gb']} GB")
+
+# 创建分享链接（1小时有效）
+share_link = drive.create_share_link("documents/文件.txt", expire_seconds=3600)
+print(f"分享链接: {share_link}")
+
+# 搜索文件
+results = drive.search("报告", fid="documents")
+print(f"找到 {len(results)} 个文件")
+```
+
+#### 5. 清华云盘示例
+
+```python
+from fundrive.drives.tsinghua import TsinghuaDrive
+
+# 初始化驱动
+drive = TsinghuaDrive(
+    share_key="your_share_key",
+    password="your_password"  # 可选
+)
+
+# 登录
+drive.login()
+
+# 获取文件列表（只读平台）
+files = drive.get_file_list("")
+for file in files:
+    print(f"📄 {file.name} ({file.size} bytes)")
+
+# 下载文件
+drive.download_file("文件ID", filedir="/本地下载路径")
+
+# 搜索文件
+results = drive.search("关键词")
+print(f"找到 {len(results)} 个文件")
+```
+
+#### 6. 文叔叔示例
+
+```python
+from fundrive.drives.wenshushu import WenshushuDrive
+
+# 初始化驱动（匿名登录）
+drive = WenshushuDrive()
+
+# 登录
+drive.login()
+
+# 上传文件（支持进度显示）
+success = drive.upload_file("/本地文件.txt", "", filename="上传文件.txt")
+if success:
+    print("✅ 文件上传成功")
+
+# 获取已上传文件列表
+files = drive.get_file_list("")
+for file in files:
+    print(f"📄 {file.name}")
+
+# 下载文件（通过分享链接）
+drive.download_file("分享链接", filedir="/本地下载路径")
+
+# 获取存储配额
+quota = drive.get_quota()
+print(f"上传次数: {quota.get('upload_count', 0)}")
+```
+
+#### 7. 阿里云 OSS 示例
 
 ```python
 from fundrive.drives.oss import OssDrive
