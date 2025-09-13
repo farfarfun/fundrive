@@ -1,3 +1,21 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+文叔叔网盘驱动实现
+
+文叔叔是一个免费的临时文件分享服务，支持匿名上传和下载。
+本驱动基于文叔叔API实现，支持文件上传、下载和分享功能。
+
+主要功能:
+- 匿名文件上传
+- 分享链接下载
+- 文件管理
+- 存储空间查询
+
+作者: FunDrive Team
+"""
+
 import base64
 import concurrent.futures
 import hashlib
@@ -6,18 +24,556 @@ import subprocess
 import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Dict, List, Optional
 
 import orjson
 import requests
-from fundrive.core import BaseDrive as BaseDrive2
 from funget import simple_download
 from funutil import getLogger
 from tqdm import tqdm
 
+from fundrive.core import BaseDrive, DriveFile
+
 logger = getLogger("fundrive")
 
 
-class BaseDrive:
+class WSSDrive(BaseDrive):
+    """
+    文叔叔网盘驱动
+
+    基于文叔叔API实现的临时文件分享驱动，支持匿名上传和下载功能。
+    文叔叔是一个免费的临时文件分享服务，无需注册即可使用。
+    """
+
+    def __init__(self, **kwargs):
+        """
+        初始化文叔叔驱动
+
+        Args:
+            **kwargs: 其他参数
+        """
+        super().__init__(**kwargs)
+
+        self.base_url = "https://www.wenshushu.cn"
+        self.session = None
+        self.token = None
+
+        # 文件存储信息
+        self.uploaded_files = {}  # 存储已上传文件的信息
+
+    def login(self, **kwargs) -> bool:
+        """
+        登录文叔叔（匿名登录）
+
+        Returns:
+            登录是否成功
+        """
+        try:
+            logger.info("正在匿名登录文叔叔...")
+
+            self.session = requests.Session()
+
+            # 匿名登录获取token
+            response = self.session.post(
+                url=f"{self.base_url}/ap/login/anonymous",
+                json={"dev_info": "{}"},
+                timeout=30,
+            )
+
+            if response.status_code != 200:
+                logger.error(f"匿名登录失败: {response.status_code}")
+                return False
+
+            result = response.json()
+            if result.get("code") != 0:
+                logger.error(f"匿名登录失败: {result.get('message', '未知错误')}")
+                return False
+
+            self.token = result["data"]["token"]
+
+            # 设置请求头
+            self.session.headers.update(
+                {
+                    "X-TOKEN": self.token,
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:82.0) Gecko/20100101 Firefox/82.0",
+                    "Accept-Language": "en-US, en;q=0.9",
+                    "Content-Type": "application/json",
+                }
+            )
+
+            # 获取用户信息
+            self._get_userinfo()
+
+            logger.info("✅ 文叔叔匿名登录成功")
+            return True
+
+        except Exception as e:
+            logger.error(f"❌ 文叔叔登录失败: {e}")
+            return False
+
+    def _get_userinfo(self):
+        """获取用户信息"""
+        try:
+            self.session.post(
+                url=f"{self.base_url}/ap/user/userinfo",
+                json={"plat": "pcweb"},
+                timeout=10,
+            )
+        except:
+            pass
+
+    def get_storage_info(self) -> Dict[str, Any]:
+        """
+        获取存储空间信息
+
+        Returns:
+            存储空间信息
+        """
+        try:
+            response = self.session.post(
+                url=f"{self.base_url}/ap/user/storage", json={}, timeout=10
+            )
+
+            if response.status_code != 200:
+                return {}
+
+            result = response.json()
+            if result.get("code") != 0:
+                return {}
+
+            data = result["data"]
+            rest_space = int(data["rest_space"])
+            send_space = int(data["send_space"])
+            storage_space = rest_space + send_space
+
+            storage_info = {
+                "used_space": send_space,
+                "free_space": rest_space,
+                "total_space": storage_space,
+                "used_space_gb": round(send_space / 1024**3, 2),
+                "free_space_gb": round(rest_space / 1024**3, 2),
+                "total_space_gb": round(storage_space / 1024**3, 2),
+            }
+
+            logger.info(
+                f"存储空间: 已用 {storage_info['used_space_gb']}GB, "
+                f"剩余 {storage_info['free_space_gb']}GB, "
+                f"总计 {storage_info['total_space_gb']}GB"
+            )
+
+            return storage_info
+
+        except Exception as e:
+            logger.error(f"获取存储信息失败: {e}")
+            return {}
+
+    # BaseDrive接口实现
+    def exist(self, fid: str, filename: str = None) -> bool:
+        """
+        检查文件是否存在（文叔叔不支持文件列表，只能检查已上传的文件）
+
+        Args:
+            fid: 文件ID或分享链接
+            filename: 文件名（可选）
+
+        Returns:
+            文件是否存在
+        """
+        try:
+            # 检查是否为已上传的文件
+            if fid in self.uploaded_files:
+                return True
+
+            # 尝试解析分享链接
+            if fid.startswith("http"):
+                return self._check_share_url_valid(fid)
+
+            return False
+
+        except Exception as e:
+            logger.error(f"检查文件存在性失败: {e}")
+            return False
+
+    def _check_share_url_valid(self, share_url: str) -> bool:
+        """检查分享链接是否有效"""
+        try:
+            # 解析分享链接获取token或tid
+            if len(share_url.split("/")[-1]) == 16:
+                token = share_url.split("/")[-1]
+                response = self.session.post(
+                    url=f"{self.base_url}/ap/task/token",
+                    json={"token": token},
+                    timeout=10,
+                )
+                return response.status_code == 200 and response.json().get("code") == 0
+            elif len(share_url.split("/")[-1]) == 11:
+                tid = share_url.split("/")[-1]
+                response = self.session.post(
+                    url=f"{self.base_url}/ap/task/mgrtask",
+                    json={"tid": tid, "password": ""},
+                    timeout=10,
+                )
+                return response.status_code == 200 and response.json().get("code") == 0
+
+            return False
+
+        except:
+            return False
+
+    def mkdir(self, fid: str, dirname: str) -> bool:
+        """
+        创建目录（文叔叔不支持目录结构）
+
+        Args:
+            fid: 父目录路径
+            dirname: 目录名
+
+        Returns:
+            创建是否成功
+        """
+        logger.warning("文叔叔不支持目录结构，无法创建目录")
+        return False
+
+    def delete(self, fid: str) -> bool:
+        """
+        删除文件（文叔叔不支持删除已分享的文件）
+
+        Args:
+            fid: 文件ID
+
+        Returns:
+            删除是否成功
+        """
+        logger.warning("文叔叔不支持删除已分享的文件")
+        return False
+
+    def get_file_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
+        """
+        获取文件列表（文叔叔不支持文件列表，返回已上传文件）
+
+        Args:
+            fid: 目录路径（忽略）
+
+        Returns:
+            文件列表
+        """
+        try:
+            files = []
+            for file_id, file_info in self.uploaded_files.items():
+                drive_file = DriveFile(
+                    fid=file_id,
+                    name=file_info.get("name", ""),
+                    size=file_info.get("size", 0),
+                    ext={
+                        "type": "file",
+                        "upload_time": file_info.get("upload_time", ""),
+                        "share_url": file_info.get("share_url", ""),
+                        "mgr_url": file_info.get("mgr_url", ""),
+                    },
+                )
+                files.append(drive_file)
+
+            return files
+
+        except Exception as e:
+            logger.error(f"获取文件列表失败: {e}")
+            return []
+
+    def get_dir_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
+        """
+        获取目录列表（文叔叔不支持目录结构）
+
+        Args:
+            fid: 目录路径
+
+        Returns:
+            目录列表（空）
+        """
+        logger.info("文叔叔不支持目录结构")
+        return []
+
+    def get_file_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+        """
+        获取文件信息
+
+        Args:
+            fid: 文件ID或分享链接
+
+        Returns:
+            文件信息
+        """
+        try:
+            # 检查已上传文件
+            if fid in self.uploaded_files:
+                file_info = self.uploaded_files[fid]
+                return DriveFile(
+                    fid=fid,
+                    name=file_info.get("name", ""),
+                    size=file_info.get("size", 0),
+                    ext={
+                        "type": "file",
+                        "upload_time": file_info.get("upload_time", ""),
+                        "share_url": file_info.get("share_url", ""),
+                        "mgr_url": file_info.get("mgr_url", ""),
+                    },
+                )
+
+            # 尝试从分享链接获取信息
+            if fid.startswith("http"):
+                return self._get_share_file_info(fid)
+
+            return None
+
+        except Exception as e:
+            logger.error(f"获取文件信息失败: {e}")
+            return None
+
+    def _get_share_file_info(self, share_url: str) -> Optional[DriveFile]:
+        """从分享链接获取文件信息"""
+        try:
+            # 解析链接获取tid
+            if len(share_url.split("/")[-1]) == 16:
+                token = share_url.split("/")[-1]
+                response = self.session.post(
+                    url=f"{self.base_url}/ap/task/token",
+                    json={"token": token},
+                    timeout=10,
+                )
+                if response.status_code != 200:
+                    return None
+                tid = response.json()["data"]["tid"]
+            elif len(share_url.split("/")[-1]) == 11:
+                tid = share_url.split("/")[-1]
+            else:
+                return None
+
+            # 获取任务信息
+            response = self.session.post(
+                url=f"{self.base_url}/ap/task/mgrtask",
+                json={"tid": tid, "password": ""},
+                timeout=10,
+            )
+
+            if response.status_code != 200:
+                return None
+
+            result = response.json()
+            if result.get("code") != 0:
+                return None
+
+            data = result["data"]
+            file_size = int(data.get("file_size", 0))
+
+            return DriveFile(
+                fid=share_url,
+                name=f"shared_file_{tid}",
+                size=file_size,
+                ext={
+                    "type": "file",
+                    "tid": tid,
+                    "expire": data.get("expire", ""),
+                    "share_url": share_url,
+                },
+            )
+
+        except Exception as e:
+            logger.error(f"获取分享文件信息失败: {e}")
+            return None
+
+    def get_dir_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+        """
+        获取目录信息（文叔叔不支持目录结构）
+
+        Args:
+            fid: 目录路径
+
+        Returns:
+            目录信息（None）
+        """
+        logger.info("文叔叔不支持目录结构")
+        return None
+
+    def upload_file(
+        self,
+        filepath: str,
+        fid: str,
+        filename: str = None,
+        callback: callable = None,
+        **kwargs,
+    ) -> bool:
+        """
+        上传文件到文叔叔
+
+        Args:
+            filepath: 本地文件路径
+            fid: 目标目录路径（文叔叔忽略此参数）
+            filename: 上传后的文件名（可选）
+            callback: 进度回调函数
+
+        Returns:
+            上传是否成功
+        """
+        try:
+            logger.info(f"正在上传文件: {filepath}")
+
+            if not os.path.exists(filepath):
+                logger.error(f"文件不存在: {filepath}")
+                return False
+
+            # 创建内部驱动实例用于上传
+            internal_drive = _WSSBaseDrive()
+
+            # 创建上传器
+            uploader = Uploader(
+                file_path=filepath,
+                drive=internal_drive,
+                chunk_size=kwargs.get("chunk_size", 2097152),
+            )
+
+            # 执行上传
+            result = uploader.upload(
+                max_workers=kwargs.get("max_workers", os.cpu_count())
+            )
+
+            if result:
+                # 保存上传文件信息
+                file_id = f"upload_{int(time.time())}"
+                self.uploaded_files[file_id] = {
+                    "name": filename or os.path.basename(filepath),
+                    "size": os.path.getsize(filepath),
+                    "upload_time": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "local_path": filepath,
+                    "share_url": getattr(uploader, "share_url", ""),
+                    "mgr_url": getattr(uploader, "mgr_url", ""),
+                }
+
+                logger.info(f"✅ 文件上传成功: {filepath}")
+                return True
+            else:
+                logger.error(f"❌ 文件上传失败: {filepath}")
+                return False
+
+        except Exception as e:
+            logger.error(f"上传文件失败: {e}")
+            return False
+
+    def download_file(
+        self,
+        fid: str,
+        filedir: str = ".",
+        filename: str = None,
+        callback: callable = None,
+        **kwargs,
+    ) -> bool:
+        """
+        从文叔叔下载文件
+
+        Args:
+            fid: 分享链接URL
+            filedir: 下载目录
+            filename: 保存的文件名（可选）
+            callback: 进度回调函数
+
+        Returns:
+            下载是否成功
+        """
+        try:
+            logger.info(f"正在下载文件: {fid}")
+
+            if not fid.startswith("http"):
+                logger.error("文叔叔需要分享链接进行下载")
+                return False
+
+            # 创建内部驱动实例用于下载
+            internal_drive = _WSSBaseDrive()
+
+            # 创建下载器
+            downloader = Downloader(
+                share_url=fid, drive=internal_drive, cache_dir=filedir
+            )
+
+            # 执行下载
+            success = downloader.download()
+
+            if success:
+                logger.info("✅ 文件下载成功")
+                return True
+            else:
+                logger.error("❌ 文件下载失败")
+                return False
+
+        except Exception as e:
+            logger.error(f"下载文件失败: {e}")
+            return False
+
+    def download_dir(
+        self, fid: str, filedir: str = "./cache", overwrite: bool = False, **kwargs
+    ) -> bool:
+        """
+        下载目录（文叔叔不支持目录结构，此方法等同于下载文件）
+
+        Args:
+            fid: 分享链接URL
+            filedir: 下载目录
+            overwrite: 是否覆盖已存在的文件
+
+        Returns:
+            下载是否成功
+        """
+        logger.info("文叔叔不支持目录结构，将尝试作为文件下载")
+        return self.download_file(fid, filedir, **kwargs)
+
+    # 高级功能实现
+    def search(self, keyword: str, fid: str = "", **kwargs) -> List[DriveFile]:
+        """
+        搜索文件（在已上传文件中搜索）
+
+        Args:
+            keyword: 搜索关键词
+            fid: 搜索范围（忽略）
+
+        Returns:
+            搜索结果列表
+        """
+        try:
+            logger.info(f"正在搜索文件: {keyword}")
+
+            results = []
+            for file_id, file_info in self.uploaded_files.items():
+                if keyword.lower() in file_info.get("name", "").lower():
+                    drive_file = DriveFile(
+                        fid=file_id,
+                        name=file_info.get("name", ""),
+                        size=file_info.get("size", 0),
+                        ext={
+                            "type": "file",
+                            "upload_time": file_info.get("upload_time", ""),
+                            "share_url": file_info.get("share_url", ""),
+                            "mgr_url": file_info.get("mgr_url", ""),
+                        },
+                    )
+                    results.append(drive_file)
+
+            logger.info(f"搜索完成，找到 {len(results)} 个结果")
+            return results
+
+        except Exception as e:
+            logger.error(f"搜索失败: {e}")
+            return []
+
+    def get_quota(self) -> Dict[str, Any]:
+        """
+        获取存储配额信息
+
+        Returns:
+            配额信息
+        """
+        return self.get_storage_info()
+
+
+class _WSSBaseDrive:
+    """文叔叔内部基础驱动类（保持向后兼容）"""
+
     def __init__(self, *args, **kwargs):
         self.session = None
         self.login_anonymous()
@@ -54,11 +610,9 @@ class BaseDrive:
 
 
 class Uploader:
-    def __init__(
-        self, file_path, drive: BaseDrive = None, chunk_size=2097152, *args, **kwargs
-    ):
-        self.drive = drive or BaseDrive()
-        self.session = drive.session
+    def __init__(self, file_path, drive=None, chunk_size=2097152, *args, **kwargs):
+        self.drive = drive or _WSSBaseDrive()
+        self.session = self.drive.session
         self.chunk_size = chunk_size
         self.file_path = file_path
         self.file_size = os.path.getsize(file_path)
@@ -279,53 +833,64 @@ class Uploader:
         return name, taskid, boxid, preid, upId
 
     def upload(self, max_workers=os.cpu_count()):
-        fname, tid, boxid, preid, upId = self.fast()
-        pbar = tqdm(
-            desc=f"{max_workers}%{fname}",
-            total=self.file_size,
-            unit="B",
-            unit_scale=True,
-            unit_divisor=1024,
-        )
-        if self.is_part:
-            with ThreadPoolExecutor(max_workers=max_workers) as executor:
-                future_list = []
-                for i in range(
-                    (self.file_size + self.chunk_size - 1) // self.chunk_size
-                ):
-                    ul_size = (
-                        self.chunk_size
-                        if self.chunk_size * (i + 1) <= self.file_size
-                        else self.file_size % self.chunk_size
-                    )
-                    future_list.append(
-                        executor.submit(
-                            self.file_put,
-                            [fname, upId, ul_size, i + 1, pbar],
-                            self.file_path,
-                            self.chunk_size * i,
-                            ul_size,
-                        )
-                    )
-                concurrent.futures.as_completed(future_list)
-        else:
-            self.file_put(
-                [fname, upId, self.file_size, pbar], self.file_path, 0, self.file_size
+        try:
+            fname, tid, boxid, preid, upId = self.fast()
+            pbar = tqdm(
+                desc=f"{max_workers}%{fname}",
+                total=self.file_size,
+                unit="B",
+                unit_scale=True,
+                unit_divisor=1024,
             )
+            if self.is_part:
+                with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                    future_list = []
+                    for i in range(
+                        (self.file_size + self.chunk_size - 1) // self.chunk_size
+                    ):
+                        ul_size = (
+                            self.chunk_size
+                            if self.chunk_size * (i + 1) <= self.file_size
+                            else self.file_size % self.chunk_size
+                        )
+                        future_list.append(
+                            executor.submit(
+                                self.file_put,
+                                [fname, upId, ul_size, i + 1, pbar],
+                                self.file_path,
+                                self.chunk_size * i,
+                                ul_size,
+                            )
+                        )
+                    concurrent.futures.as_completed(future_list)
+            else:
+                self.file_put(
+                    [fname, upId, self.file_size, pbar],
+                    self.file_path,
+                    0,
+                    self.file_size,
+                )
 
-        self.complete(self.is_part, fname, upId, tid, boxid, preid)
-        self.get_process(upId)
+            self.complete(self.is_part, fname, upId, tid, boxid, preid)
+            self.get_process(upId)
+
+            # 保存分享链接信息
+            self.share_url = f"https://www.wenshushu.cn/f/{tid}"
+            self.mgr_url = f"https://www.wenshushu.cn/mgr/{tid}"
+
+            return True
+
+        except Exception as e:
+            logger.error(f"上传失败: {e}")
+            return False
 
 
 class Downloader:
-    def __init__(
-        self, share_url, drive: BaseDrive = None, cache_dir="./", *args, **kwargs
-    ):
-        self.drive = drive or BaseDrive()
-        self.session = drive.session
+    def __init__(self, share_url, drive=None, cache_dir="./", *args, **kwargs):
+        self.drive = drive or _WSSBaseDrive()
+        self.session = self.drive.session
         self.share_url = share_url
         self.cache_dir = cache_dir
-        super().__init__(*args, **kwargs)
 
     def get_tid(self, token):
         r = self.session.post(
@@ -381,45 +946,18 @@ class Downloader:
             },
         )
         rsp = r.json()
-        for file in rsp["data"]["fileList"]:
-            filename = file["fname"]
-            url = self.sign_url(file["fid"])
-            simple_download(url, filepath=f"{self.cache_dir}/{filename}")
-
-
-class WSSDrive(BaseDrive2):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.drive = BaseDrive()
-
-    def upload_dir(self, dir_path="./cache", overwrite=False, *args, **kwargs) -> bool:
-        pass
-
-    def download_dir(
-        self, dir_path="./cache", overwrite=False, *args, **kwargs
-    ) -> bool:
-        pass
-
-    def upload_file(
-        self, file_path="./cache", overwrite=False, *args, **kwargs
-    ) -> bool:
-        uploader = Uploader(drive=self.drive, file_path=file_path)
+        success = True
         try:
-            uploader.upload()
-            return True
+            for file in rsp["data"]["fileList"]:
+                filename = file["fname"]
+                url = self.sign_url(file["fid"])
+                simple_download(url, filepath=f"{self.cache_dir}/{filename}")
         except Exception as e:
-            logger.info(f"error: {e} traceback: {traceback.format_exc()}")
-            return False
+            logger.error(f"下载失败: {e}")
+            success = False
 
-    def download_file(
-        self, share_url=None, dir_path="./cache", overwrite=False, *args, **kwargs
-    ) -> bool:
-        downloader = Downloader(
-            drive=self.drive, share_url=share_url, cache_dir=dir_path
-        )
-        try:
-            downloader.download()
-            return True
-        except Exception as e:
-            logger.info(f"error: {e} traceback: {traceback.format_exc()}")
-            return False
+        return success
+
+
+# 向后兼容的别名
+WenShuShuDrive = WSSDrive
