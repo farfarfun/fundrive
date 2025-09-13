@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-本地文件系统驱动测试和演示脚本
+WebDAV驱动测试和演示脚本
 
 使用方法:
     python example.py --test          # 运行完整测试
@@ -11,38 +11,48 @@
 
 配置方法:
     # 使用funsecret配置（推荐）
-    funsecret set fundrive os root_path "/path/to/your/storage"
+    funsecret set fundrive webdav url "https://your-webdav-server.com/webdav"
+    funsecret set fundrive webdav username "your_username"
+    funsecret set fundrive webdav password "your_password"
 
     # 或者设置环境变量
-    export OS_ROOT_PATH="/path/to/your/storage"
+    export WEBDAV_URL="https://your-webdav-server.com/webdav"
+    export WEBDAV_USERNAME="your_username"
+    export WEBDAV_PASSWORD="your_password"
 """
 
 import argparse
 import os
 import tempfile
 
-from fundrive.drives.os import OSDrive
+
+from fundrive.drives.webdav import WebDavDrive
 from funutil import getLogger
 
-logger = getLogger("fundrive.os.example")
+logger = getLogger("fundrive.webdav.example")
 
 
-def create_os_drive():
-    """创建本地文件系统驱动实例"""
+def create_webdav_drive():
+    """创建WebDAV驱动实例"""
     try:
-        # 使用临时目录作为测试根目录
-        test_root = tempfile.mkdtemp(prefix="fundrive_os_test_")
-        drive = OSDrive(root_path=test_root)
-        logger.info(f"✅ 成功创建OsDrive实例，根目录: {test_root}")
-        return drive, test_root
+        # 尝试从配置或环境变量获取凭据
+        drive = WebDavDrive()
+        logger.info("✅ 成功创建WebDavDrive实例")
+        return drive
     except Exception as e:
-        logger.error(f"❌ 创建OsDrive实例失败: {e}")
-        return None, None
+        logger.error(f"❌ 创建WebDavDrive实例失败: {e}")
+        logger.info("请确保已正确配置WebDAV服务器信息:")
+        logger.info(
+            "funsecret set fundrive webdav url 'https://your-webdav-server.com/webdav'"
+        )
+        logger.info("funsecret set fundrive webdav username 'your_username'")
+        logger.info("funsecret set fundrive webdav password 'your_password'")
+        return None
 
 
-def run_comprehensive_test(drive, test_root):
+def run_comprehensive_test(drive):
     """运行完整的驱动功能测试"""
-    logger.info("\n🧪 开始本地文件系统完整功能测试...")
+    logger.info("\n🧪 开始WebDAV完整功能测试...")
 
     test_results = []
 
@@ -100,7 +110,7 @@ def run_comprehensive_test(drive, test_root):
     # 测试5: 创建测试文件并上传
     logger.info("\n5️⃣ 测试文件上传...")
     test_content = (
-        f"这是本地文件系统的测试文件内容\n测试时间: {os.popen('date').read().strip()}"
+        f"这是WebDAV的测试文件内容\n测试时间: {os.popen('date').read().strip()}"
     )
 
     with tempfile.NamedTemporaryFile(
@@ -210,7 +220,7 @@ def run_comprehensive_test(drive, test_root):
         test_results.append(("删除文件", False))
 
     # 输出测试结果汇总
-    logger.info("\n📊 本地文件系统测试结果汇总:")
+    logger.info("\n📊 WebDAV测试结果汇总:")
     passed = 0
     for test_name, result in test_results:
         status = "✅ 通过" if result else "❌ 失败"
@@ -225,30 +235,29 @@ def run_comprehensive_test(drive, test_root):
 
 def run_interactive_demo():
     """运行交互式演示"""
-    logger.info("\n🎮 本地文件系统驱动交互式演示")
+    logger.info("\n🎮 WebDAV驱动交互式演示")
     logger.info("=" * 50)
 
     # 创建驱动实例
-    drive, test_root = create_os_drive()
+    drive = create_webdav_drive()
     if not drive:
         logger.error("❌ 无法创建驱动实例，退出演示")
         return
 
     # 登录
-    logger.info("\n🔐 正在初始化本地文件系统...")
+    logger.info("\n🔐 正在连接WebDAV服务器...")
     try:
         if not drive.login():
-            logger.error("❌ 初始化失败，退出演示")
+            logger.error("❌ 连接失败，退出演示")
             return
-        logger.info("✅ 初始化成功!")
-        logger.info(f"📁 工作目录: {test_root}")
+        logger.info("✅ 连接成功!")
     except Exception as e:
-        logger.error(f"❌ 初始化异常: {e}")
+        logger.error(f"❌ 连接异常: {e}")
         return
 
     # 交互式操作循环
     while True:
-        print("\n本地文件系统可用操作:")
+        print("\nWebDAV可用操作:")
         print("1. 查看根目录文件")
         print("2. 查看根目录文件夹")
         print("3. 上传文件")
@@ -310,14 +319,6 @@ def run_interactive_demo():
 
         elif choice == "5":
             logger.info("👋 退出交互式演示")
-            # 清理测试目录
-            import shutil
-
-            try:
-                shutil.rmtree(test_root)
-                logger.info(f"🗑️ 已清理测试目录: {test_root}")
-            except Exception as e:
-                logger.warning(f"⚠️ 清理测试目录失败: {e}")
             break
 
         else:
@@ -326,30 +327,20 @@ def run_interactive_demo():
 
 def main():
     """主函数"""
-    parser = argparse.ArgumentParser(description="本地文件系统驱动测试和演示")
+    parser = argparse.ArgumentParser(description="WebDAV驱动测试和演示")
     parser.add_argument("--test", action="store_true", help="运行完整测试")
     parser.add_argument("--interactive", action="store_true", help="运行交互式演示")
 
     args = parser.parse_args()
 
     if args.test:
-        logger.info("🚀 开始本地文件系统驱动完整测试")
+        logger.info("🚀 开始WebDAV驱动完整测试")
 
-        drive, test_root = create_os_drive()
+        drive = create_webdav_drive()
         if drive:
-            try:
-                run_comprehensive_test(drive, test_root)
-            finally:
-                # 清理测试目录
-                import shutil
+            run_comprehensive_test(drive)
 
-                try:
-                    shutil.rmtree(test_root)
-                    logger.info(f"🗑️ 已清理测试目录: {test_root}")
-                except Exception as e:
-                    logger.warning(f"⚠️ 清理测试目录失败: {e}")
-
-        logger.info("\n🎉 本地文件系统驱动测试完成!")
+        logger.info("\n🎉 WebDAV驱动测试完成!")
 
     elif args.interactive:
         run_interactive_demo()

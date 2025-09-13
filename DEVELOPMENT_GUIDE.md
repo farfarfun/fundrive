@@ -140,7 +140,7 @@ src/fundrive/drives/{drive_name}/
 2. **`example.py`** - 使用示例文件
    - 包含驱动的使用示例和综合测试代码
    - 必须提供 `comprehensive_test()` 函数，按优先级测试所有核心接口
-   - 支持 `--test` 参数运行完整测试，可选支持 `--interactive` 参数运行交互式演示
+   - 支持运行完整测试
    - 提供清晰的使用说明和测试结果统计
 
 3. **`README.md`** - 驱动说明文档

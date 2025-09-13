@@ -2,7 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """
-本地文件系统驱动测试和演示脚本
+阿里云盘驱动测试和演示脚本
+
+支持两种阿里云盘驱动：
+1. AlipanDrive - 基于aligo库的阿里云盘驱动
+2. AliopenDrive - 基于开放API的阿里云盘驱动
 
 使用方法:
     python example.py --test          # 运行完整测试
@@ -11,38 +15,56 @@
 
 配置方法:
     # 使用funsecret配置（推荐）
-    funsecret set fundrive os root_path "/path/to/your/storage"
+    funsecret set fundrive alipan refresh_token "your_refresh_token"
+    funsecret set fundrive alipan access_token "your_access_token"
 
     # 或者设置环境变量
-    export OS_ROOT_PATH="/path/to/your/storage"
+    export ALIPAN_REFRESH_TOKEN="your_refresh_token"
+    export ALIPAN_ACCESS_TOKEN="your_access_token"
 """
 
 import argparse
 import os
 import tempfile
 
-from fundrive.drives.os import OSDrive
+
+from fundrive.drives.alipan import AlipanDrive, AliopenDrive
 from funutil import getLogger
 
-logger = getLogger("fundrive.os.example")
+logger = getLogger("fundrive.alipan.example")
 
 
-def create_os_drive():
-    """创建本地文件系统驱动实例"""
+def create_alipan_drive():
+    """创建阿里云盘驱动实例（基于aligo）"""
     try:
-        # 使用临时目录作为测试根目录
-        test_root = tempfile.mkdtemp(prefix="fundrive_os_test_")
-        drive = OSDrive(root_path=test_root)
-        logger.info(f"✅ 成功创建OsDrive实例，根目录: {test_root}")
-        return drive, test_root
+        # 尝试从配置或环境变量获取凭据
+        drive = AlipanDrive()
+        logger.info("✅ 成功创建AlipanDrive实例")
+        return drive
     except Exception as e:
-        logger.error(f"❌ 创建OsDrive实例失败: {e}")
-        return None, None
+        logger.error(f"❌ 创建AlipanDrive实例失败: {e}")
+        logger.info("请确保已正确配置refresh_token:")
+        logger.info("funsecret set fundrive alipan refresh_token 'your_refresh_token'")
+        return None
 
 
-def run_comprehensive_test(drive, test_root):
+def create_aliopen_drive():
+    """创建阿里云盘开放API驱动实例"""
+    try:
+        # 尝试从配置或环境变量获取凭据
+        drive = AliopenDrive()
+        logger.info("✅ 成功创建AliopenDrive实例")
+        return drive
+    except Exception as e:
+        logger.error(f"❌ 创建AliopenDrive实例失败: {e}")
+        logger.info("请确保已正确配置access_token:")
+        logger.info("funsecret set fundrive alipan access_token 'your_access_token'")
+        return None
+
+
+def run_comprehensive_test(drive, drive_name):
     """运行完整的驱动功能测试"""
-    logger.info("\n🧪 开始本地文件系统完整功能测试...")
+    logger.info(f"\n🧪 开始 {drive_name} 完整功能测试...")
 
     test_results = []
 
@@ -65,7 +87,7 @@ def run_comprehensive_test(drive, test_root):
     # 测试2: 获取根目录文件列表
     logger.info("\n2️⃣ 测试获取文件列表...")
     try:
-        files = drive.get_file_list("/")
+        files = drive.get_file_list("root")
         logger.info(f"✅ 获取到 {len(files)} 个文件")
         test_results.append(("获取文件列表", True))
     except Exception as e:
@@ -75,7 +97,7 @@ def run_comprehensive_test(drive, test_root):
     # 测试3: 获取根目录列表
     logger.info("\n3️⃣ 测试获取目录列表...")
     try:
-        dirs = drive.get_dir_list("/")
+        dirs = drive.get_dir_list("root")
         logger.info(f"✅ 获取到 {len(dirs)} 个目录")
         test_results.append(("获取目录列表", True))
     except Exception as e:
@@ -86,7 +108,7 @@ def run_comprehensive_test(drive, test_root):
     test_dir_name = "fundrive_test_dir"
     logger.info(f"\n4️⃣ 测试创建目录: {test_dir_name}")
     try:
-        result = drive.mkdir("/", test_dir_name)
+        result = drive.mkdir("root", test_dir_name)
         if result:
             logger.info("✅ 目录创建成功")
             test_results.append(("创建目录", True))
@@ -100,7 +122,7 @@ def run_comprehensive_test(drive, test_root):
     # 测试5: 创建测试文件并上传
     logger.info("\n5️⃣ 测试文件上传...")
     test_content = (
-        f"这是本地文件系统的测试文件内容\n测试时间: {os.popen('date').read().strip()}"
+        f"这是{drive_name}的测试文件内容\n测试时间: {os.popen('date').read().strip()}"
     )
 
     with tempfile.NamedTemporaryFile(
@@ -110,7 +132,7 @@ def run_comprehensive_test(drive, test_root):
         temp_file = f.name
 
     try:
-        result = drive.upload_file(temp_file, "/", filename="fundrive_test.txt")
+        result = drive.upload_file(temp_file, "root", filename="fundrive_test.txt")
         if result:
             logger.info("✅ 文件上传成功")
             test_results.append(("文件上传", True))
@@ -126,7 +148,7 @@ def run_comprehensive_test(drive, test_root):
     # 测试6: 检查文件是否存在
     logger.info("\n6️⃣ 测试文件存在性检查...")
     try:
-        exists = drive.exist("/", "fundrive_test.txt")
+        exists = drive.exist("root", "fundrive_test.txt")
         if exists:
             logger.info("✅ 文件存在性检查通过")
             test_results.append(("文件存在检查", True))
@@ -141,7 +163,7 @@ def run_comprehensive_test(drive, test_root):
     logger.info("\n7️⃣ 测试获取文件信息...")
     try:
         # 先获取文件列表找到测试文件
-        files = drive.get_file_list("/")
+        files = drive.get_file_list("root")
         test_file = None
         for file in files:
             if file.name == "fundrive_test.txt":
@@ -169,23 +191,21 @@ def run_comprehensive_test(drive, test_root):
     logger.info("\n8️⃣ 测试文件下载...")
     try:
         with tempfile.TemporaryDirectory() as temp_dir:
-            if test_file:
-                result = drive.download_file(
-                    test_file.fid, filedir=temp_dir, filename="downloaded_test.txt"
-                )
-                if result:
-                    downloaded_file = os.path.join(temp_dir, "downloaded_test.txt")
-                    if os.path.exists(downloaded_file):
-                        logger.info("✅ 文件下载成功")
-                        test_results.append(("文件下载", True))
-                    else:
-                        logger.error("❌ 下载的文件不存在")
-                        test_results.append(("文件下载", False))
+            result = drive.download_file(
+                test_file.fid if test_file else "unknown",
+                filedir=temp_dir,
+                filename="downloaded_test.txt",
+            )
+            if result:
+                downloaded_file = os.path.join(temp_dir, "downloaded_test.txt")
+                if os.path.exists(downloaded_file):
+                    logger.info("✅ 文件下载成功")
+                    test_results.append(("文件下载", True))
                 else:
-                    logger.error("❌ 文件下载失败")
+                    logger.error("❌ 下载的文件不存在")
                     test_results.append(("文件下载", False))
             else:
-                logger.warning("⚠️ 没有测试文件可下载")
+                logger.error("❌ 文件下载失败")
                 test_results.append(("文件下载", False))
     except Exception as e:
         logger.error(f"❌ 文件下载异常: {e}")
@@ -210,7 +230,7 @@ def run_comprehensive_test(drive, test_root):
         test_results.append(("删除文件", False))
 
     # 输出测试结果汇总
-    logger.info("\n📊 本地文件系统测试结果汇总:")
+    logger.info(f"\n📊 {drive_name} 测试结果汇总:")
     passed = 0
     for test_name, result in test_results:
         status = "✅ 通过" if result else "❌ 失败"
@@ -225,30 +245,45 @@ def run_comprehensive_test(drive, test_root):
 
 def run_interactive_demo():
     """运行交互式演示"""
-    logger.info("\n🎮 本地文件系统驱动交互式演示")
+    logger.info("\n🎮 阿里云盘驱动交互式演示")
     logger.info("=" * 50)
 
-    # 创建驱动实例
-    drive, test_root = create_os_drive()
+    # 选择驱动类型
+    print("\n请选择要测试的阿里云盘驱动:")
+    print("1. AlipanDrive (基于aligo库)")
+    print("2. AliopenDrive (基于开放API)")
+
+    while True:
+        choice = input("\n请输入选择 (1/2): ").strip()
+        if choice == "1":
+            drive = create_alipan_drive()
+            drive_name = "AlipanDrive"
+            break
+        elif choice == "2":
+            drive = create_aliopen_drive()
+            drive_name = "AliopenDrive"
+            break
+        else:
+            print("❌ 无效选择，请输入 1 或 2")
+
     if not drive:
         logger.error("❌ 无法创建驱动实例，退出演示")
         return
 
     # 登录
-    logger.info("\n🔐 正在初始化本地文件系统...")
+    logger.info(f"\n🔐 正在登录 {drive_name}...")
     try:
         if not drive.login():
-            logger.error("❌ 初始化失败，退出演示")
+            logger.error("❌ 登录失败，退出演示")
             return
-        logger.info("✅ 初始化成功!")
-        logger.info(f"📁 工作目录: {test_root}")
+        logger.info("✅ 登录成功!")
     except Exception as e:
-        logger.error(f"❌ 初始化异常: {e}")
+        logger.error(f"❌ 登录异常: {e}")
         return
 
     # 交互式操作循环
     while True:
-        print("\n本地文件系统可用操作:")
+        print(f"\n{drive_name} 可用操作:")
         print("1. 查看根目录文件")
         print("2. 查看根目录文件夹")
         print("3. 上传文件")
@@ -259,7 +294,7 @@ def run_interactive_demo():
 
         if choice == "1":
             try:
-                files = drive.get_file_list("/")
+                files = drive.get_file_list("root")
                 logger.info(f"\n📁 根目录文件列表 (共 {len(files)} 个):")
                 for i, file in enumerate(files[:10], 1):  # 只显示前10个
                     logger.info(f"  {i}. {file.name} ({file.size} 字节)")
@@ -270,7 +305,7 @@ def run_interactive_demo():
 
         elif choice == "2":
             try:
-                dirs = drive.get_dir_list("/")
+                dirs = drive.get_dir_list("root")
                 logger.info(f"\n📂 根目录文件夹列表 (共 {len(dirs)} 个):")
                 for i, dir in enumerate(dirs[:10], 1):  # 只显示前10个
                     logger.info(f"  {i}. {dir.name}")
@@ -284,7 +319,7 @@ def run_interactive_demo():
             if os.path.exists(file_path):
                 try:
                     filename = os.path.basename(file_path)
-                    result = drive.upload_file(file_path, "/", filename=filename)
+                    result = drive.upload_file(file_path, "root", filename=filename)
                     if result:
                         logger.info(f"✅ 文件 {filename} 上传成功")
                     else:
@@ -298,7 +333,7 @@ def run_interactive_demo():
             dir_name = input("请输入要创建的文件夹名称: ").strip()
             if dir_name:
                 try:
-                    result = drive.mkdir("/", dir_name)
+                    result = drive.mkdir("root", dir_name)
                     if result:
                         logger.info(f"✅ 文件夹 {dir_name} 创建成功")
                     else:
@@ -310,14 +345,6 @@ def run_interactive_demo():
 
         elif choice == "5":
             logger.info("👋 退出交互式演示")
-            # 清理测试目录
-            import shutil
-
-            try:
-                shutil.rmtree(test_root)
-                logger.info(f"🗑️ 已清理测试目录: {test_root}")
-            except Exception as e:
-                logger.warning(f"⚠️ 清理测试目录失败: {e}")
             break
 
         else:
@@ -326,30 +353,34 @@ def run_interactive_demo():
 
 def main():
     """主函数"""
-    parser = argparse.ArgumentParser(description="本地文件系统驱动测试和演示")
+    parser = argparse.ArgumentParser(description="阿里云盘驱动测试和演示")
     parser.add_argument("--test", action="store_true", help="运行完整测试")
     parser.add_argument("--interactive", action="store_true", help="运行交互式演示")
 
     args = parser.parse_args()
 
     if args.test:
-        logger.info("🚀 开始本地文件系统驱动完整测试")
+        logger.info("🚀 开始阿里云盘驱动完整测试")
 
-        drive, test_root = create_os_drive()
-        if drive:
-            try:
-                run_comprehensive_test(drive, test_root)
-            finally:
-                # 清理测试目录
-                import shutil
+        # 测试AlipanDrive
+        logger.info("\n" + "=" * 60)
+        logger.info("测试 AlipanDrive (基于aligo库)")
+        logger.info("=" * 60)
 
-                try:
-                    shutil.rmtree(test_root)
-                    logger.info(f"🗑️ 已清理测试目录: {test_root}")
-                except Exception as e:
-                    logger.warning(f"⚠️ 清理测试目录失败: {e}")
+        alipan_drive = create_alipan_drive()
+        if alipan_drive:
+            run_comprehensive_test(alipan_drive, "AlipanDrive")
 
-        logger.info("\n🎉 本地文件系统驱动测试完成!")
+        # 测试AliopenDrive
+        logger.info("\n" + "=" * 60)
+        logger.info("测试 AliopenDrive (基于开放API)")
+        logger.info("=" * 60)
+
+        aliopen_drive = create_aliopen_drive()
+        if aliopen_drive:
+            run_comprehensive_test(aliopen_drive, "AliopenDrive")
+
+        logger.info("\n🎉 阿里云盘驱动测试完成!")
 
     elif args.interactive:
         run_interactive_demo()
