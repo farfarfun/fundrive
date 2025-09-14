@@ -22,7 +22,7 @@ name = "farfarfun"
 email = "farfarfun@qq.com"
 
 [dependency-groups]
-all = [ "fundrive[oss]", "fundrive[alipan]", "fundrive[webdav]", "fundrive[baidu]", "fundrive[lanzou]", "fundrive[google]", "fundrive[onedrive]", "fundrive[wenshushu]", "fundrive[amazon]", "fundrive[tsinghua]", "fundrive[dropbox]",]
+all = [ "fundrive[oss]", "fundrive[alipan]", "fundrive[webdav]", "fundrive[baidu]", "fundrive[lanzou]", "fundrive[google]", "fundrive[onedrive]", "fundrive[wenshushu]", "fundrive[amazon]", "fundrive[tsinghua]", "fundrive[dropbox]", "fundrive[github]", "fundrive[gitee]",]
 
 [project.optional-dependencies]
 alipan = [ "aligo>=6.2.4", "fundrive-alipan",]
@@ -37,6 +37,8 @@ google = [ "google-api-python-client>=2.0.0", "google-auth-httplib2>=0.1.0", "go
 onedrive = [ "requests>=2.25.0",]
 amazon = [ "boto3>=1.34.0",]
 tsinghua = [ "requests>=2.32.4",]
+github = [ "requests>=2.32.4", "orjson>=3.10.10",]
+gitee = [ "requests>=2.32.4", "orjson>=3.10.10",]
 
 [project.urls]
 Organization = "https://github.com/farfarfun"
