@@ -222,8 +222,8 @@ drive.download_file("file_id", filedir="/本地下载路径", filename="下载�
 
 # 获取存储配额
 quota = drive.get_quota()
-print(f"总空间: {quota['total']/(1024**3):.2f} GB")
-print(f"已使用: {quota['used']/(1024**3):.2f} GB")
+print(f"总空间: {quota['total'] / (1024 ** 3):.2f} GB")
+print(f"已使用: {quota['used'] / (1024 ** 3):.2f} GB")
 
 # 搜索文件
 results = drive.search("关键词", file_type="pdf")
@@ -257,8 +257,8 @@ drive.download_file("file_id", filedir="/本地下载路径", filename="下载�
 
 # 获取存储配额
 quota = drive.get_quota()
-print(f"总空间: {quota['total']/(1024**3):.2f} GB")
-print(f"已使用: {quota['used']/(1024**3):.2f} GB")
+print(f"总空间: {quota['total'] / (1024 ** 3):.2f} GB")
+print(f"已使用: {quota['used'] / (1024 ** 3):.2f} GB")
 
 # 搜索文件
 results = drive.search("关键词")
@@ -451,25 +451,25 @@ python example.py --interactive
 ```python
 # 文件操作
 drive.upload_file(local_path, remote_dir, filename)  # 上传文件
-drive.download_file(remote_path, local_path)         # 下载文件
-drive.delete(file_or_dir_path)                       # 删除文件/目录
+drive.download_file(remote_path, local_path)  # 下载文件
+drive.delete(file_or_dir_path)  # 删除文件/目录
 
 # 目录操作  
-drive.mkdir(parent_dir, dir_name)                    # 创建目录
-drive.get_file_list(dir_path)                        # 获取文件列表
-drive.get_dir_list(dir_path)                         # 获取目录列表
+drive.mkdir(parent_dir, dir_name)  # 创建目录
+drive.get_file_list(dir_path)  # 获取文件列表
+drive.get_dir_list(dir_path)  # 获取目录列表
 
 # 信息查询
-drive.exist(path)                                    # 检查文件/目录是否存在
-drive.get_file_info(file_path)                       # 获取文件信息
-drive.get_quota()                                    # 获取存储配额
+drive.exist(path)  # 检查文件/目录是否存在
+drive.get_file_info(file_path)  # 获取文件信息
+drive.get_quota()  # 获取存储配额
 
 # 高级功能
-drive.search(keyword, dir_path)                      # 搜索文件
-drive.share(file_path, expire_days=7)                # 创建分享链接
-drive.copy(src_path, dst_path)                       # 复制文件
-drive.move(src_path, dst_path)                       # 移动文件
-drive.rename(file_path, new_name)                    # 重命名文件
+drive.search(keyword, dir_path)  # 搜索文件
+drive.share(file_path, expire_days=7)  # 创建分享链接
+drive.copy(src_path, dst_path)  # 复制文件
+drive.move(src_path, dst_path)  # 移动文件
+drive.rename(file_path, new_name)  # 重命名文件
 ```
 
 ### 文件分享示例

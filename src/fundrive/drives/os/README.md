@@ -122,38 +122,40 @@ process_directory(drive)
 import os
 from pathlib import Path
 
+
 # 批量上传目录
 def upload_directory(drive, local_dir, remote_dir="/"):
     """批量上传本地目录到存储"""
     local_path = Path(local_dir)
-    
+
     for item in local_path.rglob("*"):
         if item.is_file():
             # 计算相对路径
             rel_path = item.relative_to(local_path)
             remote_path = str(rel_path.parent) if rel_path.parent != Path(".") else "/"
-            
+
             # 确保远程目录存在
             if remote_path != "/":
                 drive.mkdir(remote_dir, remote_path)
-            
+
             # 上传文件
-            drive.upload_file(str(item), f"{remote_dir.rstrip('/')}/{remote_path}", 
-                            filename=item.name)
+            drive.upload_file(str(item), f"{remote_dir.rstrip('/')}/{remote_path}",
+                              filename=item.name)
             print(f"已上传: {rel_path}")
+
 
 # 批量下载目录
 def download_directory(drive, remote_dir="/", local_dir="./downloads"):
     """批量下载存储目录到本地"""
     os.makedirs(local_dir, exist_ok=True)
-    
+
     def download_recursive(remote_path, local_path):
         # 下载文件
         files = drive.get_file_list(remote_path)
         for file in files:
             drive.download_file(file.fid, filedir=local_path, filename=file.name)
             print(f"已下载: {file.name}")
-        
+
         # 递归下载子目录
         dirs = drive.get_dir_list(remote_path)
         for dir in dirs:
@@ -161,8 +163,9 @@ def download_directory(drive, remote_dir="/", local_dir="./downloads"):
             sub_local = os.path.join(local_path, dir.name)
             os.makedirs(sub_local, exist_ok=True)
             download_recursive(sub_remote, sub_local)
-    
+
     download_recursive(remote_dir, local_dir)
+
 
 # 使用示例
 upload_directory(drive, "/home/user/documents", "/backup")
@@ -252,6 +255,7 @@ backup_drive.upload_file("/important/data.db", "/daily", "data_backup.db")
 ```
 
 ### 混合存储策略
+
 ```python
 # 结合云存储和本地存储
 from fundrive.drives.google import GoogleDrive
@@ -259,12 +263,13 @@ from fundrive.drives.google import GoogleDrive
 local_drive = OsDrive(root_path="/local/cache")
 cloud_drive = GoogleDrive()
 
+
 # 本地缓存策略
 def get_file_with_cache(file_id, filename):
     # 先检查本地缓存
     if local_drive.exist("/cache", filename):
         return local_drive.download_file(file_id, "/tmp", filename)
-    
+
     # 从云端下载并缓存
     cloud_drive.download_file(file_id, "/tmp", filename)
     local_drive.upload_file(f"/tmp/{filename}", "/cache", filename)

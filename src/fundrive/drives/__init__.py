@@ -109,36 +109,32 @@ except ImportError:
 # 驱动注册表 - 按流行度排序
 AVAILABLE_DRIVES = {
     # 🌟 全球主流服务
-    'google': GoogleDrive,
-    'onedrive': OneDrive,
-    'dropbox': DropboxDrive,
-    'amazon': S3Drive,
-    's3': S3Drive,  # S3别名
-    
+    "google": GoogleDrive,
+    "onedrive": OneDrive,
+    "dropbox": DropboxDrive,
+    "amazon": S3Drive,
+    "s3": S3Drive,  # S3别名
     # 💻 代码托管平台
-    'github': GitHubDrive,
-    'gitee': GiteeDrive,
-    
+    "github": GitHubDrive,
+    "gitee": GiteeDrive,
     # 🇨🇳 国内主流服务
-    'baidu': BaiduDrive,
-    'alipan': AliPanDrive,
-    'alipan_open': AliPanOpenDrive,
-    'oss': OssDrive,
-    
+    "baidu": BaiduDrive,
+    "alipan": AliPanDrive,
+    "alipan_open": AliPanOpenDrive,
+    "oss": OssDrive,
     # 🔧 通用协议和工具
-    'webdav': WebDAVDrive,
-    'pcloud': PCloudDrive,
-    'mediafire': MediaFireDrive,
-    'lanzou': LanzouDrive,
-    'local': LocalDrive,
-    'os': LocalDrive,  # 本地文件系统别名
-    
+    "webdav": WebDAVDrive,
+    "pcloud": PCloudDrive,
+    "mediafire": MediaFireDrive,
+    "lanzou": LanzouDrive,
+    "local": LocalDrive,
+    "os": LocalDrive,  # 本地文件系统别名
     # 🔬 学术和专业服务
-    'zenodo': ZenodoDrive,
-    'tsinghua': TsinghuaDrive,
-    'openxlab': OpenXLabDrive,
-    'tianchi': TianchiDrive,
-    'wenshushu': WenshushuDrive,
+    "zenodo": ZenodoDrive,
+    "tsinghua": TsinghuaDrive,
+    "openxlab": OpenXLabDrive,
+    "tianchi": TianchiDrive,
+    "wenshushu": WenshushuDrive,
 }
 
 # 过滤掉未安装的驱动
@@ -148,41 +144,43 @@ AVAILABLE_DRIVES = {k: v for k, v in AVAILABLE_DRIVES.items() if v is not None}
 def get_drive(drive_type: str, *args, **kwargs):
     """
     根据驱动类型获取驱动实例
-    
+
     Args:
         drive_type (str): 驱动类型名称
         *args: 传递给驱动构造函数的位置参数
         **kwargs: 传递给驱动构造函数的关键字参数
-    
+
     Returns:
         BaseDrive: 驱动实例
-        
+
     Raises:
         ValueError: 不支持的驱动类型
         ImportError: 驱动依赖未安装
-    
+
     Examples:
         >>> drive = get_drive('google', credentials_file='path/to/creds.json')
         >>> drive = get_drive('dropbox', access_token='your_token')
         >>> drive = get_drive('s3', access_key_id='key', secret_access_key='secret')
     """
     drive_type = drive_type.lower()
-    
+
     if drive_type not in AVAILABLE_DRIVES:
-        available = ', '.join(sorted(AVAILABLE_DRIVES.keys()))
+        available = ", ".join(sorted(AVAILABLE_DRIVES.keys()))
         raise ValueError(f"不支持的驱动类型: {drive_type}. 可用驱动: {available}")
-    
+
     drive_class = AVAILABLE_DRIVES[drive_type]
     if drive_class is None:
-        raise ImportError(f"驱动 {drive_type} 的依赖未安装，请运行: pip install fundrive[{drive_type}]")
-    
+        raise ImportError(
+            f"驱动 {drive_type} 的依赖未安装，请运行: pip install fundrive[{drive_type}]"
+        )
+
     return drive_class(*args, **kwargs)
 
 
 def list_available_drives():
     """
     列出所有可用的驱动类型
-    
+
     Returns:
         dict: 驱动类型到驱动类的映射
     """
@@ -192,7 +190,7 @@ def list_available_drives():
 def get_drive_info():
     """
     获取所有驱动的详细信息
-    
+
     Returns:
         dict: 包含驱动分类和描述的信息
     """
@@ -225,39 +223,38 @@ def get_drive_info():
             "openxlab": "OpenXLab - AI模型和数据集平台",
             "tianchi": "天池 - 阿里云大数据竞赛平台",
             "wenshushu": "文叔叔 - 临时文件分享",
-        }
+        },
     }
 
 
 # 导出所有可用的驱动类
 __all__ = [
     # 核心函数
-    'get_drive',
-    'list_available_drives', 
-    'get_drive_info',
-    'AVAILABLE_DRIVES',
-    
+    "get_drive",
+    "list_available_drives",
+    "get_drive_info",
+    "AVAILABLE_DRIVES",
     # 驱动类 - 按流行度排序
-    'GoogleDrive',
-    'OneDrive', 
-    'DropboxDrive',
-    'S3Drive',
-    'GitHubDrive',
-    'GiteeDrive',
-    'BaiduDrive',
-    'AliPanDrive',
-    'AliPanOpenDrive',
-    'OssDrive',
-    'WebDAVDrive',
-    'PCloudDrive',
-    'MediaFireDrive',
-    'LanzouDrive',
-    'LocalDrive',
-    'ZenodoDrive',
-    'TsinghuaDrive',
-    'OpenXLabDrive',
-    'TianchiDrive',
-    'WenshushuDrive',
+    "GoogleDrive",
+    "OneDrive",
+    "DropboxDrive",
+    "S3Drive",
+    "GitHubDrive",
+    "GiteeDrive",
+    "BaiduDrive",
+    "AliPanDrive",
+    "AliPanOpenDrive",
+    "OssDrive",
+    "WebDAVDrive",
+    "PCloudDrive",
+    "MediaFireDrive",
+    "LanzouDrive",
+    "LocalDrive",
+    "ZenodoDrive",
+    "TsinghuaDrive",
+    "OpenXLabDrive",
+    "TianchiDrive",
+    "WenshushuDrive",
 ]
 
 # 过滤掉None值的导出

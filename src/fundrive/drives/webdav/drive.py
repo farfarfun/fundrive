@@ -1,11 +1,11 @@
 import os.path
-import subprocess
-from typing import List
+from typing import List, Optional
 
 from funsecret import read_secret
 from funutil import getLogger
 
 from fundrive.core import BaseDrive, DriveFile
+from webdav4.client import Client
 
 logger = getLogger("fundrive")
 
@@ -23,12 +23,7 @@ class WebDavDrive(BaseDrive):
         password = password or read_secret("fundrive", "webdav", "password")
         if not server_url or not username or not password:
             raise Exception("server_url, username, password is None")
-        try:
-            from webdav4.client import Client
-        except Exception as e:
-            logger.error(e)
-            subprocess.check_call(["pip", "install", "fundrive-webdav"])
-            from webdav4.client import Client
+
         self.drive = Client(server_url, auth=(username, password))
         return True
 
@@ -92,26 +87,64 @@ class WebDavDrive(BaseDrive):
             size=res["content_length"],
         )
 
-    def download_file(self, fid, local_dir, overwrite=False, *args, **kwargs) -> bool:
-        local_path = os.path.join(local_dir, os.path.basename(fid))
-        os.makedirs(local_dir, exist_ok=True)
+    def download_file(
+        self,
+        fid: str,
+        save_dir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
+        *args,
+        **kwargs,
+    ) -> bool:
+        """
+        下载单个文件
+
+        Args:
+            fid: 文件ID（远程路径）
+            save_dir: 文件保存目录
+            filename: 文件名
+            filepath: 完整的文件保存路径
+            overwrite: 是否覆盖已存在的文件
+
+        Returns:
+            bool: 下载是否成功
+        """
+        # 确定保存路径
+        if filepath:
+            local_path = filepath
+        elif save_dir and filename:
+            local_path = os.path.join(save_dir, filename)
+        elif save_dir:
+            local_path = os.path.join(save_dir, os.path.basename(fid))
+        else:
+            local_path = os.path.basename(fid)
+
+        # 确保目录存在
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+
+        # 检查文件是否已存在
         if os.path.exists(local_path) and not overwrite:
             return False
+
+        # 检查远程文件是否存在
         if not self.exist(fid):
             return False
+
+        # 执行下载
         self.drive.download_file(from_path=fid, to_path=local_path)
         return True
 
     def upload_file(
-        self, local_path, fid, recursion=True, overwrite=False, *args, **kwargs
+        self, filepath: str, fid: str, recursion=True, overwrite=False, *args, **kwargs
     ) -> bool:
         if self.exist(fid) and not overwrite:
             logger.warning(f"File {fid} already exists, skipping upload")
             return False
-        logger.info(f"Uploading {local_path} to {fid}")
+        logger.info(f"Uploading {filepath} to {fid}")
         self.drive.upload_file(
-            from_path=local_path,
-            to_path=os.path.join(fid, os.path.basename(local_path)),
+            from_path=filepath,
+            to_path=os.path.join(fid, os.path.basename(filepath)),
             overwrite=overwrite,
         )
         return True

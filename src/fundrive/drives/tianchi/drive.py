@@ -17,7 +17,7 @@
 """
 
 import os
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 import orjson
 import requests
@@ -412,9 +412,12 @@ class TianChiDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        filedir: str = ".",
-        filename: str = None,
+        save_dir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
         callback: callable = None,
+        *args,
         **kwargs,
     ) -> bool:
         """
@@ -422,8 +425,10 @@ class TianChiDrive(BaseDrive):
 
         Args:
             fid: 文件ID
-            filedir: 下载目录
-            filename: 保存的文件名
+            save_dir: 文件保存目录
+            filename: 文件名
+            filepath: 完整的文件保存路径
+            overwrite: 是否覆盖已存在的文件
             callback: 进度回调函数
 
         Returns:
@@ -439,18 +444,31 @@ class TianChiDrive(BaseDrive):
                 return False
 
             # 确定保存路径
-            filename = filename or f"tianchi_file_{fid}"
-            os.makedirs(filedir, exist_ok=True)
-            filepath = os.path.join(filedir, filename)
+            if filepath:
+                local_path = filepath
+            elif save_dir and filename:
+                local_path = os.path.join(save_dir, filename)
+            elif save_dir:
+                local_path = os.path.join(save_dir, f"tianchi_file_{fid}")
+            else:
+                local_path = f"tianchi_file_{fid}"
+
+            # 检查文件是否已存在
+            if os.path.exists(local_path) and not overwrite:
+                logger.warning(f"文件已存在，跳过下载: {local_path}")
+                return False
+
+            # 确保目录存在
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
             # 下载文件
-            success = simple_download(url=download_url, filepath=filepath, **kwargs)
+            success = simple_download(url=download_url, filepath=local_path, **kwargs)
 
             if success:
-                logger.info(f"✅ 文件下载成功: {filepath}")
+                logger.info(f"✅ 文件下载成功: {local_path}")
                 return True
             else:
-                logger.error(f"❌ 文件下载失败")
+                logger.error("❌ 文件下载失败")
                 return False
 
         except Exception as e:

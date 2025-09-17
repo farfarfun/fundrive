@@ -168,7 +168,7 @@ class BaiDuDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        filedir: Optional[str] = None,
+        save_dir: Optional[str] = None,
         filename: Optional[str] = None,
         filepath: Optional[str] = None,
         overwrite: bool = False,
@@ -178,7 +178,7 @@ class BaiDuDrive(BaseDrive):
         """
         下载文件
         :param fid: 文件ID
-        :param filedir: 文件保存目录
+        :param save_dir: 文件保存目录
         :param filename: 文件名
         :param filepath: 完整的文件保存路径
         :param overwrite: 是否覆盖已存在的文件
@@ -194,11 +194,11 @@ class BaiDuDrive(BaseDrive):
             "Cookie": f"BDUSS={self.drive.bduss};ptoken={self.drive.ptoken}",
         }
         try:
-            filepath = get_filepath(filedir, filename, filepath)
+            filepath = get_filepath(save_dir, filename, filepath)
             download(
                 link,
                 filepath=filepath
-                or os.path.join(filedir, filename or os.path.basename(fid)),
+                or os.path.join(save_dir, filename or os.path.basename(fid)),
                 headers=headers,
                 overwrite=overwrite,
                 *args,

@@ -98,27 +98,27 @@ drive = TianChiDrive()
 # 登录
 if drive.login():
     print("✅ 登录成功")
-    
+
     # 数据集ID（数字格式）
     dataset_id = "75730"
-    
+
     # 检查数据集是否存在
     exists = drive.exist(dataset_id)
     print(f"数据集存在: {exists}")
-    
+
     # 获取数据集文件列表
     files = drive.get_file_list(dataset_id)
     print(f"数据集有 {len(files)} 个文件")
-    
+
     # 获取数据集目录列表
     dirs = drive.get_dir_list(dataset_id)
     print(f"数据集有 {len(dirs)} 个目录")
-    
+
     # 下载文件（需要文件ID）
     if files:
         first_file = files[0]
         file_id = first_file.ext.get("file_id")
-        
+
         success = drive.download_file(file_id, "./downloads")
         if success:
             print("✅ 文件下载成功")

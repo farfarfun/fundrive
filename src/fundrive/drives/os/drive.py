@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional
 
 from fundrive.core import BaseDrive
 
@@ -17,21 +17,60 @@ class OSDrive(BaseDrive):
         return True
 
     def upload_file(
-        self, local_path, drive_path, recursion=True, overwrite=False, *args, **kwargs
+        self, filepath: str, fid: str, recursion=True, overwrite=False, *args, **kwargs
     ) -> bool:
-        if not os.path.exists(local_path):
+        if not os.path.exists(filepath):
             return False
-        print(local_path, drive_path)
-        shutil.copyfile(local_path, drive_path)
+        print(filepath, fid)
+        shutil.copyfile(filepath, fid)
         return True
 
     def download_file(
-        self, local_path, drive_path, overwrite=False, *args, **kwargs
+        self,
+        fid: str,
+        save_dir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
+        *args,
+        **kwargs,
     ) -> bool:
-        if not os.path.exists(drive_path):
+        """
+        下载单个文件
+
+        Args:
+            fid: 文件ID（源文件路径）
+            save_dir: 文件保存目录
+            filename: 文件名
+            filepath: 完整的文件保存路径
+            overwrite: 是否覆盖已存在的文件
+
+        Returns:
+            bool: 下载是否成功
+        """
+        # 检查源文件是否存在
+        if not os.path.exists(fid):
             return False
-        print(local_path, drive_path)
-        shutil.copyfile(drive_path, local_path)
+
+        # 确定保存路径
+        if filepath:
+            local_path = filepath
+        elif save_dir and filename:
+            local_path = os.path.join(save_dir, filename)
+        elif save_dir:
+            local_path = os.path.join(save_dir, os.path.basename(fid))
+        else:
+            local_path = os.path.basename(fid)
+
+        # 检查文件是否已存在
+        if os.path.exists(local_path) and not overwrite:
+            return False
+
+        # 确保目录存在
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+
+        # 执行复制
+        shutil.copyfile(fid, local_path)
         return True
 
     def get_file_list(self, path, *args, **kwargs) -> List[Dict[str, Any]]:

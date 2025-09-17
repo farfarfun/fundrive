@@ -107,12 +107,12 @@ def demo_file_operations(drive: TSingHuaDrive):
     print(f"📄 选择测试文件: {test_file.name}")
 
     # 检查文件是否存在
-    print(f"\n🔍 检查文件是否存在...")
+    print("\n🔍 检查文件是否存在...")
     exists = drive.exist(test_file.fid)
     print(f"✅ 文件存在: {exists}")
 
     # 获取文件详细信息
-    print(f"\n📋 获取文件详细信息...")
+    print("\n📋 获取文件详细信息...")
     file_info = drive.get_file_info(test_file.fid)
     if file_info:
         print(f"✅ 文件名: {file_info.name}")
@@ -121,7 +121,7 @@ def demo_file_operations(drive: TSingHuaDrive):
 
     # 下载文件（小文件）
     if test_file.size < 10 * 1024 * 1024:  # 小于10MB
-        print(f"\n⬇️ 下载文件到本地...")
+        print("\n⬇️ 下载文件到本地...")
         download_dir = "./test_downloads"
         success = drive.download_file(
             fid=test_file.fid, filedir=download_dir, filename=f"test_{test_file.name}"
@@ -149,23 +149,23 @@ def demo_directory_operations(drive: TSingHuaDrive):
     print(f"📁 选择测试目录: {test_dir.name}")
 
     # 检查目录是否存在
-    print(f"\n🔍 检查目录是否存在...")
+    print("\n🔍 检查目录是否存在...")
     exists = drive.exist(test_dir.fid)
     print(f"✅ 目录存在: {exists}")
 
     # 获取目录详细信息
-    print(f"\n📋 获取目录详细信息...")
+    print("\n📋 获取目录详细信息...")
     dir_info = drive.get_dir_info(test_dir.fid)
     if dir_info:
         print(f"✅ 目录名: {dir_info.name}")
         print(f"   路径: {dir_info.fid}")
 
     # 列出目录内容
-    print(f"\n📄 列出目录内文件...")
+    print("\n📄 列出目录内文件...")
     sub_files = drive.get_file_list(test_dir.fid)
     print_files(sub_files, f"目录 {test_dir.name} 中的文件")
 
-    print(f"\n📁 列出目录内子目录...")
+    print("\n📁 列出目录内子目录...")
     sub_dirs = drive.get_dir_list(test_dir.fid)
     print_files(sub_dirs, f"目录 {test_dir.name} 中的子目录")
 
@@ -395,7 +395,7 @@ def run_interactive_demo():
                 item_choice = int(input("请选择项目编号: ")) - 1
                 if 0 <= item_choice < len(all_items):
                     item = all_items[item_choice]
-                    print(f"\n📋 项目信息:")
+                    print("\n📋 项目信息:")
                     print(f"   名称: {item.name}")
                     print(f"   路径: {item.fid}")
                     print(
@@ -415,7 +415,7 @@ def run_interactive_demo():
         elif choice == "7" or choice == "..":
             if current_path:
                 current_path = os.path.dirname(current_path)
-                print(f"✅ 已返回上级目录")
+                print("✅ 已返回上级目录")
             else:
                 print("❌ 已在根目录")
         else:

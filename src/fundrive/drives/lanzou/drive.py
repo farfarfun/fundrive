@@ -183,11 +183,11 @@ class LanZouDrive(BaseDrive):
 
     def download_file(
         self,
-        fid,
-        filedir=None,
-        filename=None,
-        filepath=None,
-        overwrite=False,
+        fid: str,
+        save_dir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
         *args,
         **kwargs,
     ) -> bool:
@@ -196,7 +196,7 @@ class LanZouDrive(BaseDrive):
 
         Args:
             fid: 文件ID
-            filedir: 文件保存目录
+            save_dir: 文件保存目录
             filename: 文件名
             filepath: 完整的文件保存路径
             overwrite: 是否覆盖已存在的文件
@@ -205,9 +205,9 @@ class LanZouDrive(BaseDrive):
             bool: 下载是否成功
         """
         file_info = self.get_file_info(fid=fid)
-        save_dir = filedir or "."
-        task = Task(url=file_info["url"], pwd=file_info["pwd"], path=save_dir)
-        os.makedirs(save_dir, exist_ok=True)
+        save_directory = save_dir or "."
+        task = Task(url=file_info["url"], pwd=file_info["pwd"], path=save_directory)
+        os.makedirs(save_directory, exist_ok=True)
         wrap = ProgressWrap()
         wrap.init(file_info["name"], file_info["size"])
 
@@ -266,8 +266,8 @@ class LanZouDrive(BaseDrive):
 
     def upload_file(
         self,
-        filepath,
-        fid,
+        filepath: str,
+        fid: str,
         url=None,
         pwd=None,
         recursion=True,

@@ -561,7 +561,7 @@ class PCloudDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        filedir: Optional[str] = None,
+        save_dir: Optional[str] = None,
         filename: Optional[str] = None,
         filepath: Optional[str] = None,
         overwrite: bool = False,
@@ -575,7 +575,7 @@ class PCloudDrive(BaseDrive):
 
         Args:
             fid (str): 文件 ID
-            filedir (Optional[str]): 文件保存目录
+            save_dir (Optional[str]): 文件保存目录
             filename (Optional[str]): 文件名
             filepath (Optional[str]): 完整的文件保存路径
             overwrite (bool): 是否覆盖已存在的文件
@@ -595,10 +595,10 @@ class PCloudDrive(BaseDrive):
             # 确定保存路径
             if filepath:
                 save_path = Path(filepath)
-            elif filedir and filename:
-                save_path = Path(filedir) / filename
-            elif filedir:
-                save_path = Path(filedir) / file_info.name
+            elif save_dir and filename:
+                save_path = Path(save_dir) / filename
+            elif save_dir:
+                save_path = Path(save_dir) / file_info.name
             else:
                 save_path = Path(file_info.name)
 

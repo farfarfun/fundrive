@@ -381,12 +381,12 @@ class GoogleDrive(BaseDrive):
             logger.error(f"获取目录信息失败: {e}")
             return None
 
-    def upload_file(self, filedir: str, fid: str, *args, **kwargs) -> bool:
+    def upload_file(self, filepath: str, fid: str, *args, **kwargs) -> bool:
         """
         上传文件到Google Drive
 
         Args:
-            filedir: 本地文件路径
+            filepath: 本地文件路径
             fid: 目标目录ID
             *args: 位置参数
             **kwargs: 关键字参数
@@ -399,18 +399,18 @@ class GoogleDrive(BaseDrive):
                 logger.error("未登录Google Drive服务")
                 return False
 
-            if not os.path.exists(filedir):
-                logger.error(f"本地文件不存在: {filedir}")
+            if not os.path.exists(filepath):
+                logger.error(f"本地文件不存在: {filepath}")
                 return False
 
             # 确定上传后的文件名
-            filename = kwargs.get("filename") or os.path.basename(filedir)
+            filename = kwargs.get("filename") or os.path.basename(filepath)
 
             # 准备文件元数据
             file_metadata = {"name": filename, "parents": [fid]}
 
             # 创建媒体上传对象
-            media = MediaFileUpload(filedir, resumable=True)
+            media = MediaFileUpload(filepath, resumable=True)
 
             # 执行上传
             request = self.service.files().create(
@@ -434,7 +434,7 @@ class GoogleDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        filedir: Optional[str] = None,
+        save_dir: Optional[str] = None,
         filename: Optional[str] = None,
         filepath: Optional[str] = None,
         overwrite: bool = False,
@@ -446,7 +446,7 @@ class GoogleDrive(BaseDrive):
 
         Args:
             fid: 文件ID
-            filedir: 文件保存目录
+            save_dir: 文件保存目录
             filename: 文件名
             filepath: 完整的文件保存路径
             overwrite: 是否覆盖已存在的文件
@@ -462,15 +462,15 @@ class GoogleDrive(BaseDrive):
             # 确定保存路径
             if filepath:
                 save_path = filepath
-            elif filedir and filename:
-                save_path = os.path.join(filedir, filename)
+            elif save_dir and filename:
+                save_path = os.path.join(save_dir, filename)
             else:
                 # 获取文件信息以确定文件名
                 file_info = self.get_file_info(fid)
                 if not file_info:
                     logger.error("无法获取文件信息")
                     return False
-                save_path = os.path.join(filedir or ".", file_info.name)
+                save_path = os.path.join(save_dir or ".", file_info.name)
 
             # 检查文件是否已存在
             if os.path.exists(save_path) and not overwrite:

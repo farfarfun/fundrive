@@ -195,11 +195,12 @@ def batch_upload(drive, file_list, remote_dir="/"):
             except Exception as e:
                 print(f"❌ {filename} 上传异常: {e}")
 
+
 # 批量下载
 def batch_download(drive, remote_dir="/", local_dir="./downloads"):
     """批量下载目录中的所有文件"""
     os.makedirs(local_dir, exist_ok=True)
-    
+
     files = drive.get_file_list(remote_dir)
     for file in files:
         try:
@@ -210,6 +211,7 @@ def batch_download(drive, remote_dir="/", local_dir="./downloads"):
                 print(f"❌ {file.name} 下载失败")
         except Exception as e:
             print(f"❌ {file.name} 下载异常: {e}")
+
 
 # 使用示例
 file_list = ["/path/to/file1.txt", "/path/to/file2.pdf"]

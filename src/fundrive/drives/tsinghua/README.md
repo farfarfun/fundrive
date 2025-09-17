@@ -75,17 +75,17 @@ drive = TSingHuaDrive(share_key="your_share_key")
 # 登录（设置分享链接）
 if drive.login():
     print("登录成功")
-    
+
     # 列出根目录文件
     files = drive.get_file_list("")
     for file in files:
         print(f"文件: {file.name}, 大小: {file.size}")
-    
+
     # 列出根目录子目录
     dirs = drive.get_dir_list("")
     for dir in dirs:
         print(f"目录: {dir.name}")
-    
+
     # 下载文件
     if files:
         success = drive.download_file(

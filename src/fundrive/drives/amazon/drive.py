@@ -20,8 +20,6 @@ Amazon S3是亚马逊提供的对象存储服务，提供高可用性、可扩�
 import os
 import mimetypes
 from typing import Any, Dict, List, Optional
-from urllib.parse import urlparse
-import time
 
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
@@ -559,9 +557,12 @@ class S3Drive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        filedir: str = ".",
-        filename: str = None,
+        save_dir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
         callback: callable = None,
+        *args,
         **kwargs,
     ) -> bool:
         """
@@ -569,8 +570,10 @@ class S3Drive(BaseDrive):
 
         Args:
             fid: 对象键（路径）
-            filedir: 下载目录
-            filename: 保存的文件名
+            save_dir: 文件保存目录
+            filename: 文件名
+            filepath: 完整的文件保存路径
+            overwrite: 是否覆盖已存在的文件
             callback: 进度回调函数
 
         Returns:
@@ -580,9 +583,22 @@ class S3Drive(BaseDrive):
             logger.info(f"正在下载文件: {fid}")
 
             # 确定保存路径
-            filename = filename or os.path.basename(fid)
-            os.makedirs(filedir, exist_ok=True)
-            filepath = os.path.join(filedir, filename)
+            if filepath:
+                local_path = filepath
+            elif save_dir and filename:
+                local_path = os.path.join(save_dir, filename)
+            elif save_dir:
+                local_path = os.path.join(save_dir, os.path.basename(fid))
+            else:
+                local_path = os.path.basename(fid)
+
+            # 检查文件是否已存在
+            if os.path.exists(local_path) and not overwrite:
+                logger.warning(f"文件已存在，跳过下载: {local_path}")
+                return False
+
+            # 确保目录存在
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
             # 获取文件大小
             try:
@@ -601,10 +617,10 @@ class S3Drive(BaseDrive):
 
             # 下载文件
             self.s3_client.download_file(
-                self.bucket_name, fid, filepath, Callback=progress_callback
+                self.bucket_name, fid, local_path, Callback=progress_callback
             )
 
-            logger.info(f"✅ 文件下载成功: {filepath}")
+            logger.info(f"✅ 文件下载成功: {local_path}")
             return True
 
         except Exception as e:

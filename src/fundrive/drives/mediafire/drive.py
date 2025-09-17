@@ -342,7 +342,7 @@ class MediaFireDrive(BaseDrive):
                     "file/delete.php", params={"quick_key": fid}, method="POST"
                 )
                 if result:
-                    logger.info(f"✅ 文件删除成功")
+                    logger.info("✅ 文件删除成功")
                     return True
             except:
                 pass
@@ -353,12 +353,12 @@ class MediaFireDrive(BaseDrive):
                     "folder/delete.php", params={"folder_key": fid}, method="POST"
                 )
                 if result:
-                    logger.info(f"✅ 目录删除成功")
+                    logger.info("✅ 目录删除成功")
                     return True
             except:
                 pass
 
-            logger.error(f"❌ 删除失败")
+            logger.error("❌ 删除失败")
             return False
 
         except Exception as e:
@@ -610,9 +610,12 @@ class MediaFireDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        filedir: str = ".",
-        filename: str = None,
+        save_dir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
         callback: callable = None,
+        *args,
         **kwargs,
     ) -> bool:
         """
@@ -620,8 +623,10 @@ class MediaFireDrive(BaseDrive):
 
         Args:
             fid: 文件ID
-            filedir: 下载目录
-            filename: 保存的文件名
+            save_dir: 文件保存目录
+            filename: 文件名
+            filepath: 完整的文件保存路径
+            overwrite: 是否覆盖已存在的文件
             callback: 进度回调函数
 
         Returns:
@@ -651,22 +656,35 @@ class MediaFireDrive(BaseDrive):
                 return False
 
             # 确定保存路径
-            filename = filename or file_info.name
-            os.makedirs(filedir, exist_ok=True)
-            filepath = os.path.join(filedir, filename)
+            if filepath:
+                local_path = filepath
+            elif save_dir and filename:
+                local_path = os.path.join(save_dir, filename)
+            elif save_dir:
+                local_path = os.path.join(save_dir, file_info.name)
+            else:
+                local_path = file_info.name
+                
+            # 检查文件是否已存在
+            if os.path.exists(local_path) and not overwrite:
+                logger.warning(f"文件已存在，跳过下载: {local_path}")
+                return False
+                
+            # 确保目录存在
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
             # 下载文件
             response = self.session.get(download_url, stream=True, timeout=300)
             response.raise_for_status()
 
-            with open(filepath, "wb") as f:
+            with open(local_path, "wb") as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     if chunk:
                         f.write(chunk)
                         if callback:
                             callback(len(chunk))
 
-            logger.info(f"✅ 文件下载成功: {filepath}")
+            logger.info(f"✅ 文件下载成功: {local_path}")
             return True
 
         except Exception as e:
@@ -737,7 +755,7 @@ class MediaFireDrive(BaseDrive):
             if links:
                 share_url = links[0].get("normal_download")
                 if share_url:
-                    logger.info(f"✅ 分享链接创建成功")
+                    logger.info("✅ 分享链接创建成功")
                     return share_url
 
             logger.error("❌ 分享链接创建失败")

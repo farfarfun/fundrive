@@ -144,9 +144,9 @@ success = drive.download_file(
 
 # 下载整个目录
 success = drive.download_dir(
-    fid="docs",             # GitHub目录路径
+    fid="docs",  # GitHub目录路径
     filedir="./downloads",  # 本地保存目录
-    overwrite=True         # 覆盖已存在文件
+    overwrite=True  # 覆盖已存在文件
 )
 ```
 

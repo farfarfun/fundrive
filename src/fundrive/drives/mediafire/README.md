@@ -106,20 +106,20 @@ drive = MediaFireDrive()
 # 登录
 if drive.login():
     print("✅ 登录成功")
-    
+
     # 获取根目录文件列表
     files = drive.get_file_list("root")
     print(f"根目录有 {len(files)} 个文件")
-    
+
     # 获取根目录文件夹列表
     folders = drive.get_dir_list("root")
     print(f"根目录有 {len(folders)} 个文件夹")
-    
+
     # 上传文件
     success = drive.upload_file("local_file.txt", "root", "uploaded_file.txt")
     if success:
         print("✅ 文件上传成功")
-    
+
     # 下载文件（需要先获取文件ID）
     files = drive.get_file_list("root")
     for file in files:

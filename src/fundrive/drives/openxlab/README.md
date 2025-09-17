@@ -91,29 +91,29 @@ drive = OpenXLabDrive()
 # 登录
 if drive.login():
     print("✅ 登录成功")
-    
+
     # 数据集名称格式：owner/dataset_name
     dataset_name = "OpenDataLab/MNIST"
-    
+
     # 检查数据集是否存在
     exists = drive.exist(dataset_name)
     print(f"数据集存在: {exists}")
-    
+
     # 获取数据集文件列表
     files = drive.get_file_list(dataset_name)
     print(f"数据集有 {len(files)} 个文件")
-    
+
     # 获取数据集目录列表
     dirs = drive.get_dir_list(dataset_name)
     print(f"数据集有 {len(dirs)} 个目录")
-    
+
     # 下载文件（需要完整的文件ID：dataset_id/file_path）
     if files:
         first_file = files[0]
         dataset_id = first_file.ext.get("dataset_id")
         file_path = first_file.ext.get("path")
         file_id = f"{dataset_id}{file_path}"
-        
+
         success = drive.download_file(file_id, "./downloads")
         if success:
             print("✅ 文件下载成功")

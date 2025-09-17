@@ -229,7 +229,7 @@ class BaseDriveTest:
             # 检查分享是否成功
             if share_link is not None and isinstance(share_link, str):
                 # 输出分享成功信息
-                logger.info(f"🎉 分享成功！")
+                logger.info("🎉 分享成功！")
                 logger.info(f"📎 分享链接: {share_link}")
                 logger.info(f"📁 分享文件: {test_file_path}")
                 return True

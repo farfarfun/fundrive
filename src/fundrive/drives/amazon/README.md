@@ -136,15 +136,15 @@ drive.upload_file(
 # 下载单个文件
 success = drive.download_file(
     fid="documents/file.txt",  # S3对象键
-    filedir="./downloads",     # 本地保存目录
+    filedir="./downloads",  # 本地保存目录
     filename="downloaded_file.txt"  # 可选：重命名
 )
 
 # 下载整个目录
 success = drive.download_dir(
-    fid="documents",           # S3目录前缀
-    filedir="./downloads",     # 本地保存目录
-    overwrite=True            # 覆盖已存在文件
+    fid="documents",  # S3目录前缀
+    filedir="./downloads",  # 本地保存目录
+    overwrite=True  # 覆盖已存在文件
 )
 ```
 

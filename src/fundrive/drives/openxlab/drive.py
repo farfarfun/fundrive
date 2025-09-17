@@ -470,7 +470,7 @@ class OpenXLabDrive(BaseDrive):
                 logger.info(f"✅ 文件下载成功: {filepath}")
                 return True
             else:
-                logger.error(f"❌ 文件下载失败")
+                logger.error("❌ 文件下载失败")
                 return False
 
         except Exception as e:

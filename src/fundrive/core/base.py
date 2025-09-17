@@ -352,7 +352,7 @@ class BaseDrive:
     def download_file(
         self,
         fid: str,
-        filedir: Optional[str] = None,
+        save_dir: Optional[str] = None,
         filename: Optional[str] = None,
         filepath: Optional[str] = None,
         overwrite: bool = False,
@@ -361,10 +361,9 @@ class BaseDrive:
     ) -> bool:
         """
         下载单个文件
-
         Args:
             fid: 文件ID
-            filedir: 文件保存目录
+            save_dir: 文件保存目录
             filename: 文件名
             filepath: 完整的文件保存路径
             overwrite: 是否覆盖已存在的文件
@@ -379,7 +378,7 @@ class BaseDrive:
     def download_dir(
         self,
         fid: str,
-        filedir: str,
+        save_dir: str,
         recursion: bool = True,
         overwrite: bool = False,
         ignore_filter: Optional[Callable[[str], bool]] = None,
@@ -389,7 +388,7 @@ class BaseDrive:
         """
         下载目录
         :param fid: 目录ID
-        :param filedir: 本地保存目录
+        :param save_dir: 本地保存目录
         :param recursion: 是否递归下载子目录
         :param overwrite: 是否覆盖已存在的文件
         :param ignore_filter: 忽略文件的过滤函数
@@ -399,15 +398,15 @@ class BaseDrive:
         """
         if not self.exist(fid):
             return False
-        if not os.path.exists(filedir):
-            os.makedirs(filedir, exist_ok=True)
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir, exist_ok=True)
         for file in self.get_file_list(fid):
             if ignore_filter and ignore_filter(file.name):
                 continue
             _drive_path = file.fid
             self.download_file(
                 fid=file.fid,
-                filedir=filedir,
+                save_dir=save_dir,
                 filename=os.path.basename(file.name),
                 overwrite=overwrite,
                 *args,
@@ -419,7 +418,7 @@ class BaseDrive:
         for file in self.get_dir_list(fid):
             self.download_dir(
                 fid=file.fid,
-                filedir=os.path.join(filedir, os.path.basename(file.name)),
+                save_dir=os.path.join(save_dir, os.path.basename(file.name)),
                 overwrite=overwrite,
                 recursion=recursion,
                 ignore_filter=ignore_filter,
@@ -428,18 +427,12 @@ class BaseDrive:
             )
         return True
 
-    def upload_file(
-        self,
-        filedir: str,
-        fid: str,
-        *args: Any,
-        **kwargs: Any,
-    ) -> bool:
+    def upload_file(self, filepath: str, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
         上传单个文件
 
         Args:
-            filedir: 本地文件路径
+            filepath: 本地文件路径
             fid: 目标目录ID
             args: 位置参数
             kwargs: 关键字参数

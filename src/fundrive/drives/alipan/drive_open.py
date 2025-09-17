@@ -141,7 +141,7 @@ class AliopenDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        filedir: Optional[str] = None,
+        save_dir: Optional[str] = None,
         filename: Optional[str] = None,
         filepath: Optional[str] = None,
         overwrite: bool = False,
@@ -151,13 +151,13 @@ class AliopenDrive(BaseDrive):
         """
         下载文件
         :param fid: 文件ID
-        :param filedir: 文件保存目录
+        :param save_dir: 文件保存目录
         :param filename: 文件名
         :param filepath: 完整的文件保存路径
         :param overwrite: 是否覆盖已存在的文件
         :return: 下载是否成功
         """
-        save_path = get_filepath(filedir, filename, filepath)
+        save_path = get_filepath(save_dir, filename, filepath)
         if not save_path:
             raise ValueError("必须提供有效的文件保存路径")
         self.drive.download_file(file_id=fid, filepath=save_path)
@@ -165,7 +165,7 @@ class AliopenDrive(BaseDrive):
 
     def upload_file(
         self,
-        filedir: str,
+        filepath: str,
         fid: str,
         recursion: bool = True,
         overwrite: bool = False,
@@ -174,14 +174,14 @@ class AliopenDrive(BaseDrive):
     ) -> bool:
         """
         上传文件
-        :param filedir: 本地文件路径
+        :param filepath: 本地文件路径
         :param fid: 目标目录ID
         :param recursion: 是否递归上传
         :param overwrite: 是否覆盖已存在的文件
         :return: 上传是否成功
         """
         self.drive.upload_file(
-            filepath=filedir,
+            filepath=filepath,
             file_id=fid,
         )
         return True

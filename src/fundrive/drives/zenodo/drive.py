@@ -1,7 +1,6 @@
 import os
 import json
 from typing import List, Optional, Any, Dict
-from pathlib import Path
 
 import requests
 
@@ -9,7 +8,6 @@ from fundrive.core import BaseDrive, DriveFile
 from funget import simple_download
 from funsecret import read_secret
 from funutil import getLogger
-from funutil.cache import cache
 
 logger = getLogger("fundrive")
 
@@ -937,7 +935,7 @@ class ZenodoDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        filedir: Optional[str] = None,
+        save_dir: Optional[str] = None,
         filename: Optional[str] = None,
         filepath: Optional[str] = None,
         overwrite: bool = False,
@@ -949,7 +947,7 @@ class ZenodoDrive(BaseDrive):
 
         Args:
             fid (str): 文件ID（格式：record_id/filename）
-            filedir (Optional[str]): 文件保存目录
+            save_dir (Optional[str]): 文件保存目录
             filename (Optional[str]): 文件名
             filepath (Optional[str]): 完整的文件保存路径
             overwrite (bool): 是否覆盖已存在的文件
@@ -979,10 +977,10 @@ class ZenodoDrive(BaseDrive):
             # 确定保存路径
             if filepath:
                 save_path = filepath
-            elif filedir and filename:
-                save_path = os.path.join(filedir, filename)
-            elif filedir:
-                save_path = os.path.join(filedir, file_name)
+            elif save_dir and filename:
+                save_path = os.path.join(save_dir, filename)
+            elif save_dir:
+                save_path = os.path.join(save_dir, file_name)
             else:
                 save_path = file_name
 
@@ -1170,7 +1168,7 @@ class ZenodoDrive(BaseDrive):
 
     def upload_file(
         self,
-        filedir: str,
+        filepath: str,
         fid: str,
         filename: Optional[str] = None,
         *args: Any,
@@ -1180,7 +1178,7 @@ class ZenodoDrive(BaseDrive):
         上传单个文件到存储库
 
         Args:
-            filedir (str): 本地文件路径
+            filepath (str): 本地文件路径
             fid (str): 目标存储库ID
             filename (Optional[str]): 上传后的文件名，默认使用本地文件名
             *args: 位置参数
@@ -1192,20 +1190,20 @@ class ZenodoDrive(BaseDrive):
         if not self._ensure_client():
             return False
 
-        if not os.path.exists(filedir):
-            logger.error(f"本地文件不存在: {filedir}")
+        if not os.path.exists(filepath):
+            logger.error(f"本地文件不存在: {filepath}")
             return False
 
         try:
-            upload_filename = filename or os.path.basename(filedir)
+            upload_filename = filename or os.path.basename(filepath)
             success, _ = self.client.upload_file_to_deposition(
-                fid, filedir, upload_filename
+                fid, filepath, upload_filename
             )
 
             if success:
-                logger.info(f"文件上传成功: {filedir} -> 存储库 {fid}")
+                logger.info(f"文件上传成功: {filepath} -> 存储库 {fid}")
             else:
-                logger.error(f"文件上传失败: {filedir}")
+                logger.error(f"文件上传失败: {filepath}")
 
             return success
 

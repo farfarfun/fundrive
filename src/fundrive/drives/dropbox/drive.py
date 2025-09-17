@@ -415,7 +415,7 @@ class DropboxDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        filedir: Optional[str] = None,
+        save_dir: Optional[str] = None,
         filename: Optional[str] = None,
         filepath: Optional[str] = None,
         overwrite: bool = False,
@@ -427,7 +427,7 @@ class DropboxDrive(BaseDrive):
 
         Args:
             fid: 文件ID
-            filedir: 文件保存目录
+            save_dir: 文件保存目录
             filename: 文件名
             filepath: 完整的文件保存路径
             overwrite: 是否覆盖已存在的文件
@@ -440,7 +440,7 @@ class DropboxDrive(BaseDrive):
                 return False
 
             # 获取保存路径
-            save_path = get_filepath(filedir, filename, filepath)
+            save_path = get_filepath(save_dir, filename, filepath)
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
             # 检查文件是否已存在

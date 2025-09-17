@@ -84,16 +84,16 @@ drive = OSSDrive()
 # 登录（使用funsecret配置）
 if drive.login():
     print("登录成功！")
-    
+
     # 获取根目录文件列表
     files = drive.get_file_list("")
     for file in files:
         print(f"文件: {file.name} ({file.size} bytes)")
-    
+
     # 上传文件
     if drive.upload_file("local_file.txt", "remote_dir"):
         print("上传成功！")
-    
+
     # 下载文件
     if drive.download_file("remote_dir/local_file.txt", filepath="downloaded_file.txt"):
         print("下载成功！")

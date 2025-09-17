@@ -362,44 +362,44 @@ class OneDrive(BaseDrive):
 
     def upload_file(
         self,
-        local_path: str,
-        parent_id: str = "root",
+        filepath: str,
+        fid: str = "root",
         filename: Optional[str] = None,
         *args,
         **kwargs,
     ) -> bool:
         """上传文件"""
         try:
-            if not os.path.exists(local_path):
-                logger.error(f"本地文件不存在: {local_path}")
+            if not os.path.exists(filepath):
+                logger.error(f"本地文件不存在: {filepath}")
                 return False
 
-            filename = filename or os.path.basename(local_path)
-            file_size = os.path.getsize(local_path)
+            filename = filename or os.path.basename(filepath)
+            file_size = os.path.getsize(filepath)
 
             headers = {"Authorization": f"Bearer {self.access_token}"}
 
             # 小文件直接上传（< 4MB）
             if file_size < 4 * 1024 * 1024:
-                return self._upload_small_file(local_path, parent_id, filename, headers)
+                return self._upload_small_file(filepath, fid, filename, headers)
             else:
-                return self._upload_large_file(local_path, parent_id, filename, headers)
+                return self._upload_large_file(filepath, fid, filename, headers)
 
         except Exception as e:
             logger.error(f"上传文件失败: {e}")
             return False
 
     def _upload_small_file(
-        self, local_path: str, parent_id: str, filename: str, headers: dict
+        self, filepath: str, fid: str, filename: str, headers: dict
     ) -> bool:
         """上传小文件"""
         try:
-            if parent_id == "root":
+            if fid == "root":
                 url = f"{self.GRAPH_API_BASE}/me/drive/root:/{filename}:/content"
             else:
-                url = f"{self.GRAPH_API_BASE}/me/drive/items/{parent_id}:/{filename}:/content"
+                url = f"{self.GRAPH_API_BASE}/me/drive/items/{fid}:/{filename}:/content"
 
-            with open(local_path, "rb") as f:
+            with open(filepath, "rb") as f:
                 response = self.session.put(url, headers=headers, data=f)
 
             if response.status_code in [200, 201]:
@@ -414,15 +414,15 @@ class OneDrive(BaseDrive):
             return False
 
     def _upload_large_file(
-        self, local_path: str, parent_id: str, filename: str, headers: dict
+        self, filepath: str, fid: str, filename: str, headers: dict
     ) -> bool:
         """上传大文件（分块上传）"""
         try:
             # 创建上传会话
-            if parent_id == "root":
+            if fid == "root":
                 url = f"{self.GRAPH_API_BASE}/me/drive/root:/{filename}:/createUploadSession"
             else:
-                url = f"{self.GRAPH_API_BASE}/me/drive/items/{parent_id}:/{filename}:/createUploadSession"
+                url = f"{self.GRAPH_API_BASE}/me/drive/items/{fid}:/{filename}:/createUploadSession"
 
             session_data = {
                 "item": {
@@ -441,9 +441,9 @@ class OneDrive(BaseDrive):
 
             # 分块上传
             chunk_size = 320 * 1024  # 320KB chunks
-            file_size = os.path.getsize(local_path)
+            file_size = os.path.getsize(filepath)
 
-            with open(local_path, "rb") as f:
+            with open(filepath, "rb") as f:
                 offset = 0
                 while offset < file_size:
                     chunk = f.read(chunk_size)
@@ -477,12 +477,25 @@ class OneDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        filedir: str = ".",
+        save_dir: Optional[str] = None,
         filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
         *args,
         **kwargs,
     ) -> bool:
-        """下载文件"""
+        """下载文件
+
+        Args:
+            fid: 文件ID
+            save_dir: 文件保存目录
+            filename: 文件名
+            filepath: 完整的文件保存路径
+            overwrite: 是否覆盖已存在的文件
+
+        Returns:
+            bool: 下载是否成功
+        """
         try:
             headers = {"Authorization": f"Bearer {self.access_token}"}
 
@@ -492,11 +505,23 @@ class OneDrive(BaseDrive):
                 logger.error("获取文件信息失败")
                 return False
 
-            filename = filename or file_info.name
-            local_path = os.path.join(filedir, filename)
+            # 确定保存路径
+            if filepath:
+                local_path = filepath
+            elif save_dir and filename:
+                local_path = os.path.join(save_dir, filename)
+            elif save_dir:
+                local_path = os.path.join(save_dir, file_info.name)
+            else:
+                local_path = file_info.name
+
+            # 检查文件是否已存在
+            if os.path.exists(local_path) and not overwrite:
+                logger.warning(f"文件已存在，跳过下载: {local_path}")
+                return False
 
             # 确保目录存在
-            os.makedirs(filedir, exist_ok=True)
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
             # 获取下载URL
             url = f"{self.GRAPH_API_BASE}/me/drive/items/{fid}/content"

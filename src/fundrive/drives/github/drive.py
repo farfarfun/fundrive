@@ -526,9 +526,12 @@ class GitHubDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        filedir: str = ".",
-        filename: str = None,
+        save_dir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
         callback: callable = None,
+        *args,
         **kwargs,
     ) -> bool:
         """
@@ -536,8 +539,10 @@ class GitHubDrive(BaseDrive):
 
         Args:
             fid: 文件路径
-            filedir: 下载目录
-            filename: 保存的文件名
+            save_dir: 文件保存目录
+            filename: 文件名
+            filepath: 完整的文件保存路径
+            overwrite: 是否覆盖已存在的文件
             callback: 进度回调函数
 
         Returns:
@@ -553,19 +558,32 @@ class GitHubDrive(BaseDrive):
                 return False
 
             # 确定保存路径
-            filename = filename or os.path.basename(fid)
-            os.makedirs(filedir, exist_ok=True)
-            filepath = os.path.join(filedir, filename)
+            if filepath:
+                local_path = filepath
+            elif save_dir and filename:
+                local_path = os.path.join(save_dir, filename)
+            elif save_dir:
+                local_path = os.path.join(save_dir, os.path.basename(fid))
+            else:
+                local_path = os.path.basename(fid)
+
+            # 检查文件是否已存在
+            if os.path.exists(local_path) and not overwrite:
+                logger.warning(f"文件已存在，跳过下载: {local_path}")
+                return False
+
+            # 确保目录存在
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
             # 下载文件
             download_url = file_info.ext.get("download_url")
             if download_url:
                 response = requests.get(download_url)
                 if response.status_code == 200:
-                    with open(filepath, "wb") as f:
+                    with open(local_path, "wb") as f:
                         f.write(response.content)
 
-                    logger.info(f"✅ 文件下载成功: {filepath}")
+                    logger.info(f"✅ 文件下载成功: {local_path}")
                     if callback:
                         callback(len(response.content), len(response.content))
                     return True
