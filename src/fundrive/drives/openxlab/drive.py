@@ -535,66 +535,6 @@ class OpenXLabDrive(BaseDrive):
             logger.error(f"获取原始文件信息失败: {e}")
             return None
 
-    def download_dir(
-        self, fid: str, filedir: str = "./cache", overwrite: bool = False, **kwargs
-    ) -> bool:
-        """
-        下载整个数据集
-
-        Args:
-            fid: 数据集名称（格式：owner/dataset_name）
-            filedir: 下载目录
-            overwrite: 是否覆盖已存在的文件
-
-        Returns:
-            下载是否成功
-        """
-        try:
-            logger.info(f"正在下载数据集: {fid}")
-
-            if fid == "root":
-                logger.error("请指定具体的数据集名称")
-                return False
-
-            # 获取文件列表
-            files = self.get_file_list(fid)
-            if not files:
-                logger.warning("数据集中没有文件")
-                return True
-
-            success_count = 0
-            total_count = len(files)
-
-            for i, file in enumerate(files):
-                try:
-                    # 构建文件ID
-                    dataset_id = file.ext.get("dataset_id", "")
-                    file_path = file.ext.get("path", "")
-                    file_fid = f"{dataset_id}{file_path}"
-
-                    # 下载文件
-                    success = self.download_file(
-                        fid=file_fid,
-                        filedir=filedir,
-                        filename=file.ext.get("path", "").lstrip("/"),
-                        **kwargs,
-                    )
-
-                    if success:
-                        success_count += 1
-
-                    logger.info(f"进度: {i + 1}/{total_count}, 成功: {success_count}")
-
-                except Exception as e:
-                    logger.error(f"下载文件失败 {file.name}: {e}")
-
-            logger.info(f"✅ 数据集下载完成: {success_count}/{total_count} 个文件成功")
-            return success_count > 0
-
-        except Exception as e:
-            logger.error(f"下载数据集失败: {e}")
-            return False
-
     # 高级功能实现
     def search(self, keyword: str, fid: str = "root", **kwargs) -> List[DriveFile]:
         """

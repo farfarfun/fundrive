@@ -221,49 +221,6 @@ class LanZouDrive(BaseDrive):
             == 0
         )
 
-    def download_dir(
-        self, fid, filedir, recursion=True, overwrite=False, *args, **kwargs
-    ) -> bool:
-        """
-        下载文件夹
-
-        Args:
-            fid: 文件夹ID
-            filedir: 保存目录
-            recursion: 是否递归下载子文件夹
-            overwrite: 是否覆盖已存在的文件
-
-        Returns:
-            bool: 下载是否成功
-        """
-        if not self.exist(fid):
-            return False
-
-        os.makedirs(filedir, exist_ok=True)
-
-        for file in self.get_file_list(fid):
-            self.download_file(
-                fid=file["fid"],
-                filedir=filedir,
-                overwrite=overwrite,
-                *args,
-                **kwargs,
-            )
-
-        if not recursion:
-            return True
-
-        for file in self.get_dir_list(fid):
-            _local_path = os.path.join(filedir, file["name"])
-            self.download_dir(
-                fid=file["fid"],
-                filedir=_local_path,
-                overwrite=overwrite,
-                recursion=recursion,
-                *args,
-                **kwargs,
-            )
-
     def upload_file(
         self,
         filepath: str,

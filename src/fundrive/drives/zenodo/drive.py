@@ -1001,68 +1001,6 @@ class ZenodoDrive(BaseDrive):
             logger.error(f"下载文件失败: {e}")
             return False
 
-    def download_dir(
-        self,
-        fid: str,
-        filedir: str,
-        recursion: bool = True,
-        overwrite: bool = False,
-        ignore_filter: Optional[Any] = None,
-        *args: Any,
-        **kwargs: Any,
-    ) -> bool:
-        """
-        下载目录（存储库或记录的所有文件）
-
-        Args:
-            fid (str): 目录ID（存储库ID或记录ID）
-            filedir (str): 本地保存目录
-            recursion (bool): 是否递归下载（Zenodo中忽略此参数）
-            overwrite (bool): 是否覆盖已存在的文件
-            ignore_filter: 忽略文件的过滤函数
-            *args: 位置参数
-            **kwargs: 关键字参数
-
-        Returns:
-            bool: 下载是否成功
-        """
-        if not self._ensure_client():
-            return False
-
-        try:
-            # 获取文件列表
-            files = self.get_file_list(fid)
-            if not files:
-                logger.warning(f"目录中没有文件: {fid}")
-                return True
-
-            # 创建保存目录
-            os.makedirs(filedir, exist_ok=True)
-
-            success_count = 0
-            for file_obj in files:
-                if ignore_filter and ignore_filter(file_obj.name):
-                    continue
-
-                success = self.download_file(
-                    fid=file_obj.fid,
-                    filedir=filedir,
-                    filename=file_obj.name,
-                    overwrite=overwrite,
-                    *args,
-                    **kwargs,
-                )
-
-                if success:
-                    success_count += 1
-
-            logger.info(f"目录下载完成: {success_count}/{len(files)} 个文件成功")
-            return success_count > 0
-
-        except Exception as e:
-            logger.error(f"下载目录失败: {e}")
-            return False
-
     def mkdir(
         self,
         fid: str,
@@ -1108,63 +1046,6 @@ class ZenodoDrive(BaseDrive):
             logger.error(f"创建目录失败: {e}")
             raise
 
-    def upload_dir(
-        self,
-        filedir: str,
-        fid: str,
-        recursion: bool = True,
-        overwrite: bool = False,
-        *args: Any,
-        **kwargs: Any,
-    ) -> bool:
-        """
-        上传目录到存储库
-
-        Args:
-            filedir (str): 本地目录路径
-            fid (str): 目标存储库ID
-            recursion (bool): 是否递归上传子目录
-            overwrite (bool): 是否覆盖已存在的文件
-            *args: 位置参数
-            **kwargs: 关键字参数
-
-        Returns:
-            bool: 上传是否成功
-        """
-        if not self._ensure_client():
-            return False
-
-        if not os.path.exists(filedir):
-            logger.error(f"本地目录不存在: {filedir}")
-            return False
-
-        try:
-            success_count = 0
-            total_count = 0
-
-            for root, dirs, files in os.walk(filedir):
-                for filename in files:
-                    file_path = os.path.join(root, filename)
-                    total_count += 1
-
-                    # 计算相对路径作为上传后的文件名
-                    rel_path = os.path.relpath(file_path, filedir)
-                    upload_filename = rel_path.replace(os.sep, "/")  # 使用 / 作为分隔符
-
-                    success = self.upload_file(file_path, fid, filename=upload_filename)
-                    if success:
-                        success_count += 1
-
-                # 如果不递归，只处理第一层
-                if not recursion:
-                    break
-
-            logger.info(f"目录上传完成: {success_count}/{total_count} 个文件成功")
-            return success_count > 0
-
-        except Exception as e:
-            logger.error(f"上传目录失败: {e}")
-            return False
 
     def upload_file(
         self,

@@ -209,57 +209,6 @@ class BaiDuDrive(BaseDrive):
             logger.error(f"Failed to download file {fid}: {e}")
             return False
 
-    def download_dir(
-        self,
-        fid: str,
-        filedir: str,
-        recursion: bool = True,
-        overwrite: bool = False,
-        ignore_filter: Optional[Callable[[str], bool]] = None,
-        *args: Any,
-        **kwargs: Any,
-    ) -> bool:
-        """
-        下载目录
-        :param fid: 目录ID
-        :param filedir: 本地保存目录
-        :param recursion: 是否递归下载子目录
-        :param overwrite: 是否覆盖已存在的文件
-        :param ignore_filter: 忽略文件的过滤函数
-        :param args: 位置参数
-        :param kwargs: 关键字参数
-        :return: 下载是否成功
-        """
-        if not self.exist(fid):
-            return False
-        if not os.path.exists(filedir):
-            os.makedirs(filedir, exist_ok=True)
-        for file in self.get_file_list(fid):
-            if ignore_filter and ignore_filter(file.name):
-                continue
-            self.download_file(
-                fid=file.fid,
-                filedir=filedir,
-                filename=os.path.basename(file.name),
-                overwrite=overwrite,
-                *args,
-                **kwargs,
-            )
-        if not recursion:
-            return True
-
-        for file in self.get_dir_list(fid):
-            self.download_dir(
-                fid=file.fid,
-                filedir=os.path.join(filedir, os.path.basename(file.name)),
-                overwrite=overwrite,
-                recursion=recursion,
-                ignore_filter=ignore_filter,
-                *args,
-                **kwargs,
-            )
-        return True
-
     def share(
         self, *fids: str, password: str, expire_days: int = 0, description: str = ""
     ):
