@@ -664,12 +664,12 @@ class MediaFireDrive(BaseDrive):
                 local_path = os.path.join(save_dir, file_info.name)
             else:
                 local_path = file_info.name
-                
+
             # 检查文件是否已存在
             if os.path.exists(local_path) and not overwrite:
                 logger.warning(f"文件已存在，跳过下载: {local_path}")
                 return False
-                
+
             # 确保目录存在
             os.makedirs(os.path.dirname(local_path), exist_ok=True)
 

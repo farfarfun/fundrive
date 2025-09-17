@@ -460,9 +460,12 @@ class WSSDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        filedir: str = ".",
-        filename: str = None,
+        save_dir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
         callback: callable = None,
+        *args,
         **kwargs,
     ) -> bool:
         """
@@ -470,8 +473,10 @@ class WSSDrive(BaseDrive):
 
         Args:
             fid: 分享链接URL
-            filedir: 下载目录
-            filename: 保存的文件名（可选）
+            save_dir: 文件保存目录
+            filename: 文件名
+            filepath: 完整的文件保存路径
+            overwrite: 是否覆盖已存在的文件
             callback: 进度回调函数
 
         Returns:
@@ -484,12 +489,28 @@ class WSSDrive(BaseDrive):
                 logger.error("文叔叔需要分享链接进行下载")
                 return False
 
+            # 确定保存路径
+            if filepath:
+                cache_dir = os.path.dirname(filepath)
+            elif save_dir:
+                cache_dir = save_dir
+            else:
+                cache_dir = "."
+                
+            # 检查文件是否已存在
+            if filepath and os.path.exists(filepath) and not overwrite:
+                logger.warning(f"文件已存在，跳过下载: {filepath}")
+                return False
+                
+            # 确保目录存在
+            os.makedirs(cache_dir, exist_ok=True)
+
             # 创建内部驱动实例用于下载
             internal_drive = _WSSBaseDrive()
 
             # 创建下载器
             downloader = Downloader(
-                share_url=fid, drive=internal_drive, cache_dir=filedir
+                share_url=fid, drive=internal_drive, cache_dir=cache_dir
             )
 
             # 执行下载

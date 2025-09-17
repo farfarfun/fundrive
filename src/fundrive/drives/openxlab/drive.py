@@ -413,9 +413,12 @@ class OpenXLabDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        filedir: str = ".",
-        filename: str = None,
+        save_dir: Optional[str] = None,
+        filename: Optional[str] = None,
+        filepath: Optional[str] = None,
+        overwrite: bool = False,
         callback: callable = None,
+        *args,
         **kwargs,
     ) -> bool:
         """
@@ -423,8 +426,10 @@ class OpenXLabDrive(BaseDrive):
 
         Args:
             fid: 文件ID（格式：dataset_id/file_path）
-            filedir: 下载目录
-            filename: 保存的文件名
+            save_dir: 文件保存目录
+            filename: 文件名
+            filepath: 完整的文件保存路径
+            overwrite: 是否覆盖已存在的文件
             callback: 进度回调函数
 
         Returns:
@@ -449,25 +454,40 @@ class OpenXLabDrive(BaseDrive):
                 return False
 
             # 确定保存路径
-            filename = filename or os.path.basename(file_path)
-            os.makedirs(filedir, exist_ok=True)
-            filepath = os.path.join(filedir, filename)
+            if filepath:
+                local_path = filepath
+            elif save_dir and filename:
+                local_path = os.path.join(save_dir, filename)
+            elif save_dir:
+                local_path = os.path.join(save_dir, os.path.basename(file_path))
+            else:
+                local_path = os.path.basename(file_path)
 
-            # 检查文件是否已存在且大小匹配
-            if os.path.exists(filepath):
-                existing_size = os.path.getsize(filepath)
-                expected_size = int(file_info_dict.get("size", 0))
-                if existing_size == expected_size:
-                    logger.info(f"文件已存在且大小匹配，跳过下载: {filepath}")
-                    return True
+            # 检查文件是否已存在
+            if os.path.exists(local_path):
+                if not overwrite:
+                    # 检查文件大小是否匹配
+                    existing_size = os.path.getsize(local_path)
+                    expected_size = int(file_info_dict.get("size", 0))
+                    if existing_size == expected_size:
+                        logger.info(f"文件已存在且大小匹配，跳过下载: {local_path}")
+                        return True
+                    else:
+                        logger.warning(
+                            f"文件已存在但大小不匹配，跳过下载: {local_path}"
+                        )
+                        return False
+
+            # 确保目录存在
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
             # 使用funget下载文件
             success = simple_download(
-                url=file_info_dict["url"], filepath=filepath, overwrite=True, **kwargs
+                url=file_info_dict["url"], filepath=local_path, overwrite=True, **kwargs
             )
 
             if success:
-                logger.info(f"✅ 文件下载成功: {filepath}")
+                logger.info(f"✅ 文件下载成功: {local_path}")
                 return True
             else:
                 logger.error("❌ 文件下载失败")
