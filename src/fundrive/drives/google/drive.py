@@ -1,18 +1,19 @@
 # 标准库导入
-import os
 import io
-from typing import List, Optional, Any
+import os
+from typing import Any, List, Optional
 
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
+# 第三方库导入
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from funsecret import read_secret
 from funutil import getLogger
 
-
+# 项目内部导入
 from fundrive.core import BaseDrive, DriveFile
 
 logger = getLogger("fundrive")
@@ -742,7 +743,7 @@ class GoogleDrive(BaseDrive):
             previous_parents = ",".join(file.get("parents"))
 
             # 移动文件
-            file = (
+            (
                 self.service.files()
                 .update(
                     fileId=source_fid,

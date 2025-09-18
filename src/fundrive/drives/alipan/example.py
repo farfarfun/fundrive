@@ -307,8 +307,8 @@ def run_interactive_demo():
             try:
                 dirs = drive.get_dir_list("root")
                 logger.info(f"\n📂 根目录文件夹列表 (共 {len(dirs)} 个):")
-                for i, dir in enumerate(dirs[:10], 1):  # 只显示前10个
-                    logger.info(f"  {i}. {dir.name}")
+                for i, _dir in enumerate(dirs[:10], 1):  # 只显示前10个
+                    logger.info(f"  {i}. {_dir.name}")
                 if len(dirs) > 10:
                     logger.info(f"  ... 还有 {len(dirs) - 10} 个文件夹")
             except Exception as e:

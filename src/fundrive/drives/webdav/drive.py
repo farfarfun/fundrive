@@ -40,7 +40,7 @@ class WebDavDrive(BaseDrive):
         self.drive.remove(path=fid)
         return True
 
-    def exist(self, fid, *args, **kwargs) -> bool:
+    def exist(self, fid: str, *args, **kwargs) -> bool:
         return self.drive.exists(fid)
 
     def get_file_list(self, fid, *args, **kwargs) -> List[DriveFile]:

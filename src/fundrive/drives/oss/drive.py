@@ -296,7 +296,8 @@ class OSSDrive(BaseDrive):
             prefix = fid.rstrip("/") + "/"
             result = self.bucket.list_objects(prefix=prefix, max_keys=1)
             return len(result.object_list) > 0
-        except:
+        except Exception as e:
+            self.logger.error("判断目录", e)
             return False
 
     def get_file_info(self, fid, *args, **kwargs) -> Optional[DriveFile]:

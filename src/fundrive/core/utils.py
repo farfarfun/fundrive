@@ -8,7 +8,7 @@ import functools
 import hashlib
 import threading
 import time
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 from collections import OrderedDict
 from funutil import getLogger
 
@@ -576,3 +576,280 @@ class ProgressTracker:
         return (
             f"{self.description}: {self.current}/{self.total} ({self.percentage:.1f}%)"
         )
+
+
+def handle_drive_errors(
+    default_return=None,
+    log_error: bool = True,
+    error_message: Optional[str] = None,
+    reraise_exceptions: Optional[tuple] = None,
+) -> Callable:
+    """
+    通用驱动错误处理装饰器
+
+    减少重复的 try-catch 代码，统一错误处理逻辑
+
+    Args:
+        default_return: 发生错误时的默认返回值
+        log_error (bool): 是否记录错误日志
+        error_message (Optional[str]): 自定义错误消息前缀
+        reraise_exceptions (Optional[tuple]): 需要重新抛出的异常类型
+
+    Returns:
+        Callable: 装饰器函数
+    """
+
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                # 检查是否需要重新抛出特定异常
+                if reraise_exceptions and isinstance(e, reraise_exceptions):
+                    raise
+
+                # 记录错误日志
+                if log_error:
+                    method_name = func.__name__
+                    class_name = args[0].__class__.__name__ if args else "Unknown"
+
+                    if error_message:
+                        log_msg = f"{error_message}: {e}"
+                    else:
+                        log_msg = f"{class_name}.{method_name} 执行失败: {e}"
+
+                    logger.error(log_msg)
+
+                return default_return
+
+        return wrapper
+
+    return decorator
+
+
+def validate_fid(allow_empty: bool = False) -> Callable:
+    """
+    文件ID验证装饰器
+
+    Args:
+        allow_empty (bool): 是否允许空的fid
+
+    Returns:
+        Callable: 装饰器函数
+    """
+
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            # 假设第二个参数是fid (self, fid, ...)
+            if len(args) >= 2:
+                fid = args[1]
+                if not allow_empty and (not fid or fid.strip() == ""):
+                    logger.error(f"{func.__name__}: fid 不能为空")
+                    # 根据函数返回类型返回合适的默认值
+                    if func.__annotations__.get("return") is bool:
+                        return False
+                    elif func.__annotations__.get("return") is str:
+                        return ""
+                    elif "List" in str(func.__annotations__.get("return", "")):
+                        return []
+                    else:
+                        return None
+
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def log_method_call(log_level: str = "info", include_args: bool = False) -> Callable:
+    """
+    方法调用日志装饰器
+
+    Args:
+        log_level (str): 日志级别 (debug, info, warning, error)
+        include_args (bool): 是否包含参数信息
+
+    Returns:
+        Callable: 装饰器函数
+    """
+
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            class_name = args[0].__class__.__name__ if args else "Unknown"
+            method_name = func.__name__
+
+            # 构建日志消息
+            if include_args and len(args) > 1:
+                # 只显示前几个关键参数，避免日志过长
+                key_args = []
+                if len(args) >= 2:  # fid参数
+                    key_args.append(f"fid={args[1]}")
+                if len(args) >= 3:  # 第三个参数
+                    key_args.append(f"arg2={args[2]}")
+
+                arg_str = f"({', '.join(key_args)})" if key_args else ""
+                log_msg = f"调用 {class_name}.{method_name}{arg_str}"
+            else:
+                log_msg = f"调用 {class_name}.{method_name}"
+
+            # 记录日志
+            log_func = getattr(logger, log_level, logger.info)
+            log_func(log_msg)
+
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+# 标准化日志记录工具函数
+def log_operation_start(operation: str, target: str = "") -> None:
+    """
+    记录操作开始的标准日志
+
+    Args:
+        logger: 日志记录器
+        operation: 操作名称（如：上传文件、下载文件、创建目录等）
+        target: 操作目标（如：文件路径、目录名等）
+    """
+    if target:
+        logger.info(f"🚀 开始{operation}: {target}")
+    else:
+        logger.info(f"🚀 开始{operation}")
+
+
+def log_operation_success(operation: str, target: str = "", details: str = "") -> None:
+    """
+    记录操作成功的标准日志
+
+    Args:
+        operation: 操作名称
+        target: 操作目标
+        details: 额外详情信息
+    """
+    message = f"✅ {operation}成功"
+    if target:
+        message += f": {target}"
+    if details:
+        message += f" ({details})"
+    logger.info(message)
+
+
+def log_operation_error(operation: str, error: Exception, target: str = "") -> None:
+    """
+    记录操作失败的标准日志
+
+    Args:
+        operation: 操作名称
+        error: 异常对象
+        target: 操作目标
+    """
+    message = f"❌ {operation}失败"
+    if target:
+        message += f": {target}"
+    message += f" - {str(error)}"
+    logger.error(message)
+
+
+def log_operation_warning(operation: str, message: str, target: str = "") -> None:
+    """
+    记录操作警告的标准日志
+
+    Args:
+
+        operation: 操作名称
+        message: 警告消息
+        target: 操作目标
+    """
+    warning_msg = f"⚠️ {operation}"
+    if target:
+        warning_msg += f"({target})"
+    warning_msg += f": {message}"
+    logger.warning(warning_msg)
+
+
+def log_progress_info(
+    operation: str, current: int, total: int, item_name: str = "项"
+) -> None:
+    """
+    记录进度信息的标准日志
+
+    Args:
+        operation: 操作名称
+        current: 当前进度
+        total: 总数
+        item_name: 项目名称（如：文件、目录等）
+    """
+    percentage = (current / total * 100) if total > 0 else 0
+    logger.info(
+        f"📊 {operation}进度: {current}/{total} {item_name} ({percentage:.1f}%)"
+    )
+
+
+def log_storage_info(used_space: str, free_space: str, total_space: str) -> None:
+    """
+    记录存储空间信息的标准日志
+
+    Args:
+        used_space: 已用空间
+        free_space: 剩余空间
+        total_space: 总空间
+    """
+    logger.info(
+        f"💾 存储空间: 已用 {used_space}, 剩余 {free_space}, 总计 {total_space}"
+    )
+
+
+# 文档字符串标准化工具函数
+def format_docstring_template(
+    description: str,
+    detailed_description: str = "",
+    args: Dict[str, str] = None,
+    returns: str = "",
+    raises: Dict[str, str] = None,
+    examples: List[str] = None,
+) -> str:
+    """
+    生成标准化的文档字符串模板
+
+    Args:
+        description: 简短描述
+        detailed_description: 详细描述
+        args: 参数说明字典，键为参数名，值为说明
+        returns: 返回值说明
+        raises: 异常说明字典，键为异常类型，值为说明
+        examples: 示例代码列表
+
+    Returns:
+        str: 格式化的文档字符串
+    """
+    lines = ['        """', f"        {description}"]
+
+    if detailed_description:
+        lines.extend(["        ", f"        {detailed_description}"])
+
+    if args:
+        lines.extend(["        ", "        Args:"])
+        for arg_name, arg_desc in args.items():
+            lines.append(f"            {arg_name}: {arg_desc}")
+
+    if returns:
+        lines.extend(["        ", "        Returns:", f"            {returns}"])
+
+    if raises:
+        lines.extend(["        ", "        Raises:"])
+        for exc_type, exc_desc in raises.items():
+            lines.append(f"            {exc_type}: {exc_desc}")
+
+    if examples:
+        lines.extend(["        ", "        Examples:"])
+        for example in examples:
+            lines.extend(["            >>> " + line for line in example.split("\n")])
+
+    lines.append('        """')
+    return "\n".join(lines)

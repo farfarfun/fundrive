@@ -17,7 +17,7 @@
 """
 
 import os
-from typing import List, Optional
+from typing import List, Optional, Any
 from urllib.parse import quote
 
 import requests
@@ -102,8 +102,8 @@ class TSingHuaDrive(BaseDrive):
                     else:
                         logger.warning("⚠️ 分享链接可能无效，将尝试继续")
                         return True
-                except:
-                    logger.warning("⚠️ 无法验证分享链接，将尝试继续")
+                except Exception as e:
+                    logger.warning("⚠️ 无法验证分享链接，将尝试继续", e)
                     return True
             else:
                 logger.warning("⚠️ 未设置分享链接，某些功能可能无法使用")
@@ -113,60 +113,51 @@ class TSingHuaDrive(BaseDrive):
             logger.error(f"❌ 清华云盘登录失败: {e}")
             return False
 
-    def exist(self, fid: str, filename: str = None) -> bool:
+    def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
         检查文件或目录是否存在
 
         Args:
             fid: 路径（相对于分享根目录）
-            filename: 文件名（可选）
 
         Returns:
-            文件是否存在
+            文件或目录是否存在
         """
         try:
-            if filename:
-                # 检查特定文件是否存在
-                files = self.get_file_list(fid)
-                for file in files:
-                    if file.name == filename:
-                        return True
-
-                # 检查是否为目录
-                dirs = self.get_dir_list(fid)
-                for dir in dirs:
-                    if dir.name == filename:
-                        return True
-
-                return False
-            else:
-                # 检查路径是否存在
-                try:
-                    url = f"{self.base_url}/api/v2.1/share-links/{self.share_key}/dirents/?path={quote(fid)}"
-                    response = self.session.get(url, timeout=10)
-                    return response.status_code == 200
-                except:
-                    return False
+            # 检查路径是否存在
+            url = f"{self.base_url}/api/v2.1/share-links/{self.share_key}/dirents/?path={quote(fid)}"
+            response = self.session.get(url, timeout=10)
+            return response.status_code == 200
 
         except Exception as e:
-            logger.error(f"检查文件存在性失败: {e}")
+            logger.error(f"检查路径存在性失败: {e}")
             return False
 
-    def mkdir(self, fid: str, dirname: str) -> bool:
+    def mkdir(
+        self,
+        fid: str,
+        name: str,
+        return_if_exist: bool = True,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str:
         """
         创建目录（清华云盘分享链接不支持创建目录）
 
         Args:
             fid: 父目录路径
-            dirname: 目录名
+            name: 目录名
+            return_if_exist: 如果目录已存在，是否返回已存在目录的ID
+            *args: 位置参数
+            **kwargs: 关键字参数
 
         Returns:
-            创建是否成功
+            创建的目录ID（此驱动不支持创建，返回空字符串）
         """
         logger.warning("清华云盘分享链接是只读的，不支持创建目录")
-        return False
+        return ""
 
-    def delete(self, fid: str) -> bool:
+    def delete(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
         删除文件或目录（清华云盘分享链接不支持删除）
 

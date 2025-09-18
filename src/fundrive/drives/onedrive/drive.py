@@ -1,11 +1,13 @@
 # 标准库导入
 import os
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
+# 第三方库导入
 import requests
 from funsecret import read_secret
 from funutil import getLogger
 
+# 项目内部导入
 from fundrive.core import BaseDrive, DriveFile
 
 logger = getLogger("fundrive")
@@ -363,10 +365,10 @@ class OneDrive(BaseDrive):
     def upload_file(
         self,
         filepath: str,
-        fid: str = "root",
+        fid: str,
         filename: Optional[str] = None,
-        *args,
-        **kwargs,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """上传文件"""
         try:

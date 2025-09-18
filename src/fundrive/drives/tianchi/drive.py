@@ -17,7 +17,7 @@
 """
 
 import os
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import orjson
 import requests
@@ -134,69 +134,65 @@ class TianChiDrive(BaseDrive):
                 else:
                     logger.warning("⚠️ 天池登录状态未知，将尝试继续")
                     return True
-            except:
-                logger.warning("⚠️ 无法验证天池登录状态，将尝试继续")
+            except Exception as e:
+                logger.warning("⚠️ 无法验证天池登录状态，将尝试继续", e)
                 return True
 
         except Exception as e:
             logger.error(f"❌ 天池登录失败: {e}")
             return False
 
-    def exist(self, fid: str, filename: str = None) -> bool:
+    def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
-        检查数据集或文件是否存在
+        检查数据集是否存在
 
         Args:
             fid: 数据集ID
-            filename: 文件名（可选）
 
         Returns:
-            文件是否存在
+            数据集是否存在
         """
         try:
-            if filename:
-                # 检查特定文件是否存在
-                files = self.get_file_list(fid)
-                for file in files:
-                    if file.name == filename:
-                        return True
-                return False
-            else:
-                # 检查数据集是否存在
-                try:
-                    data = orjson.dumps({"dataId": int(fid)}).decode("utf-8")
-                    response = requests.post(
-                        url=f"{self.base_url}/api/notebook/dataDetail",
-                        cookies=self.cookies,
-                        headers=self.headers,
-                        data=data,
-                        timeout=10,
-                    )
-                    return response.status_code == 200 and response.json().get(
-                        "success", False
-                    )
-                except:
-                    return False
+            # 检查数据集是否存在
+            data = orjson.dumps({"dataId": int(fid)}).decode("utf-8")
+            response = requests.post(
+                url=f"{self.base_url}/api/notebook/dataDetail",
+                cookies=self.cookies,
+                headers=self.headers,
+                data=data,
+                timeout=10,
+            )
+            return response.status_code == 200 and response.json().get("success", False)
 
         except Exception as e:
-            logger.error(f"检查文件存在性失败: {e}")
+            logger.error(f"检查数据集存在性失败: {e}")
             return False
 
-    def mkdir(self, fid: str, dirname: str) -> bool:
+    def mkdir(
+        self,
+        fid: str,
+        name: str,
+        return_if_exist: bool = True,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str:
         """
         创建目录（天池不支持创建目录）
 
         Args:
             fid: 父目录ID
-            dirname: 目录名
+            name: 目录名
+            return_if_exist: 如果目录已存在，是否返回已存在目录的ID
+            *args: 位置参数
+            **kwargs: 关键字参数
 
         Returns:
-            创建是否成功
+            创建的目录ID（此驱动不支持创建，返回空字符串）
         """
         logger.warning("天池是只读平台，不支持创建目录")
-        return False
+        return ""
 
-    def delete(self, fid: str) -> bool:
+    def delete(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
         删除文件或目录（天池不支持删除）
 

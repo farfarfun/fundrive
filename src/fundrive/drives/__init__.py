@@ -39,9 +39,9 @@ except ImportError:
 
 # 🇨🇳 国内主流服务 - 国内用户首选
 try:
-    from .baidu import BaiduDrive
+    from .baidu import BaiDuDrive
 except ImportError:
-    BaiduDrive = None
+    BaiDuDrive = None
 
 try:
     from .alipan import AliPanDrive, AliPanOpenDrive
@@ -76,8 +76,11 @@ except ImportError:
     LanzouDrive = None
 
 try:
-    from .os import LocalDrive
+    from .os import OSDrive
+
+    LocalDrive = OSDrive  # 为了向后兼容保留LocalDrive别名
 except ImportError:
+    OSDrive = None
     LocalDrive = None
 
 # 🔬 学术和专业服务 - 特定用途
@@ -87,9 +90,9 @@ except ImportError:
     ZenodoDrive = None
 
 try:
-    from .tsinghua import TsinghuaDrive
+    from .tsinghua import TSingHuaDrive
 except ImportError:
-    TsinghuaDrive = None
+    TSingHuaDrive = None
 
 try:
     from .openxlab import OpenXLabDrive
@@ -97,14 +100,14 @@ except ImportError:
     OpenXLabDrive = None
 
 try:
-    from .tianchi import TianchiDrive
+    from .tianchi import TianChiDrive
 except ImportError:
-    TianchiDrive = None
+    TianChiDrive = None
 
 try:
-    from .wenshushu import WenshushuDrive
+    from .wenshushu import WSSDrive
 except ImportError:
-    WenshushuDrive = None
+    WSSDrive = None
 
 # 驱动注册表 - 按流行度排序
 AVAILABLE_DRIVES = {
@@ -118,7 +121,7 @@ AVAILABLE_DRIVES = {
     "github": GitHubDrive,
     "gitee": GiteeDrive,
     # 🇨🇳 国内主流服务
-    "baidu": BaiduDrive,
+    "baidu": BaiDuDrive,
     "alipan": AliPanDrive,
     "alipan_open": AliPanOpenDrive,
     "oss": OssDrive,
@@ -131,10 +134,10 @@ AVAILABLE_DRIVES = {
     "os": LocalDrive,  # 本地文件系统别名
     # 🔬 学术和专业服务
     "zenodo": ZenodoDrive,
-    "tsinghua": TsinghuaDrive,
+    "tsinghua": TSingHuaDrive,
     "openxlab": OpenXLabDrive,
-    "tianchi": TianchiDrive,
-    "wenshushu": WenshushuDrive,
+    "tianchi": TianChiDrive,
+    "wenshushu": WSSDrive,
 }
 
 # 过滤掉未安装的驱动
@@ -187,52 +190,11 @@ def list_available_drives():
     return AVAILABLE_DRIVES.copy()
 
 
-def get_drive_info():
-    """
-    获取所有驱动的详细信息
-
-    Returns:
-        dict: 包含驱动分类和描述的信息
-    """
-    return {
-        "🌟 全球主流服务": {
-            "google": "Google Drive - 全球最大云存储服务，15GB免费空间",
-            "onedrive": "OneDrive - Microsoft云存储，与Office深度集成",
-            "dropbox": "Dropbox - 老牌云存储服务，同步稳定",
-            "amazon": "Amazon S3 - 企业级对象存储，支持无限扩展",
-        },
-        "💻 代码托管平台": {
-            "github": "GitHub - 全球最大代码托管平台",
-            "gitee": "Gitee - 国内领先代码托管平台",
-        },
-        "🇨🇳 国内主流服务": {
-            "baidu": "百度网盘 - 国内最大个人云存储，2TB免费空间",
-            "alipan": "阿里云盘 - 阿里巴巴出品，100GB免费空间",
-            "oss": "阿里云OSS - 企业级对象存储",
-        },
-        "🔧 通用协议和工具": {
-            "webdav": "WebDAV - 通用协议，支持多种WebDAV服务器",
-            "pcloud": "pCloud - 欧洲云存储，10GB免费空间",
-            "mediafire": "MediaFire - 国外文件分享平台",
-            "lanzou": "蓝奏云 - 轻量级文件分享",
-            "local": "本地文件系统 - 本地文件操作统一接口",
-        },
-        "🔬 学术和专业服务": {
-            "zenodo": "Zenodo - 学术数据存储，开放获取",
-            "tsinghua": "清华云盘 - 学术共享平台",
-            "openxlab": "OpenXLab - AI模型和数据集平台",
-            "tianchi": "天池 - 阿里云大数据竞赛平台",
-            "wenshushu": "文叔叔 - 临时文件分享",
-        },
-    }
-
-
 # 导出所有可用的驱动类
 __all__ = [
     # 核心函数
     "get_drive",
     "list_available_drives",
-    "get_drive_info",
     "AVAILABLE_DRIVES",
     # 驱动类 - 按流行度排序
     "GoogleDrive",
@@ -241,7 +203,7 @@ __all__ = [
     "S3Drive",
     "GitHubDrive",
     "GiteeDrive",
-    "BaiduDrive",
+    "BaiDuDrive",
     "AliPanDrive",
     "AliPanOpenDrive",
     "OssDrive",
@@ -249,12 +211,13 @@ __all__ = [
     "PCloudDrive",
     "MediaFireDrive",
     "LanzouDrive",
+    "OSDrive",
     "LocalDrive",
     "ZenodoDrive",
-    "TsinghuaDrive",
+    "TSingHuaDrive",
     "OpenXLabDrive",
-    "TianchiDrive",
-    "WenshushuDrive",
+    "TianChiDrive",
+    "WSSDrive",
 ]
 
 # 过滤掉None值的导出

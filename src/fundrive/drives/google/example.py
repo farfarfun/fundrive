@@ -11,9 +11,7 @@ Google Drive 网盘驱动测试和示例
 
 import argparse
 import sys
-from pathlib import Path
 
-# 添加项目根目录到Python路径
 
 from fundrive.core import create_drive_tester
 from fundrive.drives.google.drive import GoogleDrive
@@ -134,7 +132,7 @@ def interactive_demo():
                     available_gb = quota.get("available", 0) / (1024**3)
                     usage_pct = quota.get("usage_percentage", 0)
 
-                    print(f"\n📊 Google Drive 存储配额:")
+                    print("\n📊 Google Drive 存储配额:")
                     print(f"   总空间: {total_gb:.2f} GB")
                     print(f"   已使用: {used_gb:.2f} GB ({usage_pct:.1f}%)")
                     print(f"   可用空间: {available_gb:.2f} GB")
@@ -147,7 +145,7 @@ def interactive_demo():
                 files = drive.get_file_list("root")
                 dirs = drive.get_dir_list("root")
 
-                print(f"\n📁 根目录内容:")
+                print("\n📁 根目录内容:")
                 print(f"   目录数量: {len(dirs)}")
                 print(f"   文件数量: {len(files)}")
 

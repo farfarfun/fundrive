@@ -207,8 +207,8 @@ class MediaFireDrive(BaseDrive):
                     if result:
                         logger.info("✅ 使用现有会话令牌登录成功")
                         return True
-                except:
-                    logger.info("现有会话令牌无效，重新登录")
+                except Exception as e:
+                    logger.info("现有会话令牌无效，重新登录", e)
                     self.session_token = None
 
             # 检查必要的登录参数
@@ -246,84 +246,94 @@ class MediaFireDrive(BaseDrive):
             logger.error(f"❌ MediaFire登录失败: {e}")
             return False
 
-    def exist(self, fid: str, filename: str = None) -> bool:
+    def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
         检查文件或目录是否存在
 
         Args:
-            fid: 父目录ID，"root"表示根目录
-            filename: 文件名（可选）
+            fid: 文件或目录ID，"root"表示根目录
 
         Returns:
-            文件是否存在
+            文件或目录是否存在
         """
         try:
-            if filename:
-                # 检查特定文件是否存在
-                files = self.get_file_list(fid)
-                for file in files:
-                    if file.name == filename:
-                        return True
+            # 先尝试作为目录检查
+            try:
+                result = self._make_request(
+                    "folder/get_info.php", params={"folder_key": fid}
+                )
+                if result is not None:
+                    return True
+            except Exception as e:
+                logger.error("目录检查失败", e)
 
-                # 检查是否为目录
-                dirs = self.get_dir_list(fid)
-                for dir in dirs:
-                    if dir.name == filename:
-                        return True
-
+            # 再尝试作为文件检查
+            try:
+                result = self._make_request(
+                    "file/get_info.php", params={"quick_key": fid}
+                )
+                return result is not None
+            except Exception as e:
+                logger.debug("", e)
                 return False
-            else:
-                # 检查目录是否存在
-                try:
-                    result = self._make_request(
-                        "folder/get_info.php", params={"folder_key": fid}
-                    )
-                    return result is not None
-                except:
-                    return False
 
         except Exception as e:
             logger.error(f"检查文件存在性失败: {e}")
             return False
 
-    def mkdir(self, fid: str, dirname: str) -> bool:
+    def mkdir(
+        self,
+        fid: str,
+        name: str,
+        return_if_exist: bool = True,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str:
         """
         创建目录
 
         Args:
             fid: 父目录ID
-            dirname: 目录名
+            name: 目录名
+            return_if_exist: 如果目录已存在，是否返回已存在目录的ID
+            *args: 位置参数
+            **kwargs: 关键字参数
 
         Returns:
-            创建是否成功
+            创建的目录ID
         """
         try:
-            logger.info(f"正在创建目录: {dirname}")
+            logger.info(f"正在创建目录: {name}")
 
             # 检查目录是否已存在
-            if self.exist(fid, dirname):
-                logger.info(f"目录 {dirname} 已存在")
-                return True
+            if return_if_exist and self.exist(fid, name):
+                logger.info(f"目录 {name} 已存在")
+                # 尝试获取已存在目录的ID
+                for dir_info in self.get_dir_list(fid):
+                    if dir_info.name == name:
+                        return dir_info.fid
+                return fid  # 如果无法获取具体ID，返回父目录ID
 
             # 创建目录
-            params = {"parent_key": fid if fid != "root" else "", "foldername": dirname}
+            params = {"parent_key": fid if fid != "root" else "", "foldername": name}
 
             result = self._make_request(
                 "folder/create.php", params=params, method="POST"
             )
 
-            if result:
-                logger.info(f"✅ 目录 {dirname} 创建成功")
-                return True
+            if result and result.get("response", {}).get("folder_key"):
+                folder_key = result["response"]["folder_key"]
+                logger.info(f"✅ 目录 {name} 创建成功，ID: {folder_key}")
+                return folder_key
             else:
-                logger.error(f"❌ 目录 {dirname} 创建失败")
-                return False
+                logger.error(f"❌ 目录 {name} 创建失败")
+                return ""
 
         except Exception as e:
             logger.error(f"创建目录失败: {e}")
-            return False
+            return ""
 
-    def delete(self, fid: str) -> bool:
+    def delete(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
         删除文件或目录
 
@@ -344,8 +354,8 @@ class MediaFireDrive(BaseDrive):
                 if result:
                     logger.info("✅ 文件删除成功")
                     return True
-            except:
-                pass
+            except Exception as e:
+                logger.error("删除失败", e)
 
             # 再尝试作为目录删除
             try:
@@ -355,8 +365,8 @@ class MediaFireDrive(BaseDrive):
                 if result:
                     logger.info("✅ 目录删除成功")
                     return True
-            except:
-                pass
+            except Exception as e:
+                logger.error("删除失败", e)
 
             logger.error("❌ 删除失败")
             return False

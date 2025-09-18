@@ -17,15 +17,18 @@ Amazon S3是亚马逊提供的对象存储服务，提供高可用性、可扩�
 作者: FunDrive Team
 """
 
-import os
+# 标准库导入
 import mimetypes
+import os
 from typing import Any, Dict, List, Optional
 
+# 第三方库导入
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 from funsecret import read_secret
 from funutil import getLogger
 
+# 项目内部导入
 from fundrive.core import BaseDrive, DriveFile
 
 logger = getLogger("fundrive")
@@ -185,26 +188,19 @@ class S3Drive(BaseDrive):
             logger.error(f"❌ S3连接失败: {e}")
             return False
 
-    def exist(self, fid: str, filename: str = None) -> bool:
+    def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
         检查对象是否存在
 
         Args:
             fid: 对象键（路径）
-            filename: 文件名（可选）
 
         Returns:
             对象是否存在
         """
         try:
-            if filename:
-                # 检查特定文件是否存在
-                key = f"{fid.rstrip('/')}/{filename}" if fid else filename
-            else:
-                key = fid
-
             # 尝试获取对象元数据
-            self.s3_client.head_object(Bucket=self.bucket_name, Key=key)
+            self.s3_client.head_object(Bucket=self.bucket_name, Key=fid)
             return True
 
         except ClientError as e:
@@ -217,22 +213,37 @@ class S3Drive(BaseDrive):
             logger.error(f"检查对象存在性失败: {e}")
             return False
 
-    def mkdir(self, fid: str, dirname: str) -> bool:
+    def mkdir(
+        self,
+        fid: str,
+        name: str,
+        return_if_exist: bool = True,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str:
         """
         创建目录（在S3中创建空对象作为目录标记）
 
         Args:
             fid: 父目录路径
-            dirname: 目录名
+            name: 目录名
+            return_if_exist: 如果目录已存在，是否返回已存在目录的ID
+            *args: 位置参数
+            **kwargs: 关键字参数
 
         Returns:
-            创建是否成功
+            创建的目录ID（S3对象键）
         """
         try:
-            logger.info(f"正在创建目录: {fid}/{dirname}")
+            logger.info(f"正在创建目录: {fid}/{name}")
 
             # 构建目录键（以/结尾表示目录）
-            dir_key = f"{fid.rstrip('/')}/{dirname}/" if fid else f"{dirname}/"
+            dir_key = f"{fid.rstrip('/')}/{name}/" if fid else f"{name}/"
+
+            # 检查目录是否已存在
+            if return_if_exist and self.exist(dir_key):
+                logger.info(f"目录已存在: {dir_key}")
+                return dir_key
 
             # 创建空对象作为目录标记
             self.s3_client.put_object(
@@ -243,13 +254,13 @@ class S3Drive(BaseDrive):
             )
 
             logger.info(f"✅ 目录创建成功: {dir_key}")
-            return True
+            return dir_key
 
         except Exception as e:
             logger.error(f"创建目录失败: {e}")
-            return False
+            return ""
 
-    def delete(self, fid: str) -> bool:
+    def delete(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
         删除对象或目录
 
@@ -604,7 +615,7 @@ class S3Drive(BaseDrive):
             try:
                 response = self.s3_client.head_object(Bucket=self.bucket_name, Key=fid)
                 file_size = response["ContentLength"]
-            except:
+            except Exception as _ignore:
                 file_size = 0
 
             # 进度回调

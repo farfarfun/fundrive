@@ -170,8 +170,8 @@ def demo_file_operations(drive: GitHubDrive):
     # 清理测试文件
     try:
         os.remove(test_file)
-    except:
-        pass
+    except Exception as e:
+        print(f"清理失败{e}")
 
     return success
 

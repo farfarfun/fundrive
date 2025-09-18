@@ -16,23 +16,28 @@
 作者: FunDrive Team
 """
 
+# 标准库导入
 import base64
 import concurrent.futures
 import hashlib
 import os
-import subprocess
 import time
-import traceback
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional
 
+# 第三方库导入
+import base58
 import orjson
 import requests
+from Cryptodome.Cipher import DES
+from Cryptodome.Util import Padding
 from funget import simple_download
 from funutil import getLogger
 from tqdm import tqdm
 
+# 项目内部导入
 from fundrive.core import BaseDrive, DriveFile
+from fundrive.core.utils import handle_drive_errors, validate_fid, log_storage_info
 
 logger = getLogger("fundrive")
 
@@ -111,7 +116,7 @@ class WSSDrive(BaseDrive):
             logger.error(f"❌ 文叔叔登录失败: {e}")
             return False
 
-    def _get_userinfo(self):
+    def _get_userinfo(self) -> None:
         """获取用户信息"""
         try:
             self.session.post(
@@ -119,8 +124,8 @@ class WSSDrive(BaseDrive):
                 json={"plat": "pcweb"},
                 timeout=10,
             )
-        except:
-            pass
+        except Exception as e:
+            logger.error("获取用户信息是吧", e)
 
     def get_storage_info(self) -> Dict[str, Any]:
         """
@@ -155,10 +160,11 @@ class WSSDrive(BaseDrive):
                 "total_space_gb": round(storage_space / 1024**3, 2),
             }
 
-            logger.info(
-                f"存储空间: 已用 {storage_info['used_space_gb']}GB, "
-                f"剩余 {storage_info['free_space_gb']}GB, "
-                f"总计 {storage_info['total_space_gb']}GB"
+            log_storage_info(
+                logger,
+                f"{storage_info['used_space_gb']}GB",
+                f"{storage_info['free_space_gb']}GB",
+                f"{storage_info['total_space_gb']}GB",
             )
 
             return storage_info
@@ -168,31 +174,29 @@ class WSSDrive(BaseDrive):
             return {}
 
     # BaseDrive接口实现
-    def exist(self, fid: str, filename: str = None) -> bool:
+    @handle_drive_errors(default_return=False, error_message="检查文件存在性失败")
+    @validate_fid(allow_empty=False)
+    def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
         检查文件是否存在（文叔叔不支持文件列表，只能检查已上传的文件）
 
         Args:
             fid: 文件ID或分享链接
-            filename: 文件名（可选）
+            *args: 位置参数
+            **kwargs: 关键字参数
 
         Returns:
             文件是否存在
         """
-        try:
-            # 检查是否为已上传的文件
-            if fid in self.uploaded_files:
-                return True
+        # 检查是否为已上传的文件
+        if fid in self.uploaded_files:
+            return True
 
-            # 尝试解析分享链接
-            if fid.startswith("http"):
-                return self._check_share_url_valid(fid)
+        # 尝试解析分享链接
+        if fid.startswith("http"):
+            return self._check_share_url_valid(fid)
 
-            return False
-
-        except Exception as e:
-            logger.error(f"检查文件存在性失败: {e}")
-            return False
+        return False
 
     def _check_share_url_valid(self, share_url: str) -> bool:
         """检查分享链接是否有效"""
@@ -217,24 +221,35 @@ class WSSDrive(BaseDrive):
 
             return False
 
-        except:
+        except Exception as e:
+            logger.error("", e)
             return False
 
-    def mkdir(self, fid: str, dirname: str) -> bool:
+    def mkdir(
+        self,
+        fid: str,
+        name: str,
+        return_if_exist: bool = True,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str:
         """
         创建目录（文叔叔不支持目录结构）
 
         Args:
             fid: 父目录路径
-            dirname: 目录名
+            name: 目录名
+            return_if_exist: 如果目录已存在，是否返回已存在目录的ID
+            *args: 位置参数
+            **kwargs: 关键字参数
 
         Returns:
-            创建是否成功
+            创建的目录ID（此驱动不支持创建，返回空字符串）
         """
         logger.warning("文叔叔不支持目录结构，无法创建目录")
-        return False
+        return ""
 
-    def delete(self, fid: str) -> bool:
+    def delete(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
         删除文件（文叔叔不支持删除已分享的文件）
 
@@ -632,6 +647,8 @@ class _WSSBaseDrive:
 
 class Uploader:
     def __init__(self, file_path, drive=None, chunk_size=2097152, *args, **kwargs):
+        self.mgr_url = None
+        self.share_url = None
         self.drive = drive or _WSSBaseDrive()
         self.session = self.drive.session
         self.chunk_size = chunk_size
@@ -781,17 +798,6 @@ class Uploader:
         return hash_code
 
     def get_cipherheader(self, epochtime, token, data):
-        try:
-            import base58
-            from Cryptodome.Cipher import DES
-            from Cryptodome.Util import Padding
-        except Exception as e:
-            logger.info(f"error: {e} traceback: {traceback.format_exc()}")
-            subprocess.check_call(["pip", "install", "pycryptodomex"])
-            import base58
-            from Cryptodome.Cipher import DES
-            from Cryptodome.Util import Padding
-
         # cipherMethod: DES/CBC/PKCS7Padding
         json_dumps = orjson.dumps(data).decode("utf-8")
         md5_hash_code = hashlib.md5((json_dumps + token).encode()).hexdigest()

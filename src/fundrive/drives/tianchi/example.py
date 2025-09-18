@@ -355,7 +355,7 @@ def run_interactive_demo():
                     logger.info("⚠️ 警告：下载整个数据集可能需要很长时间")
                     confirm = input("确认下载？(y/N): ").strip().lower()
                     if confirm == "y":
-                        result = drive.download_dir(dataset_id, filedir=download_dir)
+                        result = drive.download_dir(dataset_id, save_dir=download_dir)
                         if result:
                             logger.info(f"✅ 数据集下载完成到: {download_dir}")
                         else:

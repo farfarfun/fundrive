@@ -1046,7 +1046,6 @@ class ZenodoDrive(BaseDrive):
             logger.error(f"创建目录失败: {e}")
             raise
 
-
     def upload_file(
         self,
         filepath: str,

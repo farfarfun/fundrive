@@ -187,8 +187,8 @@ def comprehensive_test():
 
     def add_test(name: str, success: bool, details: str = ""):
         tests.append({"name": name, "success": success, "details": details})
-        status = "✅" if success else "❌"
-        print(f"{status} {name}: {details}")
+        _status = "✅" if success else "❌"
+        print(f"{_status} {name}: {details}")
 
     # 1. 连接测试
     print("\n1. 连接测试...")

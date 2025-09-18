@@ -27,8 +27,9 @@ API 版本: v2.0
 from typing import Optional
 
 from fundrive.drives.oss import OSSDrive
-from fundrive.core import BaseDriveTest, create_drive_tester
+from fundrive.core import create_drive_tester
 from funutil import getLogger
+
 
 logger = getLogger("fundrive.oss.example")
 

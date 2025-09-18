@@ -3,13 +3,14 @@
 """
 
 import os
-from typing import List
+from typing import List, Optional, Any
 
 from fundrives.lanzou import LanZouCloud
 from fundrives.lanzou.utils import convert_file_size_to_int
 from funsecret import read_secret
 from funutil import getLogger
 from tqdm import tqdm
+
 
 from fundrive.core import BaseDrive, DriveFile
 
@@ -105,7 +106,7 @@ class LanZouDrive(BaseDrive):
             url, pwd = path.split(",")
         return fid, url, pwd
 
-    def exist(self, path, *args, **kwargs) -> bool:
+    def exist(self, fid: str, *args, **kwargs) -> bool:
         return True
 
     def mkdir(self, fid, name, url=None, pwd=None, *args, **kwargs) -> bool:
@@ -148,7 +149,9 @@ class LanZouDrive(BaseDrive):
                 )
         return result
 
-    def get_file_info(self, fid, url=None, pwd=None, *args, **kwargs) -> DriveFile:
+    def get_file_info(
+        self, fid, url=None, pwd=None, *args, **kwargs
+    ) -> DriveFile[Any] | None:
         data = None
         if fid is not None:
             data = self.drive.get_file_info_by_id(fid)
@@ -164,6 +167,7 @@ class LanZouDrive(BaseDrive):
                 url=data.url,
                 pwd=data.pwd,
             )
+        return None
 
     def get_dir_info(self, fid, url=None, pwd=None, *args, **kwargs) -> DriveFile:
         data = None

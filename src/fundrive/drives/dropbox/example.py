@@ -19,7 +19,6 @@ import argparse
 import os
 import tempfile
 
-
 from fundrive.drives.dropbox.drive import DropboxDrive
 
 
@@ -46,8 +45,8 @@ def comprehensive_test():
                 print(f"❌ {step_name} - 失败")
                 test_results["failed"] += 1
                 return False
-        except Exception as e:
-            print(f"💥 {step_name} - 异常: {e}")
+        except Exception as error:
+            print(f"💥 {step_name} - 异常: {error}")
             test_results["failed"] += 1
             return False
 
@@ -61,7 +60,7 @@ def comprehensive_test():
 
     # 2. 文件存在性检查
     def test_exist():
-        return drive.exist("/") == True  # 根目录必须存在
+        return drive.exist("/")  # 根目录必须存在
 
     test_step("文件存在性检查", test_exist)
 
@@ -151,7 +150,7 @@ def comprehensive_test():
         try:
             download_dir = tempfile.mkdtemp()
             download_file = os.path.join(download_dir, "downloaded_test.txt")
-        except:
+        except Exception:
             download_file = None
 
         def test_download():
@@ -200,7 +199,7 @@ def comprehensive_test():
         # 18. 保存分享功能（应该返回False）
         def test_save_shared():
             result = drive.save_shared("https://example.com/share", test_dir)
-            return result == False  # 应该返回False表示不支持
+            return not result  # 应该返回False表示不支持
 
         test_step("保存分享功能（警告测试）", test_save_shared)
 
@@ -222,8 +221,8 @@ def comprehensive_test():
             if download_file and os.path.exists(download_file):
                 os.unlink(download_file)
                 os.rmdir(os.path.dirname(download_file))
-        except:
-            pass
+        except Exception as e:
+            print(f"error:{e}")
 
     # 20. 删除测试目录
     def test_delete_dir():

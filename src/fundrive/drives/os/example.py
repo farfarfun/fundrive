@@ -40,7 +40,7 @@ def create_os_drive():
         return None, None
 
 
-def run_comprehensive_test(drive, test_root):
+def run_comprehensive_test(drive):
     """运行完整的驱动功能测试"""
     logger.info("\n🧪 开始本地文件系统完整功能测试...")
 
@@ -338,7 +338,7 @@ def main():
         drive, test_root = create_os_drive()
         if drive:
             try:
-                run_comprehensive_test(drive, test_root)
+                run_comprehensive_test(drive)
             finally:
                 # 清理测试目录
                 import shutil

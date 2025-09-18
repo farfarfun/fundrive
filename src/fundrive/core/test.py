@@ -224,7 +224,7 @@ class BaseDriveTest:
         """测试分享功能"""
         try:
             test_file_path = f"{self.test_dir}/test_renamed.txt"
-            share_link = self.drive.share(test_file_path)
+            share_link = self.drive.share(test_file_path, password="aaaa")
 
             # 检查分享是否成功
             if share_link is not None and isinstance(share_link, str):
@@ -274,8 +274,8 @@ class BaseDriveTest:
                         try:
                             # 这里可能需要根据原始位置重新删除
                             pass  # 暂时跳过重新删除，避免影响用户数据
-                        except:
-                            pass
+                        except Exception as e:
+                            logger.error("删除失败", e)
                 else:
                     logger.warning(f"⚠️ 文件恢复失败: {first_item.name}")
 

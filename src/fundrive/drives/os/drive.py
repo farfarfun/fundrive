@@ -9,8 +9,8 @@ class OSDrive(BaseDrive):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def exist(self, path, *args, **kwargs) -> bool:
-        return os.path.exists(path)
+    def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
+        return os.path.exists(fid)
 
     def mkdir(self, path, exist_ok=True, *args, **kwargs) -> bool:
         os.makedirs(path, exist_ok=exist_ok)

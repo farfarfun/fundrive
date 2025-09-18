@@ -16,7 +16,7 @@ class LanZouSnapshot(DriveSnapshot):
         self.pwd = pwd
 
     def delete_outed_version(self):
-        datas = self.drive.get_file_list(path=self.fid)
+        datas = self.drive.get_file_list(fid=self.fid)
         datas = sorted(datas, key=lambda x: x["name"], reverse=True)
         if len(datas) > self.version_num:
             for i in range(self.version_num, len(datas)):
@@ -26,13 +26,13 @@ class LanZouSnapshot(DriveSnapshot):
         gz_path = self._tar_path(file_path)
         tarfile.file_entar(file_path, gz_path)
         self.drive.login()
-        self.drive.upload_file(gz_path, drive_path=self.fid)
+        self.drive.upload_file(gz_path, fid=self.fid)
         os.remove(gz_path)
         self.delete_outed_version()
 
     def download(self, dir_path, *args, **kwargs):
         self.drive.instance()
-        datas = self.drive.get_file_list(url=self.url, pwd=self.pwd)
+        datas = self.drive.get_file_list(url=self.url, pwd=self.pwd, fid=None)
         if len(datas) == 0:
             print("没有快照文件")
             return

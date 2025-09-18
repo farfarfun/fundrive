@@ -147,26 +147,20 @@ class GiteeDrive(BaseDrive):
             logger.error(f"❌ Gitee连接失败: {e}")
             return False
 
-    def exist(self, fid: str, filename: str = None) -> bool:
+    def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
-        检查文件是否存在
+        检查文件或目录是否存在
 
         Args:
-            fid: 文件路径
-            filename: 文件名（可选）
+            fid: 文件或目录路径
 
         Returns:
-            文件是否存在
+            文件或目录是否存在
         """
         try:
-            if filename:
-                path = f"{fid.rstrip('/')}/{filename}" if fid else filename
-            else:
-                path = fid
-
             params = {"access_token": self.access_token, "ref": self.branch}
             response = requests.get(
-                f"{self.base_url}/repos/{self.repo_str}/contents/{path}", params=params
+                f"{self.base_url}/repos/{self.repo_str}/contents/{fid}", params=params
             )
 
             return response.status_code == 200
@@ -175,23 +169,37 @@ class GiteeDrive(BaseDrive):
             logger.error(f"检查文件存在性失败: {e}")
             return False
 
-    def mkdir(self, fid: str, dirname: str) -> bool:
+    def mkdir(
+        self,
+        fid: str,
+        name: str,
+        return_if_exist: bool = True,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str:
         """
         创建目录（通过创建.gitkeep文件）
 
         Args:
             fid: 父目录路径
-            dirname: 目录名
+            name: 目录名
+            return_if_exist: 如果目录已存在，是否返回已存在目录的ID
+            *args: 位置参数
+            **kwargs: 关键字参数
 
         Returns:
-            创建是否成功
+            创建的目录ID（路径）
         """
         try:
-            logger.info(f"正在创建目录: {fid}/{dirname}")
+            logger.info(f"正在创建目录: {fid}/{name}")
 
             # 构建目录路径
-            dir_path = f"{fid.rstrip('/')}/{dirname}" if fid else dirname
-            gitkeep_path = f"{dir_path}/.gitkeep"
+            dir_path = f"{fid.rstrip('/')}/{name}" if fid else name
+
+            # 检查目录是否已存在
+            if return_if_exist and self.exist(dir_path):
+                logger.info(f"目录已存在: {dir_path}")
+                return dir_path
 
             # 创建.gitkeep文件来表示目录
             success = self.upload_file(
@@ -204,13 +212,15 @@ class GiteeDrive(BaseDrive):
 
             if success:
                 logger.info(f"✅ 目录创建成功: {dir_path}")
-            return success
+                return dir_path
+            else:
+                return ""
 
         except Exception as e:
             logger.error(f"创建目录失败: {e}")
-            return False
+            return ""
 
-    def delete(self, fid: str) -> bool:
+    def delete(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
         删除文件
 
@@ -427,13 +437,14 @@ class GiteeDrive(BaseDrive):
 
     def upload_file(
         self,
-        filepath: str = None,
-        fid: str = "",
+        filepath: str,
+        fid: str,
         filename: str = None,
         content: str = None,
         commit_message: str = None,
         callback: callable = None,
-        **kwargs,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         上传文件到Gitee
