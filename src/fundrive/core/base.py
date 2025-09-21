@@ -533,7 +533,7 @@ class BaseDrive:
         Args:
             keyword: 搜索关键词
             fid: 搜索的起始目录ID,默认从根目录开始
-            file_type: 文件类型筛选,如'doc','video','image'等
+            file_type: 文件类型筛选,如'docs','video','image'等
             args: 位置参数
             kwargs: 关键字参数
 

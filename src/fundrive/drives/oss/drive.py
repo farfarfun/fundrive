@@ -669,7 +669,7 @@ class OSSDrive(BaseDrive):
                             ],
                             "video": ["mp4", "avi", "mkv", "mov", "wmv", "flv", "m4v"],
                             "audio": ["mp3", "wav", "flac", "aac", "m4a", "ogg"],
-                            "doc": ["pdf", "doc", "docx", "txt", "rtf", "odt"],
+                            "docs": ["pdf", "docs", "docx", "txt", "rtf", "odt"],
                             "archive": ["zip", "rar", "7z", "tar", "gz", "bz2"],
                         }
 

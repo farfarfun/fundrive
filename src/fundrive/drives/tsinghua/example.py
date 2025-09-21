@@ -175,7 +175,7 @@ def demo_search_operations(drive: TSingHuaDrive):
     print_separator("搜索功能演示")
 
     # 搜索文件
-    search_keywords = ["txt", "pdf", "doc", "md"]
+    search_keywords = ["txt", "pdf", "docs", "md"]
 
     for keyword in search_keywords:
         print(f"\n🔍 搜索包含 '{keyword}' 的文件...")

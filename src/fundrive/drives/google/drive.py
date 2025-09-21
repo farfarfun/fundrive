@@ -538,7 +538,7 @@ class GoogleDrive(BaseDrive):
             if file_type:
                 # 根据文件类型添加MIME类型过滤
                 mime_type_map = {
-                    "doc": "application/vnd.google-apps.document",
+                    "docs": "application/vnd.google-apps.document",
                     "sheet": "application/vnd.google-apps.spreadsheet",
                     "slide": "application/vnd.google-apps.presentation",
                     "pdf": "application/pdf",

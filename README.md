@@ -4,11 +4,11 @@ FunDrive 是一个统一的网盘操作接口框架，旨在提供一个标准�
 
 ## 📚 文档导航
 
-- **[📖 API接口文档](doc/API.md)** - 完整的API接口说明，适合开发者集成使用
-- **[📋 变更日志](doc/CHANGELOG.md)** - 版本变更记录和更新说明
-- **[🚀 快速入门指南](doc/QUICK_START.md)** - 5分钟快速上手，包含常用场景示例
-- **[🔧 开发指南](doc/DEVELOPMENT_GUIDE.md)** - 开发者贡献指南和最佳实践
-- **[📊 性能优化指南](doc/OPTIMIZATION_GUIDE.md)** - 性能优化建议和最佳实践
+- **[📖 API接口文档](docs/API.md)** - 完整的API接口说明，适合开发者集成使用
+- **[📋 变更日志](docs/CHANGELOG.md)** - 版本变更记录和更新说明
+- **[🚀 快速入门指南](docs/QUICK_START.md)** - 5分钟快速上手，包含常用场景示例
+- **[🔧 开发指南](docs/DEVELOPMENT_GUIDE.md)** - 开发者贡献指南和最佳实践
+- **[📊 性能优化指南](docs/OPTIMIZATION_GUIDE.md)** - 性能优化建议和最佳实践
 
 ## V2.0有大改动，升级注意
 

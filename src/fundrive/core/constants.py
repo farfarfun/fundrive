@@ -63,7 +63,7 @@ SUPPORTED_FILE_TYPES = {
     "image": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg"],
     "video": [".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm"],
     "audio": [".mp3", ".wav", ".flac", ".aac", ".ogg", ".wma"],
-    "document": [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt"],
+    "document": [".pdf", ".docs", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt"],
     "archive": [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2"],
     "code": [".py", ".js", ".html", ".css", ".java", ".cpp", ".c", ".go", ".rs"],
 }
@@ -190,7 +190,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
 FILE_TYPE_MAPPING = {
     # 文档类型
     ".pdf": "document",
-    ".doc": "document",
+    ".docs": "document",
     ".docx": "document",
     ".txt": "document",
     ".md": "document",
