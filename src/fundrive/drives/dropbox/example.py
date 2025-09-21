@@ -20,13 +20,16 @@ import os
 import tempfile
 
 from fundrive.drives.dropbox.drive import DropboxDrive
+from funutil import getLogger
+
+logger = getLogger("fundrive")
 
 
 def comprehensive_test():
     """综合测试所有功能，按优先级顺序测试核心接口"""
-    print("=" * 80)
-    print("🧪 Dropbox 驱动综合功能测试")
-    print("=" * 80)
+    logger.info("=" * 80)
+    logger.info("🧪 Dropbox 驱动综合功能测试")
+    logger.info("=" * 80)
 
     # 初始化驱动
     drive = DropboxDrive()
@@ -35,18 +38,18 @@ def comprehensive_test():
     def test_step(step_name, test_func):
         """执行单个测试步骤"""
         test_results["total"] += 1
-        print(f"\n📋 {test_results['total']}. {step_name}")
+        logger.info(f"📋 {test_results['total']}. {step_name}")
         try:
             if test_func():
-                print(f"✅ {step_name} - 通过")
+                logger.info(f"✅ {step_name} - 通过")
                 test_results["passed"] += 1
                 return True
             else:
-                print(f"❌ {step_name} - 失败")
+                logger.error(f"❌ {step_name} - 失败")
                 test_results["failed"] += 1
                 return False
         except Exception as error:
-            print(f"💥 {step_name} - 异常: {error}")
+            logger.error(f"💥 {step_name} - 异常: {error}")
             test_results["failed"] += 1
             return False
 
@@ -55,7 +58,7 @@ def comprehensive_test():
         return drive.login()
 
     if not test_step("登录认证", test_login):
-        print("\n❌ 登录失败，无法继续测试")
+        logger.error("❌ 登录失败，无法继续测试")
         return False
 
     # 2. 文件存在性检查
@@ -119,7 +122,7 @@ def comprehensive_test():
             f.write(test_file_content)
             temp_file = f.name
     except Exception as e:
-        print(f"❌ 创建临时文件失败: {e}")
+        logger.error(f"❌ 创建临时文件失败: {e}")
         temp_file = None
 
     if temp_file:
@@ -222,7 +225,7 @@ def comprehensive_test():
                 os.unlink(download_file)
                 os.rmdir(os.path.dirname(download_file))
         except Exception as e:
-            print(f"error:{e}")
+            logger.error(f"error:{e}")
 
     # 20. 删除测试目录
     def test_delete_dir():
@@ -231,74 +234,74 @@ def comprehensive_test():
     test_step("删除测试目录", test_delete_dir)
 
     # ========== 测试结果汇总 ==========
-    print("\n" + "=" * 80)
-    print("📊 测试结果汇总")
-    print("=" * 80)
-    print(f"✅ 通过: {test_results['passed']} 项")
-    print(f"❌ 失败: {test_results['failed']} 项")
-    print(f"📋 总计: {test_results['total']} 项")
+    logger.info("=" * 80)
+    logger.info("📊 测试结果汇总")
+    logger.info("=" * 80)
+    logger.info(f"✅ 通过: {test_results['passed']} 项")
+    logger.info(f"❌ 失败: {test_results['failed']} 项")
+    logger.info(f"📋 总计: {test_results['total']} 项")
 
     success_rate = (
         (test_results["passed"] / test_results["total"]) * 100
         if test_results["total"] > 0
         else 0
     )
-    print(f"🎯 成功率: {success_rate:.1f}%")
+    logger.info(f"🎯 成功率: {success_rate:.1f}%")
 
     if success_rate >= 90:
-        print("🎉 测试结果优秀！Dropbox 驱动运行良好")
+        logger.success("🎉 测试结果优秀！Dropbox 驱动运行良好")
     elif success_rate >= 70:
-        print("👍 测试结果良好，部分功能可能需要优化")
+        logger.info("👍 测试结果良好，部分功能可能需要优化")
     else:
-        print("⚠️  测试结果需要改进，请检查失败的功能")
+        logger.warning("⚠️  测试结果需要改进，请检查失败的功能")
 
     return success_rate >= 70
 
 
 def quick_demo():
     """快速演示核心功能"""
-    print("=" * 60)
-    print("🚀 Dropbox 驱动快速演示")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("🚀 Dropbox 驱动快速演示")
+    logger.info("=" * 60)
 
     # 初始化驱动
     drive = DropboxDrive()
 
     # 登录
-    print("1. 登录测试...")
+    logger.info("1. 登录测试...")
     if not drive.login():
-        print("❌ 登录失败，请检查配置")
+        logger.error("❌ 登录失败，请检查配置")
         return False
-    print("✅ 登录成功")
+    logger.info("✅ 登录成功")
 
     # 获取配额信息
-    print("\n2. 获取配额信息...")
+    logger.info("2. 获取配额信息...")
     quota = drive.get_quota()
     if quota:
         used_gb = quota.get("used_space", 0) / (1024**3)
         total_gb = quota.get("total_space", 0) / (1024**3)
-        print(f"✅ 已使用: {used_gb:.2f} GB / {total_gb:.2f} GB")
+        logger.info(f"✅ 已使用: {used_gb:.2f} GB / {total_gb:.2f} GB")
 
     # 获取根目录文件列表
-    print("\n3. 获取根目录文件列表...")
+    logger.info("3. 获取根目录文件列表...")
     files = drive.get_file_list("/")
-    print(f"✅ 找到 {len(files)} 个文件")
+    logger.info(f"✅ 找到 {len(files)} 个文件")
     for i, file in enumerate(files[:3]):  # 只显示前3个
-        print(f"   {i + 1}. {file.name} ({file.size} bytes)")
+        logger.info(f"   {i + 1}. {file.name} ({file.size} bytes)")
 
     # 创建测试目录
-    print("\n4. 创建测试目录...")
+    logger.info("4. 创建测试目录...")
     test_dir_name = "quick_test"
     test_dir = f"/{test_dir_name}"
     if drive.mkdir("/", test_dir_name):
-        print(f"✅ 目录创建成功: {test_dir}")
+        logger.info(f"✅ 目录创建成功: {test_dir}")
 
         # 删除测试目录
         if drive.delete(test_dir):
-            print(f"✅ 目录删除成功: {test_dir}")
+            logger.info(f"✅ 目录删除成功: {test_dir}")
 
-    print("\n🎉 快速演示完成!")
-    print("💡 运行 'python example.py --test' 进行完整测试")
+    logger.success("🎉 快速演示完成!")
+    logger.info("💡 运行 'python example.py --test' 进行完整测试")
     return True
 
 
@@ -332,10 +335,9 @@ def main():
     args = parser.parse_args()
 
     # 显示欢迎信息
-    print("🎯 Dropbox 网盘驱动示例程序")
-    print("📦 基于 fundrive 框架开发")
-    print("🔗 项目地址: https://github.com/farfarfun/fundrive")
-    print()
+    logger.info("🎯 Dropbox 网盘驱动示例程序")
+    logger.info("📦 基于 fundrive 框架开发")
+    logger.info("🔗 项目地址: https://github.com/farfarfun/fundrive")
 
     try:
         if args.test:
@@ -346,17 +348,17 @@ def main():
             success = quick_demo()
 
         if success:
-            print("\n✨ 示例程序执行成功!")
+            logger.success("✨ 示例程序执行成功!")
             return 0
         else:
-            print("\n❌ 示例程序执行失败!")
+            logger.error("❌ 示例程序执行失败!")
             return 1
 
     except KeyboardInterrupt:
-        print("\n\n⏹️  用户中断执行")
+        logger.warning("⏹️  用户中断执行")
         return 1
     except Exception as e:
-        print(f"\n💥 程序执行出错: {e}")
+        logger.error(f"💥 程序执行出错: {e}")
         import traceback
 
         traceback.print_exc()

@@ -29,34 +29,36 @@ import os
 import tempfile
 from typing import List
 
-
 from fundrive.drives.github import GitHubDrive
 from fundrive.core import DriveFile
+from funutil import getLogger
+
+logger = getLogger("fundrive.github.example")
 
 
-def print_separator(title: str = ""):
-    """打印分隔线"""
-    print("\n" + "=" * 60)
+def log_separator(title: str = ""):
+    """记录分隔线"""
+    logger.info("=" * 60)
     if title:
-        print(f" {title} ")
-        print("=" * 60)
+        logger.info(f" {title} ")
+        logger.info("=" * 60)
 
 
-def print_files(files: List[DriveFile], title: str = "文件列表"):
-    """打印文件列表"""
-    print(f"\n📁 {title} (共 {len(files)} 个):")
+def log_files(files: List[DriveFile], title: str = "文件列表"):
+    """记录文件列表"""
+    logger.info(f"📁 {title} (共 {len(files)} 个):")
     if not files:
-        print("  (空)")
+        logger.info("  (空)")
         return
 
     for i, file in enumerate(files, 1):
         file_type = "📁" if file.ext.get("type") == "folder" else "📄"
         size_str = f"{file.size:,} bytes" if file.size > 0 else "-"
-        print(f"  {i:2d}. {file_type} {file.name}")
-        print(f"      路径: {file.fid}")
-        print(f"      大小: {size_str}")
+        logger.info(f"  {i:2d}. {file_type} {file.name}")
+        logger.info(f"      路径: {file.fid}")
+        logger.info(f"      大小: {size_str}")
         if file.ext.get("sha"):
-            print(f"      SHA: {file.ext['sha'][:8]}...")
+            logger.info(f"      SHA: {file.ext['sha'][:8]}...")
 
 
 def create_test_file(filename: str = "github_test.txt", content: str = None) -> str:
@@ -80,57 +82,57 @@ GitHub特性:
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print(f"📄 创建测试文件: {filepath}")
+    logger.info(f"📄 创建测试文件: {filepath}")
     return filepath
 
 
 def demo_basic_operations(drive: GitHubDrive):
     """演示基本操作"""
-    print_separator("基本操作演示")
+    log_separator("基本操作演示")
 
     # 登录
-    print("🔐 正在连接GitHub...")
+    logger.info("🔐 正在连接GitHub...")
     if drive.login():
-        print("✅ GitHub连接成功")
+        logger.info("✅ GitHub连接成功")
     else:
-        print("❌ GitHub连接失败")
+        logger.error("❌ GitHub连接失败")
         return False
 
     # 获取仓库信息
-    print("\n💾 获取仓库信息...")
+    logger.info("💾 获取仓库信息...")
     quota_info = drive.get_quota()
     if quota_info:
-        print("✅ 仓库信息:")
-        print(f"   仓库: {quota_info.get('repo_name', 'N/A')}")
-        print(f"   描述: {quota_info.get('description', '无')}")
-        print(f"   大小: {quota_info.get('size_mb', 0)} MB")
-        print(f"   默认分支: {quota_info.get('default_branch', 'main')}")
-        print(f"   语言: {quota_info.get('language', '未知')}")
-        print(f"   星标: {quota_info.get('stars', 0)}")
+        logger.info("✅ 仓库信息:")
+        logger.info(f"   仓库: {quota_info.get('repo_name', 'N/A')}")
+        logger.info(f"   描述: {quota_info.get('description', '无')}")
+        logger.info(f"   大小: {quota_info.get('size_mb', 0)} MB")
+        logger.info(f"   默认分支: {quota_info.get('default_branch', 'main')}")
+        logger.info(f"   语言: {quota_info.get('language', '未知')}")
+        logger.info(f"   星标: {quota_info.get('stars', 0)}")
 
     # 列出根目录文件
-    print("\n📄 获取根目录文件列表...")
+    logger.info("📄 获取根目录文件列表...")
     files = drive.get_file_list("")
-    print_files(files, "根目录文件")
+    log_files(files, "根目录文件")
 
     # 列出根目录子目录
-    print("\n📁 获取根目录子目录列表...")
+    logger.info("📁 获取根目录子目录列表...")
     dirs = drive.get_dir_list("")
-    print_files(dirs, "根目录子目录")
+    log_files(dirs, "根目录子目录")
 
     return True
 
 
 def demo_file_operations(drive: GitHubDrive):
     """演示文件操作"""
-    print_separator("文件操作演示")
+    log_separator("文件操作演示")
 
     # 创建测试文件
     test_file = create_test_file("fundrive_test.md")
     test_filename = "fundrive_github_test.md"
 
     # 上传文件
-    print(f"\n📤 上传文件: {test_filename}")
+    logger.info(f"📤 上传文件: {test_filename}")
     success = drive.upload_file(
         filepath=test_file,
         fid="test",
@@ -139,24 +141,24 @@ def demo_file_operations(drive: GitHubDrive):
     )
 
     if success:
-        print("✅ 文件上传成功")
+        logger.info("✅ 文件上传成功")
 
         # 获取文件信息
-        print(f"\n📋 获取文件信息: test/{test_filename}")
+        logger.info(f"📋 获取文件信息: test/{test_filename}")
         file_info = drive.get_file_info(f"test/{test_filename}")
         if file_info:
-            print("✅ 文件信息:")
-            print(f"   名称: {file_info.name}")
-            print(f"   大小: {file_info.size} bytes")
-            print(f"   SHA: {file_info.ext.get('sha', 'N/A')[:8]}...")
+            logger.info("✅ 文件信息:")
+            logger.info(f"   名称: {file_info.name}")
+            logger.info(f"   大小: {file_info.size} bytes")
+            logger.info(f"   SHA: {file_info.ext.get('sha', 'N/A')[:8]}...")
 
             # 创建分享链接
             share_url = drive.create_share_link(f"test/{test_filename}")
             if share_url:
-                print(f"   分享链接: {share_url}")
+                logger.info(f"   分享链接: {share_url}")
 
         # 下载文件
-        print(f"\n📥 下载文件: test/{test_filename}")
+        logger.info(f"📥 下载文件: test/{test_filename}")
         download_dir = tempfile.mkdtemp()
         success = drive.download_file(
             fid=f"test/{test_filename}",
@@ -165,38 +167,38 @@ def demo_file_operations(drive: GitHubDrive):
         )
 
         if success:
-            print(f"✅ 文件下载成功: {download_dir}/downloaded_test.md")
+            logger.info(f"✅ 文件下载成功: {download_dir}/downloaded_test.md")
 
     # 清理测试文件
     try:
         os.remove(test_file)
     except Exception as e:
-        print(f"清理失败{e}")
+        logger.error(f"清理失败{e}")
 
     return success
 
 
 def demo_search_features(drive: GitHubDrive):
     """演示搜索功能"""
-    print_separator("搜索功能演示")
+    log_separator("搜索功能演示")
 
     # 搜索README文件
-    print("🔍 搜索README文件...")
+    logger.info("🔍 搜索README文件...")
     results = drive.search("README")
-    print_files(results, "搜索结果")
+    log_files(results, "搜索结果")
 
     # 搜索Python文件
-    print("\n🔍 搜索Python文件...")
+    logger.info("🔍 搜索Python文件...")
     results = drive.search("*.py")
-    print_files(results[:5], "Python文件 (前5个)")
+    log_files(results[:5], "Python文件 (前5个)")
 
     return True
 
 
 def run_quick_demo():
     """运行快速演示"""
-    print("🚀 GitHub驱动快速演示")
-    print("=" * 50)
+    logger.info("🚀 GitHub驱动快速演示")
+    logger.info("=" * 50)
 
     # 检查配置
     access_token = os.getenv("GITHUB_ACCESS_TOKEN")
@@ -204,12 +206,12 @@ def run_quick_demo():
     repo_name = os.getenv("GITHUB_REPO_NAME")
 
     if not all([access_token, repo_owner, repo_name]):
-        print("⚠️ 未找到GitHub配置信息")
-        print("请设置以下环境变量:")
-        print("  export GITHUB_ACCESS_TOKEN='your_access_token'")
-        print("  export GITHUB_REPO_OWNER='your_username'")
-        print("  export GITHUB_REPO_NAME='your_repo_name'")
-        print("或使用funsecret配置")
+        logger.warning("⚠️ 未找到GitHub配置信息")
+        logger.info("请设置以下环境变量:")
+        logger.info("  export GITHUB_ACCESS_TOKEN='your_access_token'")
+        logger.info("  export GITHUB_REPO_OWNER='your_username'")
+        logger.info("  export GITHUB_REPO_NAME='your_repo_name'")
+        logger.info("或使用funsecret配置")
         return
 
     # 创建驱动实例
@@ -221,14 +223,14 @@ def run_quick_demo():
     if demo_basic_operations(drive):
         demo_search_features(drive)
 
-    print_separator("演示完成")
-    print("✅ GitHub驱动快速演示完成！")
+    log_separator("演示完成")
+    logger.success("✅ GitHub驱动快速演示完成！")
 
 
 def run_full_test():
     """运行完整测试"""
-    print("🧪 GitHub驱动完整测试")
-    print("=" * 50)
+    logger.info("🧪 GitHub驱动完整测试")
+    logger.info("=" * 50)
 
     # 检查配置
     access_token = os.getenv("GITHUB_ACCESS_TOKEN")
@@ -236,7 +238,7 @@ def run_full_test():
     repo_name = os.getenv("GITHUB_REPO_NAME")
 
     if not all([access_token, repo_owner, repo_name]):
-        print("⚠️ 未找到GitHub配置信息")
+        logger.warning("⚠️ 未找到GitHub配置信息")
         return False
 
     # 创建驱动实例
@@ -253,19 +255,19 @@ def run_full_test():
     else:
         success = False
 
-    print_separator("测试完成")
+    log_separator("测试完成")
     if success:
-        print("✅ 所有测试通过！")
+        logger.success("✅ 所有测试通过！")
     else:
-        print("❌ 部分测试失败")
+        logger.error("❌ 部分测试失败")
 
     return success
 
 
 def run_interactive_demo():
     """运行交互式演示"""
-    print("🎮 GitHub驱动交互式演示")
-    print("=" * 50)
+    logger.info("🎮 GitHub驱动交互式演示")
+    logger.info("=" * 50)
 
     # 获取配置
     access_token = input("请输入GitHub访问令牌: ").strip()
@@ -273,7 +275,7 @@ def run_interactive_demo():
     repo_name = input("请输入仓库名称: ").strip()
 
     if not all([access_token, repo_owner, repo_name]):
-        print("❌ 配置信息不完整")
+        logger.error("❌ 配置信息不完整")
         return
 
     # 创建驱动实例
@@ -283,7 +285,7 @@ def run_interactive_demo():
 
     # 登录
     if not drive.login():
-        print("❌ 连接失败")
+        logger.error("❌ 连接失败")
         return
 
     while True:

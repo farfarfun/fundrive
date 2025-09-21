@@ -31,31 +31,34 @@ from typing import List
 
 from fundrive.drives.amazon import S3Drive
 from fundrive.core import DriveFile
+from funutil import getLogger
+
+logger = getLogger("fundrive")
 
 
-def print_separator(title: str = ""):
-    """打印分隔线"""
-    print("\n" + "=" * 60)
+def log_separator(title: str = ""):
+    """记录分隔线"""
+    logger.info("=" * 60)
     if title:
-        print(f" {title} ")
-        print("=" * 60)
+        logger.info(f" {title} ")
+        logger.info("=" * 60)
 
 
-def print_files(files: List[DriveFile], title: str = "文件列表"):
-    """打印文件列表"""
-    print(f"\n📁 {title} (共 {len(files)} 个):")
+def log_files(files: List[DriveFile], title: str = "文件列表"):
+    """记录文件列表"""
+    logger.info(f"📁 {title} (共 {len(files)} 个):")
     if not files:
-        print("  (空)")
+        logger.info("  (空)")
         return
 
     for i, file in enumerate(files, 1):
         file_type = "📁" if file.ext.get("type") == "folder" else "📄"
         size_str = f"{file.size:,} bytes" if file.size > 0 else "-"
-        print(f"  {i:2d}. {file_type} {file.name}")
-        print(f"      键: {file.fid}")
-        print(f"      大小: {size_str}")
+        logger.info(f"  {i:2d}. {file_type} {file.name}")
+        logger.info(f"      键: {file.fid}")
+        logger.info(f"      大小: {size_str}")
         if file.ext.get("last_modified"):
-            print(f"      修改时间: {file.ext['last_modified']}")
+            logger.info(f"      修改时间: {file.ext['last_modified']}")
 
 
 def create_test_file(filename: str = "s3_test.txt", content: str = None) -> str:
@@ -79,49 +82,49 @@ Amazon S3特性:
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print(f"📄 创建测试文件: {filepath}")
+    logger.info(f"📄 创建测试文件: {filepath}")
     return filepath
 
 
 def demo_basic_operations(drive: S3Drive):
     """演示基本操作"""
-    print_separator("基本操作演示")
+    log_separator("基本操作演示")
 
     # 登录
-    print("🔐 正在连接Amazon S3...")
+    logger.info("🔐 正在连接Amazon S3...")
     if drive.login():
-        print("✅ S3连接成功")
+        logger.info("✅ S3连接成功")
     else:
-        print("❌ S3连接失败")
+        logger.error("❌ S3连接失败")
         return False
 
     # 获取存储桶信息
-    print("\n💾 获取存储桶信息...")
+    logger.info("💾 获取存储桶信息...")
     quota_info = drive.get_quota()
     if quota_info:
-        print("✅ 存储桶信息:")
-        print(f"   存储桶: {quota_info.get('bucket_name', 'N/A')}")
-        print(f"   区域: {quota_info.get('region', 'N/A')}")
-        print(f"   对象数量: {quota_info.get('object_count', 0):,}")
-        print(f"   总大小: {quota_info.get('total_size_gb', 0)} GB")
+        logger.info("✅ 存储桶信息:")
+        logger.info(f"   存储桶: {quota_info.get('bucket_name', 'N/A')}")
+        logger.info(f"   区域: {quota_info.get('region', 'N/A')}")
+        logger.info(f"   对象数量: {quota_info.get('object_count', 0):,}")
+        logger.info(f"   总大小: {quota_info.get('total_size_gb', 0)} GB")
 
     # 列出根目录文件
-    print("\n📄 获取根目录文件列表...")
+    logger.info("📄 获取根目录文件列表...")
     files = drive.get_file_list("")
-    print_files(files, "根目录文件")
+    log_files(files, "根目录文件")
 
     # 列出根目录子目录
-    print("\n📁 获取根目录子目录列表...")
+    logger.info("📁 获取根目录子目录列表...")
     dirs = drive.get_dir_list("")
-    print_files(dirs, "根目录子目录")
+    log_files(dirs, "根目录子目录")
 
     return True
 
 
 def run_quick_demo():
     """运行快速演示"""
-    print("🚀 Amazon S3驱动快速演示")
-    print("=" * 50)
+    logger.info("🚀 Amazon S3驱动快速演示")
+    logger.info("=" * 50)
 
     # 检查配置
     access_key = os.getenv("AWS_ACCESS_KEY_ID")
@@ -129,12 +132,12 @@ def run_quick_demo():
     bucket_name = os.getenv("S3_BUCKET_NAME")
 
     if not all([access_key, secret_key, bucket_name]):
-        print("⚠️ 未找到AWS配置信息")
-        print("请设置以下环境变量:")
-        print("  export AWS_ACCESS_KEY_ID='your_access_key'")
-        print("  export AWS_SECRET_ACCESS_KEY='your_secret_key'")
-        print("  export S3_BUCKET_NAME='your_bucket_name'")
-        print("或使用funsecret配置")
+        logger.warning("⚠️ 未找到AWS配置信息")
+        logger.info("请设置以下环境变量:")
+        logger.info("  export AWS_ACCESS_KEY_ID='your_access_key'")
+        logger.info("  export AWS_SECRET_ACCESS_KEY='your_secret_key'")
+        logger.info("  export S3_BUCKET_NAME='your_bucket_name'")
+        logger.info("或使用funsecret配置")
         return
 
     # 创建驱动实例
@@ -145,8 +148,8 @@ def run_quick_demo():
     # 运行演示
     demo_basic_operations(drive)
 
-    print_separator("演示完成")
-    print("✅ Amazon S3驱动快速演示完成！")
+    log_separator("演示完成")
+    logger.success("✅ Amazon S3驱动快速演示完成！")
 
 
 def main():
@@ -179,8 +182,8 @@ def main():
         run_quick_demo()
     else:
         # 默认运行快速演示
-        print("未指定运行模式，执行快速演示...")
-        print("使用 --help 查看所有选项")
+        logger.info("未指定运行模式，执行快速演示...")
+        logger.info("使用 --help 查看所有选项")
         run_quick_demo()
 
 

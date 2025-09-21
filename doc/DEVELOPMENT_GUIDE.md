@@ -849,9 +849,9 @@ python example.py --interactive
 
 ### 相关文档
 
-- [BaseDrive API 文档](src/fundrive/core/base.py)
-- [通用测试框架文档](src/fundrive/core/test.py)
-- [项目主 README](README.md)
+- [BaseDrive API 文档](../src/fundrive/core/base.py)
+- [通用测试框架文档](../src/fundrive/core/test.py)
+- [项目主 README](../README.md)
 
 ---
 
