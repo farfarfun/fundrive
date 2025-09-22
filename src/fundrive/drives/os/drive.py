@@ -88,3 +88,7 @@ class OSDrive(BaseDrive):
             if os.path.isdir(file_path):
                 result.append({"path": file_path})
         return result
+
+
+class LocalDrive(OSDrive):
+    pass

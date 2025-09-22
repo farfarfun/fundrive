@@ -54,6 +54,11 @@ try:
 except ImportError:
     OssDrive = None
 
+try:
+    from .ossutil import OSSUtilDrive
+except ImportError:
+    OSSUtilDrive = None
+
 # 🔧 通用协议和工具 - 兼容性强
 try:
     from .webdav import WebDAVDrive
@@ -76,9 +81,7 @@ except ImportError:
     LanzouDrive = None
 
 try:
-    from .os import OSDrive
-
-    LocalDrive = OSDrive  # 为了向后兼容保留LocalDrive别名
+    from .os import OSDrive, LocalDrive
 except ImportError:
     OSDrive = None
     LocalDrive = None
@@ -125,6 +128,7 @@ AVAILABLE_DRIVES = {
     "alipan": AliPanDrive,
     "alipan_open": AliPanOpenDrive,
     "oss": OssDrive,
+    "ossutil": OSSUtilDrive,
     # 🔧 通用协议和工具
     "webdav": WebDAVDrive,
     "pcloud": PCloudDrive,
@@ -207,6 +211,7 @@ __all__ = [
     "AliPanDrive",
     "AliPanOpenDrive",
     "OssDrive",
+    "OSSUtilDrive",
     "WebDAVDrive",
     "PCloudDrive",
     "MediaFireDrive",

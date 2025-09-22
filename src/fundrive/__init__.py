@@ -53,7 +53,6 @@ from .core.utils import (
 from .drives import (
     get_drive,
     list_available_drives,
-    get_drive_info,
     AVAILABLE_DRIVES,
 )
 
@@ -99,7 +98,6 @@ __all__ = [
     # 驱动管理
     "get_drive",
     "list_available_drives",
-    "get_drive_info",
     "AVAILABLE_DRIVES",
 ]
 

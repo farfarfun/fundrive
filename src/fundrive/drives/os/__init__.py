@@ -1,3 +1,3 @@
-from .drive import OSDrive
+from .drive import OSDrive, LocalDrive
 
-__all__ = ["OSDrive"]
+__all__ = ["OSDrive", "LocalDrive"]

@@ -205,21 +205,22 @@ print(f"是否为目录: {file.is_dir}")
 7. **BaiDuDrive** - 百度网盘
 8. **AlipanDrive** - 阿里云盘（Aligo版本）
 9. **AliopenDrive** - 阿里云盘（Open API版本）
-10. **OSSDrive** - 阿里云OSS
+10. **OSSDrive** - 阿里云OSS（Python SDK版本）
+11. **OSSUtilDrive** - 阿里云OSS（ossutil命令行工具版本）
 
 ### 🔧 通用协议和工具
-11. **WebDAVDrive** - WebDAV协议
-12. **OSDrive** - 本地文件系统
-13. **PCloudDrive** - PCloud云存储
-14. **MediaFireDrive** - MediaFire文件分享
-15. **LanzouDrive** - 蓝奏云
+12. **WebDAVDrive** - WebDAV协议
+13. **OSDrive** - 本地文件系统
+14. **PCloudDrive** - PCloud云存储
+15. **MediaFireDrive** - MediaFire文件分享
+16. **LanzouDrive** - 蓝奏云
 
 ### 🔬 学术和专业服务
-16. **ZenodoDrive** - Zenodo学术数据存储
-17. **TianChiDrive** - 天池数据科学平台
-18. **TSingHuaDrive** - 清华云盘
-19. **OpenXLabDrive** - OpenXLab AI平台
-20. **WSSDrive** - 文叔叔临时存储
+17. **ZenodoDrive** - Zenodo学术数据存储
+18. **TianChiDrive** - 天池数据科学平台
+19. **TSingHuaDrive** - 清华云盘
+20. **OpenXLabDrive** - OpenXLab AI平台
+21. **WSSDrive** - 文叔叔临时存储
 
 ## 异常处理
 
