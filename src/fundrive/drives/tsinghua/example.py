@@ -27,13 +27,13 @@
 import argparse
 import os
 import sys
-from typing import List
+
+from fundrive.utils.file import print_files
 
 # 添加项目根目录到Python路径
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
 
 from fundrive.drives.tsinghua import TSingHuaDrive
-from fundrive.core import DriveFile
 
 
 def print_separator(title: str = ""):
@@ -42,23 +42,6 @@ def print_separator(title: str = ""):
     if title:
         print(f" {title} ")
         print("=" * 60)
-
-
-def print_files(files: List[DriveFile], title: str = "文件列表"):
-    """打印文件列表"""
-    print(f"\n📁 {title} (共 {len(files)} 个):")
-    if not files:
-        print("  (空)")
-        return
-
-    for i, file in enumerate(files, 1):
-        file_type = "📁" if file.ext.get("type") == "folder" else "📄"
-        size_str = f"{file.size:,} bytes" if file.size > 0 else "-"
-        print(f"  {i:2d}. {file_type} {file.name}")
-        print(f"      路径: {file.fid}")
-        print(f"      大小: {size_str}")
-        if file.ext.get("modified"):
-            print(f"      修改时间: {file.ext['modified']}")
 
 
 def demo_basic_operations(drive: TSingHuaDrive):

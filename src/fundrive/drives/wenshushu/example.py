@@ -25,11 +25,10 @@
 import argparse
 import os
 import tempfile
-from typing import List
 
 
 from fundrive.drives.wenshushu import WSSDrive
-from fundrive.core import DriveFile
+from fundrive.utils.file import print_files
 
 
 def print_separator(title: str = ""):
@@ -38,25 +37,6 @@ def print_separator(title: str = ""):
     if title:
         print(f" {title} ")
         print("=" * 60)
-
-
-def print_files(files: List[DriveFile], title: str = "文件列表"):
-    """打印文件列表"""
-    print(f"\n📁 {title} (共 {len(files)} 个):")
-    if not files:
-        print("  (空)")
-        return
-
-    for i, file in enumerate(files, 1):
-        file_type = "📁" if file.ext.get("type") == "folder" else "📄"
-        size_str = f"{file.size:,} bytes" if file.size > 0 else "-"
-        print(f"  {i:2d}. {file_type} {file.name}")
-        print(f"      ID: {file.fid}")
-        print(f"      大小: {size_str}")
-        if file.ext.get("upload_time"):
-            print(f"      上传时间: {file.ext['upload_time']}")
-        if file.ext.get("share_url"):
-            print(f"      分享链接: {file.ext['share_url']}")
 
 
 def create_test_file(filename: str = "test_file.txt", content: str = None) -> str:
