@@ -1,6 +1,6 @@
 [project]
 name = "fundrive"
-version = "2.0.45"
+version = "2.0.51"
 description = "fundrive"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -39,7 +39,7 @@ amazon = [ "boto3>=1.34.0",]
 tsinghua = [ "requests>=2.32.4",]
 github = [ "requests>=2.32.4", "orjson>=3.10.10",]
 gitee = [ "requests>=2.32.4", "orjson>=3.10.10",]
-ossutil = [ "funinstall",]
+ossutil = [ "funinstall>=1.0.58",]
 
 [project.urls]
 Organization = "https://github.com/farfarfun"
