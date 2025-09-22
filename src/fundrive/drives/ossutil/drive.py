@@ -1,25 +1,14 @@
 import os
-import platform
-import shutil
 import subprocess
 import tempfile
-import zipfile
 from typing import Any, List, Optional
-import requests
-from funinstall.install.ossutil import OSSUtilInstall
+from funinstall.install import OSSUtilInstall
 from funsecret import read_secret
 from funutil import getLogger
 from fundrive.core import BaseDrive, DriveFile
 
 
 logger = getLogger("fundrive-ossutil")
-
-
-
-
-
-
-
 
 
 class OSSUtilDrive(BaseDrive):
@@ -52,8 +41,6 @@ class OSSUtilDrive(BaseDrive):
         self._endpoint = None
         self._access_key = None
         self._access_secret = None
-
-
 
     def _create_config_file(self) -> bool:
         """创建ossutil配置文件
@@ -1047,5 +1034,3 @@ endpoint={self._endpoint}
         except Exception as e:
             logger.error(f"获取上传链接失败: {e}")
             return ""
-
-
