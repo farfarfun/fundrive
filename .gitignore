@@ -9,5 +9,5 @@ build
 dist
 .cache
 .venv
-#logs
+logs
 uv.lock
