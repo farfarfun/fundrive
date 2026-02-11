@@ -34,7 +34,7 @@ touch __init__.py drive.py example.py README.md
 ```python
 # drive.py
 from fundrive.core import BaseDrive, DriveFile
-from funutil import getLogger
+from funlog import getLogger
 
 logger = getLogger("fundrive.your_drive")
 
@@ -185,7 +185,7 @@ src/fundrive/drives/{drive_name}/
 ```python
 from typing import List, Optional, Any
 from fundrive.core import BaseDrive, DriveFile
-from funutil import getLogger
+from funlog import getLogger
 from funsecret import read_secret
 
 logger = getLogger("fundrive.your_drive")
@@ -566,7 +566,7 @@ class YourDrive(BaseDrive):
 **启用详细日志**:
 ```python
 import logging
-from funutil import getLogger
+from funlog import getLogger
 
 # 设置日志级别
 logging.basicConfig(level=logging.DEBUG)
@@ -712,7 +712,7 @@ class YourDrive(BaseDrive):
 ### 错误处理规范
 
 ```python
-from funutil import getLogger
+from funlog import getLogger
 
 logger = getLogger("fundrive.your_drive")
 
@@ -779,7 +779,7 @@ from pathlib import Path
 # 第三方库导入
 import requests
 from tqdm import tqdm
-from funutil import getLogger
+from funlog import getLogger
 from funsecret import read_secret
 
 # 项目内部导入

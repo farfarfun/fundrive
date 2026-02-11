@@ -27,9 +27,9 @@ import argparse
 import os
 import tempfile
 
+from funlog import getLogger
 
-from fundrive.drives.alipan import AlipanDrive, AliopenDrive
-from funutil import getLogger
+from fundrive.drives.alipan import AliopenDrive, AlipanDrive
 
 logger = getLogger("fundrive.alipan.example")
 

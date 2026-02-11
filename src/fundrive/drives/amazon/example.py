@@ -29,9 +29,10 @@ import os
 import tempfile
 from typing import List
 
-from fundrive.drives.amazon import S3Drive
+from funlog import getLogger
+
 from fundrive.core import DriveFile
-from funutil import getLogger
+from fundrive.drives.amazon import S3Drive
 
 logger = getLogger("fundrive")
 

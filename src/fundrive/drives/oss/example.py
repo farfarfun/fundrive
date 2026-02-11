@@ -26,10 +26,10 @@ API 版本: v2.0
 
 from typing import Optional
 
-from fundrive.drives.oss import OSSDrive
-from fundrive.core import create_drive_tester
-from funutil import getLogger
+from funlog import getLogger
 
+from fundrive.core import create_drive_tester
+from fundrive.drives.oss import OSSDrive
 
 logger = getLogger("fundrive.oss.example")
 

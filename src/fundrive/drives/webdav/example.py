@@ -25,9 +25,9 @@ import argparse
 import os
 import tempfile
 
+from funlog import getLogger
 
 from fundrive.drives.webdav import WebDavDrive
-from funutil import getLogger
 
 logger = getLogger("fundrive.webdav.example")
 

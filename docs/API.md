@@ -269,7 +269,7 @@ print(f"可用驱动: {list(available_drives.keys())}")
 ### 日志记录工具
 
 ```python
-from funutil import getLogger
+from funlog import getLogger
 
 logger = getLogger("fundrive")
 logger.info("操作开始")

@@ -22,8 +22,8 @@ from typing import Any, List, Optional
 import orjson
 import requests
 from funget import simple_download
+from funlog import getLogger
 from funsecret import read_secret
-from funutil import getLogger
 
 from fundrive.core import BaseDrive, DriveFile
 

@@ -27,9 +27,9 @@ import argparse
 import os
 import tempfile
 
+from funlog import getLogger
 
 from fundrive.drives.tianchi import TianChiDrive
-from funutil import getLogger
 
 logger = getLogger("fundrive.tianchi.example")
 

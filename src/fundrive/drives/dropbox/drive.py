@@ -1,12 +1,11 @@
 # 标准库
 import os
-from typing import List, Any, Optional
-
+from typing import Any, List, Optional
 
 import dropbox
 from dropbox.exceptions import ApiError, AuthError
+from funlog import getLogger
 from funsecret import read_secret
-from funutil import getLogger
 from tqdm import tqdm
 
 # 项目内部

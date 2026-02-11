@@ -19,8 +19,9 @@ import argparse
 import os
 import tempfile
 
+from funlog import getLogger
+
 from fundrive.drives.dropbox.drive import DropboxDrive
-from funutil import getLogger
 
 logger = getLogger("fundrive")
 

@@ -2,12 +2,11 @@
 import os
 from typing import Any, List, Optional
 
-
 # 第三方库导入
 from fundrives.baidu import BaiduPCSApi, PcsFile
 from funget import download
+from funlog import getLogger
 from funsecret import read_secret
-from funutil import getLogger
 
 # 项目内部导入
 from fundrive.core import BaseDrive, DriveFile

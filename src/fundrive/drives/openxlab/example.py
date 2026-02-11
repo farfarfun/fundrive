@@ -25,8 +25,9 @@ import argparse
 import os
 import tempfile
 
+from funlog import getLogger
+
 from fundrive.drives.openxlab import OpenXLabDrive
-from funutil import getLogger
 
 logger = getLogger("fundrive.openxlab.example")
 

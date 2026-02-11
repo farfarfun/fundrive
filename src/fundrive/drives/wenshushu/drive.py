@@ -32,12 +32,12 @@ import requests
 from Cryptodome.Cipher import DES
 from Cryptodome.Util import Padding
 from funget import simple_download
-from funutil import getLogger
+from funlog import getLogger
 from tqdm import tqdm
 
 # 项目内部导入
 from fundrive.core import BaseDrive, DriveFile
-from fundrive.core.utils import handle_drive_errors, validate_fid, log_storage_info
+from fundrive.core.utils import handle_drive_errors, log_storage_info, validate_fid
 
 logger = getLogger("fundrive")
 

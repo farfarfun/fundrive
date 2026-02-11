@@ -27,9 +27,10 @@ API 版本: v1.0
 
 from typing import Optional
 
-from fundrive.drives.zenodo import ZenodoDrive
+from funlog import getLogger
+
 from fundrive.core import create_drive_tester
-from funutil import getLogger
+from fundrive.drives.zenodo import ZenodoDrive
 
 logger = getLogger("fundrive.zenodo.example")
 

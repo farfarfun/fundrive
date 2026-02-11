@@ -17,15 +17,15 @@ MediaFire是一个流行的云存储服务，提供文件存储、共享和同�
 作者: FunDrive Team
 """
 
-import os
-import json
 import hashlib
-import requests
-from typing import List, Optional, Dict, Any
+import json
+import os
+from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
+import requests
+from funlog import getLogger
 from funsecret import read_secret
-from funutil import getLogger
 
 from fundrive.core import BaseDrive, DriveFile
 

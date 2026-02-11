@@ -248,7 +248,7 @@ python example.py --interactive
 
 ```python
 import logging
-from funutil import getLogger
+from funlog import getLogger
 
 # 启用调试日志
 logger = getLogger("fundrive")

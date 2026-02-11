@@ -29,10 +29,10 @@ import os
 import tempfile
 from typing import List
 
-from fundrive.drives.github import GitHubDrive
-from fundrive.core import DriveFile
-from funutil import getLogger
+from funlog import getLogger
 
+from fundrive.core import DriveFile
+from fundrive.drives.github import GitHubDrive
 from fundrive.utils.file import print_files
 
 logger = getLogger("fundrive.github.example")

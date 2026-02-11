@@ -1,16 +1,12 @@
 [project]
 name = "fundrive"
-version = "2.0.55"
+version = "2.0.56"
 description = "fundrive"
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = [ "funget>=1.0.34", "funsecret>=1.4.49", "orjson>=3.10.10", "requests>=2.32.4", "tqdm>=4.67.1",]
+dependencies = [ "funget>=1.0.34", "funlog-tau>=1.0.1", "funsecret>=1.4.49", "orjson>=3.10.10", "requests>=2.32.4", "tqdm>=4.67.1",]
 [[project.authors]]
-name = "牛哥"
-email = "niuliangtao@qq.com"
-
-[[project.authors]]
-name = "farfarfun"
+name = "niuliangtao"
 email = "farfarfun@qq.com"
 
 [[project.maintainers]]

@@ -27,9 +27,9 @@ import argparse
 import os
 import tempfile
 
+from funlog import getLogger
 
 from fundrive.drives.mediafire import MediaFireDrive
-from funutil import getLogger
 
 logger = getLogger("fundrive.mediafire.example")
 

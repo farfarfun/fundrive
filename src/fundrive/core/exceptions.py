@@ -7,7 +7,8 @@ FunDrive 统一异常处理模块
 import functools
 import time
 from typing import Callable, Optional
-from funutil import getLogger
+
+from funlog import getLogger
 
 logger = getLogger("fundrive.exceptions")
 

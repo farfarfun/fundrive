@@ -12,10 +12,10 @@ OneDrive 网盘驱动测试和示例
 import argparse
 import sys
 
+from funlog import getLogger
 
 from fundrive.core import create_drive_tester
 from fundrive.drives.onedrive.drive import OneDrive
-from funutil import getLogger
 
 logger = getLogger("fundrive.onedrive.example")
 

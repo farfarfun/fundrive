@@ -1,11 +1,11 @@
 import os.path
 from typing import List, Optional
 
+from funlog import getLogger
 from funsecret import read_secret
-from funutil import getLogger
+from webdav4.client import Client
 
 from fundrive.core import BaseDrive, DriveFile
-from webdav4.client import Client
 
 logger = getLogger("fundrive")
 

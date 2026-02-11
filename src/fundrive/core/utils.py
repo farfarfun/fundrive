@@ -8,9 +8,10 @@ import functools
 import hashlib
 import threading
 import time
-from typing import Any, Callable, Dict, List, Optional, Union
 from collections import OrderedDict
-from funutil import getLogger
+from typing import Any, Callable, Dict, List, Optional, Union
+
+from funlog import getLogger
 
 logger = getLogger("fundrive.utils")
 

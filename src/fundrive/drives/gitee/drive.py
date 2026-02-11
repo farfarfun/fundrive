@@ -22,8 +22,8 @@ import os
 from typing import Any, Dict, List, Optional
 
 import requests
+from funlog import getLogger
 from funsecret import read_secret
-from funutil import getLogger
 
 from fundrive.core import BaseDrive, DriveFile
 
