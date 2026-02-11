@@ -57,7 +57,7 @@ from .drives import (
 )
 
 # 版本信息
-__version__ = "2.0.39"
+__version__ = "2.0.56"
 __author__ = "farfarfun"
 __email__ = "farfarfun@qq.com"
 __description__ = "统一云存储接口框架"
