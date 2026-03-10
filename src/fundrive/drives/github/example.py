@@ -29,7 +29,7 @@ import os
 import tempfile
 from typing import List
 
-from funlog import getLogger
+from nltlog import getLogger
 
 from fundrive.core import DriveFile
 from fundrive.drives.github import GitHubDrive

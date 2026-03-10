@@ -12,7 +12,7 @@ Google Drive 网盘驱动测试和示例
 import argparse
 import sys
 
-from funlog import getLogger
+from nltlog import getLogger
 
 from fundrive.core import create_drive_tester
 from fundrive.drives.google.drive import GoogleDrive

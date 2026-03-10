@@ -369,7 +369,7 @@ for config in config_files:
 
 ```python
 import logging
-from funlog import getLogger
+from nltlog import getLogger
 
 # 启用调试日志
 logger = getLogger("fundrive")

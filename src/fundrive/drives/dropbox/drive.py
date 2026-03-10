@@ -4,7 +4,7 @@ from typing import Any, List, Optional
 
 import dropbox
 from dropbox.exceptions import ApiError, AuthError
-from funlog import getLogger
+from nltlog import getLogger
 from funsecret import read_secret
 from tqdm import tqdm
 

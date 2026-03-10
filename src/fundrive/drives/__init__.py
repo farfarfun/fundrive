@@ -50,6 +50,11 @@ except ImportError:
     AliPanOpenDrive = None
 
 try:
+    from .pan115 import Pan115Drive
+except ImportError:
+    Pan115Drive = None
+
+try:
     from .oss import OssDrive
 except ImportError:
     OssDrive = None
@@ -127,6 +132,8 @@ AVAILABLE_DRIVES = {
     "baidu": BaiDuDrive,
     "alipan": AliPanDrive,
     "alipan_open": AliPanOpenDrive,
+    "pan115": Pan115Drive,
+    "115": Pan115Drive,
     "oss": OssDrive,
     "ossutil": OSSUtilDrive,
     # 🔧 通用协议和工具
@@ -210,6 +217,7 @@ __all__ = [
     "BaiDuDrive",
     "AliPanDrive",
     "AliPanOpenDrive",
+    "Pan115Drive",
     "OssDrive",
     "OSSUtilDrive",
     "WebDAVDrive",

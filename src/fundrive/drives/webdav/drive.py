@@ -1,7 +1,7 @@
 import os.path
 from typing import List, Optional
 
-from funlog import getLogger
+from nltlog import getLogger
 from funsecret import read_secret
 from webdav4.client import Client
 

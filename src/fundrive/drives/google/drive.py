@@ -3,7 +3,7 @@ import io
 import os
 from typing import Any, List, Optional
 
-from funlog import getLogger
+from nltlog import getLogger
 from funsecret import read_secret
 
 # 第三方库导入

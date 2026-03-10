@@ -8,7 +8,7 @@ import functools
 import time
 from typing import Callable, Optional
 
-from funlog import getLogger
+from nltlog import getLogger
 
 logger = getLogger("fundrive.exceptions")
 

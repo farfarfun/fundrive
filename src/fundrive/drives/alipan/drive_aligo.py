@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, List, Optional
 
 from aligo import Aligo
-from funlog import getLogger
+from nltlog import getLogger
 from funsecret import read_secret
 
 from fundrive.core import BaseDrive, DriveFile

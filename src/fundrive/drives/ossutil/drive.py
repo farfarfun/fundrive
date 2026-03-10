@@ -4,7 +4,7 @@ import tempfile
 from typing import Any, List, Optional
 
 from funinstall.install import OSSUtilInstall
-from funlog import getLogger
+from nltlog import getLogger
 from funsecret import read_secret
 
 from fundrive.core import BaseDrive, DriveFile

@@ -8,7 +8,7 @@
 import os
 import tempfile
 
-from funlog import getLogger
+from nltlog import getLogger
 
 from .base import BaseDrive
 

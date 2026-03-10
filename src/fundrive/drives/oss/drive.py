@@ -2,7 +2,7 @@ import os
 from typing import Any, List, Optional
 
 import oss2
-from funlog import getLogger
+from nltlog import getLogger
 from funsecret import read_secret
 from tqdm import tqdm
 

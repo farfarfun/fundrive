@@ -4,7 +4,7 @@ import tempfile
 from typing import Optional
 
 # 第三方库导入
-from funlog import getLogger
+from nltlog import getLogger
 
 # 项目内部导入
 from fundrive.drives.ossutil import OSSUtilDrive

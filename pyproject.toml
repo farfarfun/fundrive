@@ -1,12 +1,16 @@
 [project]
 name = "fundrive"
-version = "2.0.57"
+version = "2.0.58"
 description = "fundrive"
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = [ "funget>=1.0.34", "funlog-tau>=1.0.1", "funsecret>=1.4.49", "orjson>=3.10.10", "requests>=2.32.4", "tqdm>=4.67.1",]
+dependencies = [ "funget>=1.0.34", "nltlog-tau>=1.0.1", "funsecret>=1.4.49", "orjson>=3.10.10", "requests>=2.32.4", "tqdm>=4.67.1",]
 [[project.authors]]
-name = "niuliangtao"
+name = "牛哥"
+email = "niuliangtao@qq.com"
+
+[[project.authors]]
+name = "farfarfun"
 email = "farfarfun@qq.com"
 
 [[project.maintainers]]
@@ -18,7 +22,7 @@ name = "farfarfun"
 email = "farfarfun@qq.com"
 
 [dependency-groups]
-all = [ "fundrive[oss]", "fundrive[alipan]", "fundrive[webdav]", "fundrive[baidu]", "fundrive[lanzou]", "fundrive[google]", "fundrive[onedrive]", "fundrive[wenshushu]", "fundrive[amazon]", "fundrive[tsinghua]", "fundrive[dropbox]", "fundrive[github]", "fundrive[gitee]",]
+all = [ "fundrive[oss]", "fundrive[alipan]", "fundrive[webdav]", "fundrive[baidu]", "fundrive[lanzou]", "fundrive[google]", "fundrive[onedrive]", "fundrive[wenshushu]", "fundrive[amazon]", "fundrive[tsinghua]", "fundrive[dropbox]", "fundrive[github]", "fundrive[gitee]", "fundrive[pan115]",]
 
 [project.optional-dependencies]
 alipan = [ "aligo>=6.2.4", "fundrive-alipan",]
@@ -36,6 +40,7 @@ tsinghua = [ "requests>=2.32.4",]
 github = [ "requests>=2.32.4", "orjson>=3.10.10",]
 gitee = [ "requests>=2.32.4", "orjson>=3.10.10",]
 ossutil = [ "funinstall>=1.0.58",]
+pan115 = [ "py115>=0.1.1",]
 
 [project.urls]
 Organization = "https://github.com/farfarfun"

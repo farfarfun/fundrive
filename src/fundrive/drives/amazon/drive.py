@@ -25,7 +25,7 @@ from typing import Any, Dict, List, Optional
 # 第三方库导入
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
-from funlog import getLogger
+from nltlog import getLogger
 from funsecret import read_secret
 
 # 项目内部导入

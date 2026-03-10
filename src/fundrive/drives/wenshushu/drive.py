@@ -32,7 +32,7 @@ import requests
 from Cryptodome.Cipher import DES
 from Cryptodome.Util import Padding
 from funget import simple_download
-from funlog import getLogger
+from nltlog import getLogger
 from tqdm import tqdm
 
 # 项目内部导入

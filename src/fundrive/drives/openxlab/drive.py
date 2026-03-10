@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 from funget import simple_download
-from funlog import getLogger
+from nltlog import getLogger
 from funsecret import read_secret
 
 from fundrive.core import BaseDrive, DriveFile
