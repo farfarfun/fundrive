@@ -40,7 +40,7 @@ tsinghua = [ "requests>=2.32.4",]
 github = [ "requests>=2.32.4", "orjson>=3.10.10",]
 gitee = [ "requests>=2.32.4", "orjson>=3.10.10",]
 ossutil = [ "funinstall>=1.0.58",]
-pan115 = [ "py115>=0.1.1",]
+pan115 = [ "p115client>=0.0.7",]
 
 [project.urls]
 Organization = "https://github.com/farfarfun"
