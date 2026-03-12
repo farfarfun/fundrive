@@ -849,6 +849,7 @@ python example.py --interactive
 
 ### 相关文档
 
+- [接口优化方案与约定（向上兼容）](../INTERFACE-OPTIMIZATION.md) — 规范签名、配置与调用约定
 - [BaseDrive API 文档](../src/fundrive/core/base.py)
 - [通用测试框架文档](../src/fundrive/core/test.py)
 - [项目主 README](../README.md)

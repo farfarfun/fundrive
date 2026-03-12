@@ -1,5 +1,7 @@
 # FunDrive API 文档
 
+> **接口规范**：方法签名与调用约定以 [INTERFACE-OPTIMIZATION.md](/INTERFACE-OPTIMIZATION.md) 及 `src/fundrive/core/base.py` 为准；所有变更均保持向上兼容。
+
 ## 项目概述
 
 FunDrive 是一个统一的云存储驱动框架，支持20个主流云存储平台的统一操作接口。通过标准化的API设计，开发者可以使用相同的代码操作不同的云存储服务。
