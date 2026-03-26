@@ -13,5 +13,5 @@ print(json.dumps(client.get_file_list("3369823324278241328")))
 
 print(json.dumps(client.get_quota()))
 
-client.download_dir("3369823279004924710", save_dir="./")
+client.download_dir("3369823279004924710", save_dir="./load")
 # client.download_file("3383167882122639641", save_dir="./")

@@ -24,6 +24,7 @@ def _convert_info_to_file(it: dict) -> DriveFile:
         size=it["s"],
         sha=it["sha"],
         time=it["t"],
+        pc=it["pc"],
     )
 
 
@@ -32,6 +33,7 @@ def _convert_info_to_dir(it: dict) -> DriveFile:
         fid=it["cid"],
         name=it["ns"],
         time=it["t"],
+        pc=it["pc"],
     )
 
 
@@ -74,6 +76,8 @@ class Pan115Drive(BaseDrive):
     def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         try:
             if self.get_file_info(fid):
+                return True
+            elif self.get_dir_info(fid):
                 return True
             else:
                 return False
@@ -135,7 +139,7 @@ class Pan115Drive(BaseDrive):
             downer = self._client.download_url_app(file_info["pc"])
             url = downer["data"][fid]["url"]["url"]
             if not filepath:
-                save_filename = file_info["n"]
+                save_filename = file_info["name"]
                 filepath = get_filepath(save_dir, save_filename)
             simple_download(
                 url, filepath=filepath, headers=downer["headers"], overwrite=overwrite
