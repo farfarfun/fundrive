@@ -105,7 +105,7 @@ class Pan115Drive(BaseDrive):
         try:
             file_info = self.get_file_info(fid=fid, *args, **kwargs)
             downer = self._client.download_url_app(file_info["pc"])
-            url = downer["data"][fid]["url"]["url"]
+            url = downer["data"][fid]["url"]
             if not filepath:
                 save_filename = file_info["n"]
                 filepath = get_filepath(save_dir, save_filename)
