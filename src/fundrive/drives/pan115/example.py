@@ -8,9 +8,7 @@ client.login()
 print(client.get_file_info("3369823279004924710"))
 print(json.dumps(client.get_quota()))
 
-# client.download_file("3369823322608908330", save_dir="./")
-client.upload_file(
-    filepath="/Users/bingtao-dev/Downloads/Archive 2.zip", fid="3369823279004924710"
-)
+client.download_file("3369823322608908330", save_dir="./")
 
-print(json.dumps(client.get_dir_info("3369823279004924710")))
+
+print(json.dumps(client.get_dir_info("3369823322608908330")))
