@@ -3,6 +3,7 @@
 """
 
 import os
+import time
 import traceback
 from typing import Any, List, Optional
 
@@ -57,7 +58,10 @@ class Pan115Drive(BaseDrive):
             self._client = P115Client(cookies=cookies)
         else:
             self._client = P115Client(
-                Path("~/115-cookies.txt").expanduser(), check_for_relogin=True
+                Path("~/115-cookies.txt").expanduser(),
+                check_for_relogin=True,
+                ensure_cookies=True,
+                app="qandroid",
             )
             self._client.login()
         return True
@@ -93,6 +97,7 @@ class Pan115Drive(BaseDrive):
             return False
 
     def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+        time.sleep(1)
         result: List[DriveFile] = []
         for it in self._client.fs_files(fid)["data"]:
             if it["fc"] == 1:
@@ -100,6 +105,7 @@ class Pan115Drive(BaseDrive):
         return result
 
     def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+        time.sleep(1)
         result: List[DriveFile] = []
         for it in self._client.fs_files(fid)["data"]:
             if it["fc"] == 0:
@@ -108,6 +114,7 @@ class Pan115Drive(BaseDrive):
 
     def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
         try:
+            time.sleep(1)
             for it in self._client.fs_file(fid)["data"]:
                 if it["fc"] == 1:
                     return _convert_info_to_file(it)
@@ -117,6 +124,7 @@ class Pan115Drive(BaseDrive):
 
     def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
         try:
+            time.sleep(1)
             for it in self._client.fs_file(fid)["data"]:
                 if it["fc"] == 0:
                     return _convert_info_to_dir(it)

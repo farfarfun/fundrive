@@ -1,5 +1,6 @@
 import os
 import posixpath
+import re
 from typing import Any, List, Optional
 from urllib.parse import quote, unquote, urlparse
 
@@ -247,6 +248,27 @@ class WebDavDrive(BaseDrive):
             raise RuntimeError("please login first")
         return f"{self.server_url}/{path.lstrip('/')}"
 
+    def get_file_sha(self, fid: str, *args: Any, **kwargs: Any) -> Optional[str]:
+        """
+        通过 WebDAV PROPFIND 读取远端文件的 checksum 属性。
+
+        说明：
+        - 仅依赖服务端返回的属性，不做本地流式计算兜底
+        - 优先读取 Nextcloud/ownCloud 常见的 oc:checksum
+        - 如果服务端未提供 checksum，返回 None
+        """
+        info = self._get_path_info(fid)
+        if info.get("type") != "file":
+            raise ValueError(f"{fid} is not a file")
+
+        checksum = info.get("checksum")
+        if not checksum:
+            return None
+
+        # 常见格式: "SHA256:abcd..."，统一只返回哈希值部分
+        match = re.match(r"^[A-Za-z0-9_-]+:(.+)$", str(checksum).strip())
+        return match.group(1).strip() if match else str(checksum).strip()
+
     def _request(self, method: str, fid: str, **kwargs: Any) -> requests.Response:
         if not self._session or not self.server_url:
             raise RuntimeError("please login first")
@@ -326,13 +348,19 @@ class WebDavDrive(BaseDrive):
             is_dir = res_type is not None and res_type.find("{*}collection") is not None
             item_type = "directory" if is_dir else "file"
             size = int(size_text) if size_text and size_text.isdigit() else 0
+            # 常见 checksum 属性（并非 WebDAV 标准字段，取决于服务端实现）
+            checksum = (
+                prop.findtext("{http://owncloud.org/ns}checksum")
+                or prop.findtext("{http://nextcloud.org/ns}checksum")
+                or prop.findtext("{*}checksum")
+            )
 
             results.append(
                 DriveFile(
                     fid=fid,
                     name=name,
                     size=size,
-                    ext={"type": item_type, "href": href},
+                    ext={"type": item_type, "href": href, "checksum": checksum},
                 )
             )
         return results
