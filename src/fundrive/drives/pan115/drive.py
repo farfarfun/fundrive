@@ -18,7 +18,9 @@ from fundrive.core.base import get_filepath
 logger = getLogger("fundrive")
 
 
-def _convert_info_to_file(it: dict) -> DriveFile:
+def _convert_info_to_file(
+    it: dict, dirname: Optional[str] = None, *args, **kwargs
+) -> DriveFile:
     return DriveFile(
         fid=it["fid"],
         name=it["n"],
@@ -26,15 +28,23 @@ def _convert_info_to_file(it: dict) -> DriveFile:
         sha=it["sha"],
         time=it["t"],
         pc=it["pc"],
+        isfile=True,
+        isdir=False,
+        dirname=dirname,
     )
 
 
-def _convert_info_to_dir(it: dict) -> DriveFile:
+def _convert_info_to_dir(
+    it: dict, dirname: Optional[str] = None, *args, **kwargs
+) -> DriveFile:
     return DriveFile(
         fid=it["cid"],
         name=it["ns"],
         time=it["t"],
         pc=it["pc"],
+        isfile=False,
+        isdir=True,
+        dirname=dirname,
     )
 
 
@@ -96,26 +106,29 @@ class Pan115Drive(BaseDrive):
             logger.error(f"删除文件失败 {fid}: {e}")
             return False
 
-    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_all_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
         time.sleep(1)
         result: List[DriveFile] = []
-        for it in self._client.fs_files(fid)["data"]:
-            if it["fc"] == 1:
-                result.append(_convert_info_to_file(it))
+        response = self._client.fs_files(fid)
+        dirname = "/".join([i["name"] for i in response["path"][1:]])
+        for it in response["data"]:
+            if it["fc"] == 0:
+                result.append(_convert_info_to_dir(it, dirname=dirname))
+            else:
+                result.append(_convert_info_to_file(it, dirname=dirname))
         return result
 
+    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+        return [i for i in self.get_all_list(fid, *args, **kwargs) if i["isfile"]]
+
     def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
-        time.sleep(1)
-        result: List[DriveFile] = []
-        for it in self._client.fs_files(fid)["data"]:
-            if it["fc"] == 0:
-                result.append(_convert_info_to_dir(it))
-        return result
+        return [i for i in self.get_all_list(fid, *args, **kwargs) if not i["isfile"]]
 
     def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
         try:
             time.sleep(1)
-            for it in self._client.fs_file(fid)["data"]:
+            response = self._client.fs_file(fid)
+            for it in response["data"]:
                 if it["fc"] == 1:
                     return _convert_info_to_file(it)
         except Exception:
@@ -125,7 +138,8 @@ class Pan115Drive(BaseDrive):
     def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
         try:
             time.sleep(1)
-            for it in self._client.fs_file(fid)["data"]:
+            response = self._client.fs_file(fid)
+            for it in response["data"]:
                 if it["fc"] == 0:
                     return _convert_info_to_dir(it)
         except Exception:
