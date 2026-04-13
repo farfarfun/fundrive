@@ -1,16 +1,7 @@
-from fundrive.drives.pan115 import Pan115Drive
+from nltsecret import read_secret
 
-
-drive = Pan115Drive()
-drive.login()
-
-
-def add(fid):
-    for f in drive.get_dir_list(fid):
-        print(f)
-        add(f["fid"])
-    for f in drive.get_file_list(fid):
-        print(f)
-
-
-add("3383167882122639641")
+read_secret(
+    "fundrive", "webdav", "funtrack", "server_url", "http://192.168.31.131:19798/dav/"
+)
+read_secret("fundrive", "webdav", "funtrack", "username", value="funtrack")
+read_secret("fundrive", "webdav", "funtrack", "password", value="funtrack")
