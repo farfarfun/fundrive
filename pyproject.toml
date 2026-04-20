@@ -1,6 +1,6 @@
 [project]
 name = "fundrive"
-version = "2.0.76"
+version = "2.0.77"
 description = "fundrive"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -40,7 +40,7 @@ tsinghua = [ "requests>=2.32.4",]
 github = [ "requests>=2.32.4", "orjson>=3.10.10",]
 gitee = [ "requests>=2.32.4", "orjson>=3.10.10",]
 ossutil = [ "funinstall>=1.0.58",]
-pan115 = [ "p115client>=0.0.7",]
+pan115 = [ "p115client>=0.0.8.4.8",]
 
 [project.urls]
 Organization = "https://github.com/farfarfun"
