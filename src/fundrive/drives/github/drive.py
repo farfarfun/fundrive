@@ -29,6 +29,15 @@ from nltsecret import read_secret
 
 # 项目内部导入
 from fundrive.core import BaseDrive, DriveFile
+from fundrive.core.exceptions import (
+    AuthenticationError,
+    AuthorizationError,
+    FileNotFoundError,
+    InsufficientStorageError,
+    InvalidParameterError,
+    NetworkError,
+    UploadError,
+)
 
 logger = getLogger("fundrive")
 
@@ -84,6 +93,63 @@ class GitHubDrive(BaseDrive):
         self.headers = {}
         self.repo_str = None
 
+    @staticmethod
+    def _response_error_message(response: requests.Response) -> str:
+        try:
+            payload = response.json()
+        except ValueError:
+            payload = response.text.strip()
+
+        if isinstance(payload, dict):
+            message = payload.get("message") or payload.get("error")
+            if message:
+                return str(message)
+
+        if isinstance(payload, str) and payload:
+            return payload
+
+        return f"HTTP {response.status_code}"
+
+    def _raise_for_github_response(
+        self, response: requests.Response, action: str
+    ) -> requests.Response:
+        if response.status_code in (200, 201):
+            return response
+
+        message = self._response_error_message(response)
+        details = {
+            "status_code": response.status_code,
+            "action": action,
+            "repo": self.repo_str,
+            "branch": self.branch,
+        }
+
+        if response.status_code == 401:
+            raise AuthenticationError(
+                f"{action}失败: GitHub认证失败(401): {message}",
+                details=details,
+            )
+        if response.status_code == 402:
+            raise InsufficientStorageError(
+                f"{action}失败: GitHub返回402: {message}",
+                details=details,
+            )
+        if response.status_code == 403:
+            raise AuthorizationError(
+                f"{action}失败: GitHub权限不足(403): {message}",
+                details=details,
+            )
+        if response.status_code == 404:
+            raise FileNotFoundError(
+                f"{action}失败: 仓库或路径不存在(404): {message}",
+                details=details,
+            )
+
+        raise UploadError(
+            f"{action}失败: GitHub API返回{response.status_code}: {message}",
+            details=details,
+        )
+
     def login(
         self,
         access_token: Optional[str] = None,
@@ -104,57 +170,45 @@ class GitHubDrive(BaseDrive):
         Returns:
             登录是否成功
         """
+        logger.info("正在连接GitHub...")
+
+        if access_token:
+            self.access_token = access_token
+        if repo_owner:
+            self.repo_owner = repo_owner
+        if repo_name:
+            self.repo_name = repo_name
+        if branch:
+            self.branch = branch
+
+        if not self.access_token:
+            raise InvalidParameterError("缺少GitHub访问令牌", parameter="access_token")
+
+        if not self.repo_owner or not self.repo_name:
+            raise InvalidParameterError(
+                "缺少GitHub仓库信息",
+                parameter="repo_owner/repo_name",
+            )
+
+        self.headers = {
+            "Authorization": f"token {self.access_token}",
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "FunDrive-GitHub-Driver",
+        }
+        self.repo_str = f"{self.repo_owner}/{self.repo_name}"
+
         try:
-            logger.info("正在连接GitHub...")
-
-            # 更新认证信息
-            if access_token:
-                self.access_token = access_token
-            if repo_owner:
-                self.repo_owner = repo_owner
-            if repo_name:
-                self.repo_name = repo_name
-            if branch:
-                self.branch = branch
-
-            # 检查必需的认证信息
-            if not self.access_token:
-                logger.error("缺少GitHub访问令牌")
-                return False
-
-            if not self.repo_owner or not self.repo_name:
-                logger.error("缺少GitHub仓库信息")
-                return False
-
-            # 设置请求头
-            self.headers = {
-                "Authorization": f"token {self.access_token}",
-                "Accept": "application/vnd.github.v3+json",
-                "User-Agent": "FunDrive-GitHub-Driver",
-            }
-            self.repo_str = f"{self.repo_owner}/{self.repo_name}"
-
-            # 验证仓库访问权限
             response = requests.get(
                 f"{self.base_url}/repos/{self.repo_str}", headers=self.headers
             )
+        except requests.RequestException as exc:
+            raise NetworkError(f"GitHub连接失败: {exc}") from exc
 
-            if response.status_code == 200:
-                repo_info = response.json()
-                logger.info(f"✅ 成功连接到GitHub仓库: {self.repo_str}")
-                logger.info(f"   仓库描述: {repo_info.get('description', '无')}")
-                logger.info(f"   默认分支: {repo_info.get('default_branch', 'main')}")
-                return True
-            elif response.status_code == 404:
-                logger.error(f"仓库不存在或无访问权限: {self.repo_str}")
-                return False
-            else:
-                logger.error(f"GitHub API错误: {response.status_code}")
-                return False
-
-        except Exception as e:
-            logger.error(f"❌ GitHub连接失败: {e}")
-            return False
+        repo_info = self._raise_for_github_response(response, "登录验证").json()
+        logger.info(f"✅ 成功连接到GitHub仓库: {self.repo_str}")
+        logger.info(f"   仓库描述: {repo_info.get('description', '无')}")
+        logger.info(f"   默认分支: {repo_info.get('default_branch', 'main')}")
+        return True
 
     def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
@@ -485,64 +539,53 @@ class GitHubDrive(BaseDrive):
         Returns:
             上传是否成功
         """
+        logger.info(f"正在上传文件: {filepath or filename}")
+
+        if filepath and os.path.exists(filepath):
+            filename = filename or os.path.basename(filepath)
+            with open(filepath, "rb") as f:
+                file_content = f.read()
+        elif content is not None:
+            if not filename:
+                raise InvalidParameterError("必须提供文件名", parameter="filename")
+            file_content = (
+                content.encode("utf-8") if isinstance(content, str) else content
+            )
+        else:
+            raise InvalidParameterError(
+                "必须提供文件路径或内容",
+                parameter="filepath/content",
+            )
+
+        github_path = f"{fid.rstrip('/')}/{filename}" if fid else filename
+        existing_file = self.get_file_info(github_path)
+
+        data = {
+            "message": commit_message or f"Upload file: {filename}",
+            "content": base64.b64encode(file_content).decode("utf-8"),
+            "branch": self.branch,
+        }
+
+        if existing_file:
+            data["sha"] = existing_file.ext.get("sha")
+            logger.info(f"更新已存在文件: {github_path}")
+        else:
+            logger.info(f"创建新文件: {github_path}")
+
         try:
-            logger.info(f"正在上传文件: {filepath or filename}")
-
-            # 确定文件名和路径
-            if filepath and os.path.exists(filepath):
-                filename = filename or os.path.basename(filepath)
-                with open(filepath, "rb") as f:
-                    file_content = f.read()
-            elif content:
-                if not filename:
-                    logger.error("必须提供文件名")
-                    return False
-                file_content = (
-                    content.encode("utf-8") if isinstance(content, str) else content
-                )
-            else:
-                logger.error("必须提供文件路径或内容")
-                return False
-
-            # 构建GitHub路径
-            github_path = f"{fid.rstrip('/')}/{filename}" if fid else filename
-
-            # 检查文件是否已存在
-            existing_file = self.get_file_info(github_path)
-
-            # 准备上传数据
-            data = {
-                "message": commit_message or f"Upload file: {filename}",
-                "content": base64.b64encode(file_content).decode("utf-8"),
-                "branch": self.branch,
-            }
-
-            # 如果文件已存在，需要提供SHA
-            if existing_file:
-                data["sha"] = existing_file.ext.get("sha")
-                logger.info(f"更新已存在文件: {github_path}")
-            else:
-                logger.info(f"创建新文件: {github_path}")
-
-            # 上传文件
             response = requests.put(
                 f"{self.base_url}/repos/{self.repo_str}/contents/{github_path}",
                 headers=self.headers,
                 json=data,
             )
+        except requests.RequestException as exc:
+            raise NetworkError(f"上传文件失败: {exc}") from exc
 
-            if response.status_code in (200, 201):
-                logger.info(f"✅ 文件上传成功: {github_path}")
-                if callback:
-                    callback(len(file_content), len(file_content))
-                return True
-            else:
-                logger.error(f"上传文件失败: {response.status_code} - {response.text}")
-                return False
-
-        except Exception as e:
-            logger.error(f"上传文件失败: {e}")
-            return False
+        self._raise_for_github_response(response, f"上传文件 {github_path}")
+        logger.info(f"✅ 文件上传成功: {github_path}")
+        if callback:
+            callback(len(file_content), len(file_content))
+        return True
 
     def download_file(
         self,
