@@ -20,6 +20,7 @@ GitHub是全球最大的代码托管平台，本驱动将GitHub仓库作为云�
 # 标准库导入
 import base64
 import os
+import time
 from typing import Any, Dict, List, Optional
 
 # 第三方库导入
@@ -149,6 +150,10 @@ class GitHubDrive(BaseDrive):
             f"{action}失败: GitHub API返回{response.status_code}: {message}",
             details=details,
         )
+
+    @staticmethod
+    def _is_conflict_response(response: requests.Response) -> bool:
+        return response.status_code == 409
 
     def login(
         self,
@@ -558,28 +563,43 @@ class GitHubDrive(BaseDrive):
             )
 
         github_path = f"{fid.rstrip('/')}/{filename}" if fid else filename
-        existing_file = self.get_file_info(github_path)
+        encoded_content = base64.b64encode(file_content).decode("utf-8")
+        max_attempts = kwargs.get("max_retries", 3) + 1
+        response = None
 
-        data = {
-            "message": commit_message or f"Upload file: {filename}",
-            "content": base64.b64encode(file_content).decode("utf-8"),
-            "branch": self.branch,
-        }
+        for attempt in range(1, max_attempts + 1):
+            existing_file = self.get_file_info(github_path)
+            data = {
+                "message": commit_message or f"Upload file: {filename}",
+                "content": encoded_content,
+                "branch": self.branch,
+            }
 
-        if existing_file:
-            data["sha"] = existing_file.ext.get("sha")
-            logger.info(f"更新已存在文件: {github_path}")
-        else:
-            logger.info(f"创建新文件: {github_path}")
+            if existing_file:
+                data["sha"] = existing_file.ext.get("sha")
+                logger.info(f"更新已存在文件: {github_path}")
+            else:
+                logger.info(f"创建新文件: {github_path}")
 
-        try:
-            response = requests.put(
-                f"{self.base_url}/repos/{self.repo_str}/contents/{github_path}",
-                headers=self.headers,
-                json=data,
+            try:
+                response = requests.put(
+                    f"{self.base_url}/repos/{self.repo_str}/contents/{github_path}",
+                    headers=self.headers,
+                    json=data,
+                )
+            except requests.RequestException as exc:
+                raise NetworkError(f"上传文件失败: {exc}") from exc
+
+            if not self._is_conflict_response(response):
+                break
+
+            if attempt == max_attempts:
+                break
+
+            logger.warning(
+                f"上传文件发生冲突，准备重试({attempt}/{max_attempts - 1}): {github_path}"
             )
-        except requests.RequestException as exc:
-            raise NetworkError(f"上传文件失败: {exc}") from exc
+            time.sleep(min(0.2 * attempt, 1.0))
 
         self._raise_for_github_response(response, f"上传文件 {github_path}")
         logger.info(f"✅ 文件上传成功: {github_path}")
