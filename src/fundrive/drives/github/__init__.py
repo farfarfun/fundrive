@@ -9,6 +9,6 @@ GitHub驱动模块
 作者: FunDrive Team
 """
 
-from .drive import GitHubDrive
+from .drive import GitHubDrive, GithubDrive
 
-__all__ = ["GitHubDrive"]
+__all__ = ["GitHubDrive", "GithubDrive"]
