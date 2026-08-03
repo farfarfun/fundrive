@@ -28,7 +28,6 @@ from typing import Any, Dict, List, Optional
 # 第三方库导入
 import base58
 import orjson
-import requests
 from Cryptodome.Cipher import DES
 from Cryptodome.Util import Padding
 from funget import simple_download
@@ -37,6 +36,7 @@ from tqdm import tqdm
 
 # 项目内部导入
 from fundrive.core import BaseDrive, DriveFile
+from fundrive.core.http import new_session
 from fundrive.core.utils import handle_drive_errors, log_storage_info, validate_fid
 
 logger = getLogger("fundrive")
@@ -76,7 +76,7 @@ class WSSDrive(BaseDrive):
         try:
             logger.info("正在匿名登录文叔叔...")
 
-            self.session = requests.Session()
+            self.session = new_session()
 
             # 匿名登录获取token
             response = self.session.post(
@@ -125,7 +125,7 @@ class WSSDrive(BaseDrive):
                 timeout=10,
             )
         except Exception as e:
-            logger.error("获取用户信息是吧", e)
+            logger.error(f"获取用户信息失败: {e}")
 
     def get_storage_info(self) -> Dict[str, Any]:
         """
@@ -222,7 +222,7 @@ class WSSDrive(BaseDrive):
             return False
 
         except Exception as e:
-            logger.error("", e)
+            logger.error(f"获取存储信息失败: {e}")
             return False
 
     def mkdir(
@@ -543,24 +543,40 @@ class WSSDrive(BaseDrive):
             return False
 
     def download_dir(
-        self, fid: str, filedir: str = "./cache", overwrite: bool = False, **kwargs
+        self,
+        fid: str,
+        save_dir: str = "./cache",
+        recursion: bool = True,
+        overwrite: bool = False,
+        ignore_filter=None,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
         """
         下载目录（文叔叔不支持目录结构，此方法等同于下载文件）
 
         Args:
             fid: 分享链接URL
-            filedir: 下载目录
+            save_dir: 下载目录
+            recursion: 忽略（文叔叔没有目录层级）
             overwrite: 是否覆盖已存在的文件
+            ignore_filter: 忽略（没有目录层级可过滤）
 
         Returns:
             下载是否成功
         """
         logger.info("文叔叔不支持目录结构，将尝试作为文件下载")
-        return self.download_file(fid, filedir, **kwargs)
+        return self.download_file(fid, save_dir, overwrite=overwrite, **kwargs)
 
     # 高级功能实现
-    def search(self, keyword: str, fid: str = "", **kwargs) -> List[DriveFile]:
+    def search(
+        self,
+        keyword: str,
+        fid: str = "",
+        file_type: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> List[DriveFile]:
         """
         搜索文件（在已上传文件中搜索）
 
@@ -571,6 +587,12 @@ class WSSDrive(BaseDrive):
         Returns:
             搜索结果列表
         """
+        if file_type is not None:
+            # 契约里有这个参数，本驱动尚未实现按类型过滤。明确告警，
+            # 而不是像以前那样被 **kwargs 静默吞掉。
+            logger.warning(
+                f"{type(self).__name__}.search 暂不支持 file_type 过滤，已忽略: {file_type!r}"
+            )
         try:
             logger.info(f"正在搜索文件: {keyword}")
 
@@ -597,7 +619,7 @@ class WSSDrive(BaseDrive):
             logger.error(f"搜索失败: {e}")
             return []
 
-    def get_quota(self) -> Dict[str, Any]:
+    def get_quota(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """
         获取存储配额信息
 
@@ -615,7 +637,7 @@ class _WSSBaseDrive:
         self.login_anonymous()
 
     def login_anonymous(self):
-        self.session = requests.Session()
+        self.session = new_session()
         r = self.session.post(
             url="https://www.wenshushu.cn/ap/login/anonymous", json={"dev_info": "{}"}
         )
@@ -703,7 +725,10 @@ class Uploader:
     def file_put(self, psurl_args, fn, offset=0, read_size=None):
         with open(fn, "rb") as fio:
             fio.seek(offset)
-            requests.put(url=self.psurl(*psurl_args), data=fio.read(read_size))
+            response = self.session.put(
+                url=self.psurl(*psurl_args), data=fio.read(read_size)
+            )
+            response.raise_for_status()
 
     def get_process(self, up_id: str):
         while True:

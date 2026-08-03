@@ -6,7 +6,7 @@ from nltlog import getLogger
 from nltsecret import read_secret
 from tqdm import tqdm
 
-from fundrive.core import BaseDrive, DriveFile
+from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
 from fundrive.core.base import get_filepath
 
 
@@ -295,7 +295,7 @@ class OSSDrive(BaseDrive):
             result = self.bucket.list_objects(prefix=prefix, max_keys=1)
             return len(result.object_list) > 0
         except Exception as e:
-            self.logger.error("判断目录", e)
+            self.logger.error(f"判断目录失败: {e}")
             return False
 
     def get_file_info(self, fid, *args, **kwargs) -> Optional[DriveFile]:
@@ -467,7 +467,7 @@ class OSSDrive(BaseDrive):
 
             # 获取保存路径
             save_path = get_filepath(save_dir, filename, filepath)
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            ensure_parent_dir(save_path)
 
             # 获取文件信息
             file_info = self.get_file_info(fid=fid)

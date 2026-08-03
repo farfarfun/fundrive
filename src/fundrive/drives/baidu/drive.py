@@ -224,14 +224,12 @@ class BaiDuDrive(BaseDrive):
         """
         self.drive.share(*fids, password=password, period=expire_days)
 
-    def save_shared(
-        self, shared_url: str, remote_dir: str, password: Optional[str] = None
-    ):
+    def save_shared(self, shared_url: str, fid: str, password: Optional[str] = None):
         """
         保存他人的分享内容到自己的网盘
         :param shared_url: 分享链接
-        :param remote_dir: 保存到的目标目录
+        :param fid: 保存到的目标目录
         :param password: 分享密码
         :return: 保存是否成功
         """
-        return self.drive.save_shared(shared_url, remote_dir, password=password)
+        return self.drive.save_shared(shared_url, fid, password=password)

@@ -108,7 +108,16 @@ class LanZouDrive(BaseDrive):
     def exist(self, fid: str, *args, **kwargs) -> bool:
         return True
 
-    def mkdir(self, fid, name, url=None, pwd=None, *args, **kwargs) -> bool:
+    def mkdir(
+        self,
+        fid,
+        name,
+        return_if_exist: bool = True,
+        *args,
+        url=None,
+        pwd=None,
+        **kwargs,
+    ) -> bool:
         return self.drive.mkdir(fid, name, *args, **kwargs) == 0
 
     def delete(self, fid=None, *args, **kwargs) -> bool:
@@ -252,6 +261,10 @@ class LanZouDrive(BaseDrive):
             )[0]
             == 0
         )
+
+    def move(self, source_fid: str, target_fid: str, *args: Any, **kwargs: Any) -> bool:
+        """移动文件到目标目录（BaseDrive 契约）。"""
+        return self.move_file(source_fid, target_fid)
 
     def move_file(self, file_id, folder_id):
         self.drive.move_file(file_id, folder_id)

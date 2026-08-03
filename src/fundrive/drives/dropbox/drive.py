@@ -9,7 +9,7 @@ from nltsecret import read_secret
 from tqdm import tqdm
 
 # 项目内部
-from fundrive.core import BaseDrive, DriveFile
+from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
 from fundrive.core.base import get_filepath
 
 
@@ -440,7 +440,7 @@ class DropboxDrive(BaseDrive):
 
             # 获取保存路径
             save_path = get_filepath(save_dir, filename, filepath)
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            ensure_parent_dir(save_path)
 
             # 检查文件是否已存在
             if not overwrite and os.path.exists(save_path):
@@ -539,59 +539,71 @@ class DropboxDrive(BaseDrive):
                 unit_divisor=1024,
             )
 
+            write_mode = (
+                dropbox.files.WriteMode.overwrite
+                if overwrite
+                else dropbox.files.WriteMode.add
+            )
+
             # 上传文件
-            with open(filepath, "rb") as f:
-                if file_size <= 150 * 1024 * 1024:  # 150MB以下使用普通上传
-                    # 小文件直接上传
-                    file_data = f.read()
-                    self.client.files_upload(
-                        file_data,
-                        target_path,
-                        mode=dropbox.files.WriteMode.overwrite
-                        if overwrite
-                        else dropbox.files.WriteMode.add,
-                    )
-                    progress_bar.update(file_size)
-                else:
-                    # 大文件分块上传
-                    chunk_size = 4 * 1024 * 1024  # 4MB块大小
+            try:
+                with open(filepath, "rb") as f:
+                    if file_size <= 150 * 1024 * 1024:  # 150MB以下使用普通上传
+                        # 小文件直接上传
+                        file_data = f.read()
+                        self.client.files_upload(
+                            file_data, target_path, mode=write_mode
+                        )
+                        progress_bar.update(file_size)
+                    else:
+                        # 大文件分块上传
+                        chunk_size = 4 * 1024 * 1024  # 4MB块大小
+                        commit = dropbox.files.CommitInfo(
+                            path=target_path, mode=write_mode
+                        )
 
-                    # 开始上传会话
-                    first_chunk = f.read(chunk_size)
-                    session_start_result = self.client.files_upload_session_start(
-                        first_chunk
-                    )
-                    cursor = dropbox.files.UploadSessionCursor(
-                        session_id=session_start_result.session_id,
-                        offset=len(first_chunk),
-                    )
-                    progress_bar.update(len(first_chunk))
+                        # 开始上传会话
+                        first_chunk = f.read(chunk_size)
+                        session_start_result = self.client.files_upload_session_start(
+                            first_chunk
+                        )
+                        cursor = dropbox.files.UploadSessionCursor(
+                            session_id=session_start_result.session_id,
+                            offset=f.tell(),
+                        )
+                        progress_bar.update(len(first_chunk))
 
-                    # 继续上传剩余块
-                    while True:
-                        chunk = f.read(chunk_size)
-                        if len(chunk) == 0:
-                            break
+                        # 用"读到文件末尾了吗"来判断最后一块，而不是"这块比
+                        # chunk_size 短吗"。文件大小恰好是 chunk_size 整数倍时，
+                        # 最后一块是满的、下一次 read 返回 b""，旧写法会直接
+                        # break 掉，files_upload_session_finish 永远不被调用：
+                        # 会话被服务端丢弃、文件没创建，却返回 True。
+                        if f.tell() >= file_size:
+                            self.client.files_upload_session_finish(b"", cursor, commit)
+                        while f.tell() < file_size:
+                            chunk = f.read(chunk_size)
+                            if not chunk:
+                                # 文件在上传过程中被截断
+                                raise IOError(
+                                    f"读到意外的 EOF: 已读 {f.tell()}/{file_size} 字节"
+                                )
+                            if f.tell() >= file_size:
+                                # 最后一块 —— 提交会话
+                                self.client.files_upload_session_finish(
+                                    chunk, cursor, commit
+                                )
+                            else:
+                                # 中间块
+                                self.client.files_upload_session_append_v2(
+                                    chunk, cursor
+                                )
+                                cursor.offset = f.tell()
 
-                        if len(chunk) < chunk_size:
-                            # 最后一块
-                            commit = dropbox.files.CommitInfo(
-                                path=target_path,
-                                mode=dropbox.files.WriteMode.overwrite
-                                if overwrite
-                                else dropbox.files.WriteMode.add,
-                            )
-                            self.client.files_upload_session_finish(
-                                chunk, cursor, commit
-                            )
-                        else:
-                            # 中间块
-                            self.client.files_upload_session_append_v2(chunk, cursor)
-                            cursor.offset += len(chunk)
+                            progress_bar.update(len(chunk))
+            finally:
+                # 失败时也要关掉进度条，否则残留的 tqdm 会污染后续终端输出
+                progress_bar.close()
 
-                        progress_bar.update(len(chunk))
-
-            progress_bar.close()
             self.logger.info(f"上传成功: {target_path}")
             return True
 
@@ -947,7 +959,7 @@ class DropboxDrive(BaseDrive):
         )
         return []
 
-    def restore(self, *fids: str, **kwargs: Any) -> bool:
+    def restore(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
         从回收站恢复文件
 
@@ -981,6 +993,7 @@ class DropboxDrive(BaseDrive):
         self,
         shared_url: str,
         fid: str = "/",
+        password: Optional[str] = None,
         *args: Any,
         **kwargs: Any,
     ) -> bool:

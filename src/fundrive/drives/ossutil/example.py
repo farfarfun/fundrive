@@ -1,7 +1,6 @@
 # 标准库导入
 import os
 import tempfile
-from typing import Optional
 
 # 第三方库导入
 from nltlog import getLogger
@@ -73,7 +72,7 @@ def test_ossutil_basic_operations():
                 logger.info("🚀 测试获取配额信息...")
                 quota = drive.get_quota()
                 if quota:
-                    logger.info(f"💾 存储空间使用情况:")
+                    logger.info("💾 存储空间使用情况:")
                     logger.info(f"  - 已用空间: {quota.get('used_space', 0)} bytes")
                     logger.info(f"  - 对象数量: {quota.get('object_count', 0)}")
                     logger.info(f"  - Bucket: {quota.get('bucket_name', 'N/A')}")
@@ -220,7 +219,7 @@ def quick_demo():
     files = drive.get_file_list("")
     dirs = drive.get_dir_list("")
 
-    logger.info(f"📊 根目录统计:")
+    logger.info("📊 根目录统计:")
     logger.info(f"   - 文件数量: {len(files)}")
     logger.info(f"   - 目录数量: {len(dirs)}")
 
@@ -238,7 +237,7 @@ def quick_demo():
     logger.info("💾 获取存储配额信息...")
     quota = drive.get_quota()
     if quota:
-        logger.info(f"📊 存储空间使用情况:")
+        logger.info("📊 存储空间使用情况:")
         logger.info(f"   - Bucket: {quota.get('bucket_name', 'N/A')}")
         logger.info(f"   - 已用空间: {quota.get('used_space', 0)} bytes")
         logger.info(f"   - 对象数量: {quota.get('object_count', 0)}")
@@ -345,7 +344,7 @@ def interactive_test():
             elif choice == "6":
                 quota = drive.get_quota()
                 if quota:
-                    print(f"\n💾 存储配额信息:")
+                    print("\n💾 存储配额信息:")
                     print(f"  - Bucket: {quota.get('bucket_name', 'N/A')}")
                     print(f"  - 已用空间: {quota.get('used_space', 0)} bytes")
                     print(f"  - 对象数量: {quota.get('object_count', 0)}")

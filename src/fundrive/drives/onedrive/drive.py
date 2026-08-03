@@ -3,12 +3,12 @@ import os
 from typing import Any, Dict, List, Optional
 
 # 第三方库导入
-import requests
 from nltlog import getLogger
 from nltsecret import read_secret
 
 # 项目内部导入
-from fundrive.core import BaseDrive, DriveFile
+from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
+from fundrive.core.http import new_session
 
 logger = getLogger("fundrive")
 
@@ -66,7 +66,7 @@ class OneDrive(BaseDrive):
             "fundrive", "onedrive", "refresh_token"
         )
 
-        self.session = requests.Session()
+        self.session = new_session()
         self._user_info = None
 
         if not self.client_id or not self.client_secret:
@@ -174,18 +174,44 @@ class OneDrive(BaseDrive):
             logger.error(f"检查文件存在性失败: {e}")
             return False
 
-    def mkdir(self, parent_id: str, dirname: str, *args, **kwargs) -> str:
-        """创建目录"""
+    def mkdir(
+        self,
+        fid: str,
+        name: str,
+        return_if_exist: bool = True,
+        *args,
+        **kwargs,
+    ) -> str:
+        """创建目录
+
+        Args:
+            fid: 父目录 ID（"root" 表示根目录）
+            name: 目录名
+            return_if_exist: 同名目录已存在时返回它的 ID，而不是让 Graph
+                自动改名成 "name (1)"。
+        """
+        parent_id, dirname = fid, name
         try:
+            if return_if_exist:
+                for existing in self.get_dir_list(parent_id):
+                    if existing.name == dirname:
+                        logger.info(f"目录已存在: {dirname} (id={existing.fid})")
+                        return existing.fid
+
             headers = {
                 "Authorization": f"Bearer {self.access_token}",
                 "Content-Type": "application/json",
             }
 
+            # conflictBehavior 必须跟 return_if_exist 一致：
+            # "rename" 会在重名时创建 "name (1)"，那正好是 return_if_exist=True
+            # 想避免的行为（语义反了）。这里显式区分两者。
             data = {
                 "name": dirname,
                 "folder": {},
-                "@microsoft.graph.conflictBehavior": "rename",
+                "@microsoft.graph.conflictBehavior": (
+                    "fail" if return_if_exist else "rename"
+                ),
             }
 
             if parent_id == "root":
@@ -523,7 +549,7 @@ class OneDrive(BaseDrive):
                 return False
 
             # 确保目录存在
-            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            ensure_parent_dir(local_path)
 
             # 获取下载URL
             url = f"{self.GRAPH_API_BASE}/me/drive/items/{fid}/content"
@@ -547,8 +573,21 @@ class OneDrive(BaseDrive):
             return False
 
     # 高级功能实现
-    def search(self, keyword: str, fid: str = "root", **kwargs) -> List[DriveFile]:
+    def search(
+        self,
+        keyword: str,
+        fid: str = "root",
+        file_type: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> List[DriveFile]:
         """搜索文件"""
+        if file_type is not None:
+            # 契约里有这个参数，本驱动尚未实现按类型过滤。明确告警，
+            # 而不是像以前那样被 **kwargs 静默吞掉。
+            logger.warning(
+                f"{type(self).__name__}.search 暂不支持 file_type 过滤，已忽略: {file_type!r}"
+            )
         try:
             headers = {"Authorization": f"Bearer {self.access_token}"}
             url = f"{self.GRAPH_API_BASE}/me/drive/root/search(q='{keyword}')"
@@ -656,7 +695,9 @@ class OneDrive(BaseDrive):
         logger.warning("OneDrive 不支持通过API清空回收站功能")
         return False
 
-    def save_shared(self, shared_url, fid, *args, **kwargs):
+    def save_shared(
+        self, shared_url, fid, password: Optional[str] = None, *args, **kwargs
+    ):
         """保存分享文件 - 需要特殊权限"""
         logger.warning("OneDrive 保存分享文件功能需要特殊权限配置")
         return False

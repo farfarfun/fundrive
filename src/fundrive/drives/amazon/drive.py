@@ -29,7 +29,7 @@ from nltlog import getLogger
 from nltsecret import read_secret
 
 # 项目内部导入
-from fundrive.core import BaseDrive, DriveFile
+from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
 
 logger = getLogger("fundrive")
 
@@ -273,25 +273,35 @@ class S3Drive(BaseDrive):
         try:
             logger.info(f"正在删除对象: {fid}")
 
-            # 如果是目录，删除所有子对象
-            if fid.endswith("/"):
-                # 列出所有以该前缀开始的对象
-                objects_to_delete = []
-                paginator = self.s3_client.get_paginator("list_objects_v2")
+            if not fid:
+                logger.error("fid 不能为空")
+                return False
 
-                for page in paginator.paginate(Bucket=self.bucket_name, Prefix=fid):
-                    if "Contents" in page:
-                        for obj in page["Contents"]:
-                            objects_to_delete.append({"Key": obj["Key"]})
+            # 判断是单个对象还是前缀（目录）。
+            #
+            # 历史实现只用 fid.endswith("/") 判断，于是传 "a/b" 这种不带尾斜杠的
+            # 目录时会走 delete_object 删一个不存在的 key —— S3 对此返回 204，
+            # 代码于是打印"✅ 对象删除成功"并返回 True，实际什么都没删。
+            is_prefix = fid.endswith("/")
+            if not is_prefix and not self._object_exists(fid):
+                # 不是对象，看看它是不是一个前缀
+                probe = self.s3_client.list_objects_v2(
+                    Bucket=self.bucket_name, Prefix=fid.rstrip("/") + "/", MaxKeys=1
+                )
+                if probe.get("KeyCount", 0) > 0:
+                    fid = fid.rstrip("/") + "/"
+                    is_prefix = True
+                else:
+                    logger.error(f"删除目标不存在: {fid}")
+                    return False
 
-                # 批量删除对象
-                if objects_to_delete:
-                    self.s3_client.delete_objects(
-                        Bucket=self.bucket_name, Delete={"Objects": objects_to_delete}
-                    )
-                    logger.info(f"✅ 删除了 {len(objects_to_delete)} 个对象")
+            if is_prefix:
+                deleted = self._delete_by_prefix(fid)
+                if deleted == 0:
+                    logger.error(f"删除目标不存在: {fid}")
+                    return False
+                logger.info(f"✅ 删除了 {deleted} 个对象")
             else:
-                # 删除单个对象
                 self.s3_client.delete_object(Bucket=self.bucket_name, Key=fid)
                 logger.info(f"✅ 对象删除成功: {fid}")
 
@@ -300,6 +310,46 @@ class S3Drive(BaseDrive):
         except Exception as e:
             logger.error(f"删除对象失败: {e}")
             return False
+
+    def _object_exists(self, key: str) -> bool:
+        """精确判断某个 key 是否存在（不把前缀算作存在）。"""
+        try:
+            self.s3_client.head_object(Bucket=self.bucket_name, Key=key)
+            return True
+        except ClientError as exc:
+            if exc.response.get("Error", {}).get("Code") in ("404", "NoSuchKey"):
+                return False
+            raise
+
+    def _delete_by_prefix(self, prefix: str) -> int:
+        """删除某前缀下的全部对象，返回删除数量。
+
+        S3 的 ``delete_objects`` 每次最多接受 1000 个 key，因此必须分批；
+        同时按页删除，避免把整个 bucket 的 key 列表先攒在内存里。
+        """
+        batch: List[dict] = []
+        deleted = 0
+        paginator = self.s3_client.get_paginator("list_objects_v2")
+
+        def flush() -> int:
+            if not batch:
+                return 0
+            response = self.s3_client.delete_objects(
+                Bucket=self.bucket_name, Delete={"Objects": batch}
+            )
+            for err in response.get("Errors", []):
+                logger.error(f"删除失败 {err.get('Key')}: {err.get('Message')}")
+            count = len(response.get("Deleted", []))
+            batch.clear()
+            return count
+
+        for page in paginator.paginate(Bucket=self.bucket_name, Prefix=prefix):
+            for obj in page.get("Contents", []):
+                batch.append({"Key": obj["Key"]})
+                if len(batch) == 1000:
+                    deleted += flush()
+        deleted += flush()
+        return deleted
 
     def get_file_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
         """
@@ -609,7 +659,7 @@ class S3Drive(BaseDrive):
                 return False
 
             # 确保目录存在
-            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            ensure_parent_dir(local_path)
 
             # 获取文件大小
             try:
@@ -639,15 +689,24 @@ class S3Drive(BaseDrive):
             return False
 
     def download_dir(
-        self, fid: str, filedir: str = "./cache", overwrite: bool = False, **kwargs
+        self,
+        fid: str,
+        save_dir: str = "./cache",
+        recursion: bool = True,
+        overwrite: bool = False,
+        ignore_filter=None,
+        *args,
+        **kwargs,
     ) -> bool:
         """
         下载整个目录
 
         Args:
             fid: 目录路径
-            filedir: 下载目录
+            save_dir: 本地保存目录
+            recursion: 是否递归下载子目录
             overwrite: 是否覆盖已存在的文件
+            ignore_filter: 返回 True 表示跳过该文件的过滤函数
 
         Returns:
             下载是否成功
@@ -673,15 +732,22 @@ class S3Drive(BaseDrive):
                         if key.endswith("/"):
                             continue
 
+                        relative_key = key[len(prefix) :] if prefix else key
+                        # recursion=False 时只取当前层，不进子目录
+                        if not recursion and "/" in relative_key:
+                            continue
+                        if ignore_filter and ignore_filter(os.path.basename(key)):
+                            continue
+
                         total_count += 1
 
                         try:
                             # 计算相对路径
                             relative_path = key[len(prefix) :] if prefix else key
-                            local_path = os.path.join(filedir, relative_path)
+                            local_path = os.path.join(save_dir, relative_path)
 
                             # 创建目录
-                            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+                            ensure_parent_dir(local_path)
 
                             # 检查是否需要覆盖
                             if os.path.exists(local_path) and not overwrite:
@@ -708,7 +774,14 @@ class S3Drive(BaseDrive):
             return False
 
     # 高级功能实现
-    def search(self, keyword: str, fid: str = "", **kwargs) -> List[DriveFile]:
+    def search(
+        self,
+        keyword: str,
+        fid: str = "",
+        file_type: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> List[DriveFile]:
         """
         搜索文件
 
@@ -719,6 +792,12 @@ class S3Drive(BaseDrive):
         Returns:
             搜索结果列表
         """
+        if file_type is not None:
+            # 契约里有这个参数，本驱动尚未实现按类型过滤。明确告警，
+            # 而不是像以前那样被 **kwargs 静默吞掉。
+            logger.warning(
+                f"{type(self).__name__}.search 暂不支持 file_type 过滤，已忽略: {file_type!r}"
+            )
         try:
             logger.info(f"正在搜索文件: {keyword}")
 
@@ -763,7 +842,7 @@ class S3Drive(BaseDrive):
             logger.error(f"搜索失败: {e}")
             return []
 
-    def get_quota(self) -> Dict[str, Any]:
+    def get_quota(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """
         获取存储配额信息（S3没有配额限制，返回存储桶统计）
 
@@ -796,6 +875,31 @@ class S3Drive(BaseDrive):
             logger.error(f"获取配额信息失败: {e}")
             return {}
 
+    def share(
+        self,
+        *fids: str,
+        password: str = "",
+        expire_days: int = 0,
+        description: str = "",
+        **kwargs: Any,
+    ) -> dict:
+        """生成预签名分享链接（BaseDrive 契约）。
+
+        S3 预签名 URL 不支持独立密码；有效期用 ``expire_days`` 换算成秒，
+        为 0 时用 :meth:`create_share_link` 的默认值。
+        """
+        if password:
+            logger.warning("S3 预签名链接不支持独立密码，已忽略 password")
+        extra = {}
+        if expire_days:
+            extra["expire_seconds"] = expire_days * 24 * 3600
+        links = [self.create_share_link(fid, **extra) for fid in fids]
+        return {
+            "links": [link for link in links if link],
+            "total": len([link for link in links if link]),
+            "description": description,
+        }
+
     def create_share_link(self, fid: str, expire_seconds: int = 3600) -> str:
         """
         创建预签名URL分享链接
@@ -819,6 +923,25 @@ class S3Drive(BaseDrive):
         except Exception as e:
             logger.error(f"生成分享链接失败: {e}")
             return ""
+
+    def copy(self, source_fid: str, target_fid: str, *args: Any, **kwargs: Any) -> bool:
+        """复制对象到目标**目录**（BaseDrive 契约）。
+
+        注意与 :meth:`copy_object` 的区别：契约里 ``target_fid`` 是目录，
+        源文件名会被拼接上去；``copy_object`` 的 ``target_fid`` 是完整的
+        对象 key。两者语义不同，所以不能互相替代。
+        """
+        target_key = (
+            f"{target_fid.rstrip('/')}/{os.path.basename(source_fid.rstrip('/'))}"
+        )
+        return self.copy_object(source_fid, target_key.lstrip("/"))
+
+    def move(self, source_fid: str, target_fid: str, *args: Any, **kwargs: Any) -> bool:
+        """移动对象到目标**目录**（BaseDrive 契约）。"""
+        target_key = (
+            f"{target_fid.rstrip('/')}/{os.path.basename(source_fid.rstrip('/'))}"
+        )
+        return self.move_object(source_fid, target_key.lstrip("/"))
 
     def copy_object(self, source_fid: str, target_fid: str) -> bool:
         """

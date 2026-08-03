@@ -80,11 +80,12 @@ class WebDavDrive(BaseDrive):
                     self._request("PROPFIND", fid, headers={"Depth": "0"})
                     return True
                 except requests.HTTPError as e2:
-                    return (
-                        False
-                        if e2.response is not None and e2.response.status_code == 404
-                        else False
-                    )
+                    # 只有 404 才算"不存在"。其它状态（401/403/5xx）必须抛出，
+                    # 否则权限不足和服务端故障都会被报成"文件不存在"，调用方
+                    # 无从区分。原实现两个分支都返回 False，等于吞掉了一切。
+                    if e2.response is not None and e2.response.status_code == 404:
+                        return False
+                    raise
             raise
 
     def get_file_list(self, fid, *args, **kwargs) -> List[DriveFile]:
@@ -149,8 +150,12 @@ class WebDavDrive(BaseDrive):
         if os.path.exists(local_path) and not overwrite:
             return False
 
+        # 必须用 _build_destination_url 做百分号编码：手拼 f"{server_url}/{fid}"
+        # 会在文件名含空格/中文/# 时产生非法 URL，且 fid 以 "/" 开头时出现 "//"。
         simple_download(
-            f"{self.server_url}/{fid}", local_path, auth=(self.username, self.password)
+            self._build_destination_url(fid),
+            local_path,
+            auth=(self.username, self.password),
         )
         return True
 
@@ -178,7 +183,7 @@ class WebDavDrive(BaseDrive):
         target = self._normalize_fid(posixpath.join(target_dir, filename))
 
         single_upload(
-            f"{self.server_url}/{target_dir.strip('/')}/{filename}",
+            self._build_destination_url(target),
             filepath,
             overwrite=overwrite,
             auth=(self.username, self.password),
@@ -243,10 +248,7 @@ class WebDavDrive(BaseDrive):
         *args: Any,
         **kwargs: Any,
     ) -> str:
-        path = self._normalize_fid(fid)
-        if not self.server_url:
-            raise RuntimeError("please login first")
-        return f"{self.server_url}/{path.lstrip('/')}"
+        return self._build_destination_url(fid)
 
     def get_file_sha(self, fid: str, *args: Any, **kwargs: Any) -> Optional[str]:
         """
