@@ -7,7 +7,7 @@ from funget import simple_download
 from nltlog import getLogger
 from nltsecret import read_secret
 
-from fundrive.core import BaseDrive, DriveFile
+from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
 
 logger = getLogger("fundrive")
 
@@ -990,7 +990,7 @@ class ZenodoDrive(BaseDrive):
                 return False
 
             # 创建目录
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            ensure_parent_dir(save_path)
 
             # 下载文件
             simple_download(url=download_url, filepath=save_path)

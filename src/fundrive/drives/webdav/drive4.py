@@ -5,7 +5,7 @@ from nltlog import getLogger
 from nltsecret import read_secret
 from webdav4.client import Client
 
-from fundrive.core import BaseDrive, DriveFile
+from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
 
 logger = getLogger("fundrive")
 
@@ -121,7 +121,7 @@ class WebDavDrive4(BaseDrive):
             local_path = os.path.basename(fid)
 
         # 确保目录存在
-        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+        ensure_parent_dir(local_path)
 
         # 检查文件是否已存在
         if os.path.exists(local_path) and not overwrite:

@@ -24,7 +24,7 @@ from funget import simple_download
 from nltlog import getLogger
 from nltsecret import read_secret
 
-from fundrive.core import BaseDrive, DriveFile
+from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
 
 logger = getLogger("fundrive")
 
@@ -117,7 +117,7 @@ class OpenXLabDrive(BaseDrive):
                     logger.warning("⚠️ OpenXLab登录状态未知，将尝试继续")
                     return True
             except Exception as e:
-                logger.warning("⚠️ 无法验证OpenXLab登录状态，将尝试继续", e)
+                logger.warning(f"⚠️ 无法验证OpenXLab登录状态，将尝试继续: {e}")
                 return True
 
         except Exception as e:
@@ -477,7 +477,7 @@ class OpenXLabDrive(BaseDrive):
                         return False
 
             # 确保目录存在
-            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            ensure_parent_dir(local_path)
 
             # 使用funget下载文件
             success = simple_download(
@@ -534,7 +534,14 @@ class OpenXLabDrive(BaseDrive):
             return None
 
     # 高级功能实现
-    def search(self, keyword: str, fid: str = "root", **kwargs) -> List[DriveFile]:
+    def search(
+        self,
+        keyword: str,
+        fid: str = "root",
+        file_type: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> List[DriveFile]:
         """
         搜索数据集
 
@@ -545,6 +552,12 @@ class OpenXLabDrive(BaseDrive):
         Returns:
             搜索结果列表
         """
+        if file_type is not None:
+            # 契约里有这个参数，本驱动尚未实现按类型过滤。明确告警，
+            # 而不是像以前那样被 **kwargs 静默吞掉。
+            logger.warning(
+                f"{type(self).__name__}.search 暂不支持 file_type 过滤，已忽略: {file_type!r}"
+            )
         try:
             logger.info(f"正在搜索数据集: {keyword}")
 

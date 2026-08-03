@@ -158,6 +158,28 @@ def get_filepath(
         raise ValueError("Either filepath or (filedir and filename) must be provided")
 
 
+def ensure_parent_dir(path: str) -> str:
+    """确保 path 的父目录存在，返回 path 本身。
+
+    直接写 ``os.makedirs(os.path.dirname(path), exist_ok=True)`` 有个坑：当
+    ``path`` 是个裸文件名（比如调用方没指定 save_dir，代码回落到
+    ``os.path.basename(fid)``）时，``dirname`` 是空串，``os.makedirs("")``
+    会抛 :class:`FileNotFoundError`。也就是说"下载到当前目录"这个最常见的
+    用法在多个驱动里恒定失败，而异常又被外层的 ``except Exception`` 吞成
+    ``return False``。
+
+    Args:
+        path (str): 目标文件路径。
+
+    Returns:
+        str: 原样返回 ``path``，方便链式使用。
+    """
+    parent = os.path.dirname(path)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    return path
+
+
 class BaseDrive:
     """
     网盘操作基类

@@ -29,7 +29,8 @@ from nltlog import getLogger
 from nltsecret import read_secret
 
 # 项目内部导入
-from fundrive.core import BaseDrive, DriveFile
+from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
+from fundrive.core.http import new_session
 from fundrive.core.exceptions import (
     AuthenticationError,
     AuthorizationError,
@@ -91,6 +92,8 @@ class GitHubDrive(BaseDrive):
 
         # API配置
         self.base_url = "https://api.github.com"
+        # 统一会话：默认超时 + 幂等请求自动重试 + 连接池复用
+        self.session = new_session()
         self.headers = {}
         self.repo_str = None
 
@@ -203,7 +206,7 @@ class GitHubDrive(BaseDrive):
         self.repo_str = f"{self.repo_owner}/{self.repo_name}"
 
         try:
-            response = requests.get(
+            response = self.session.get(
                 f"{self.base_url}/repos/{self.repo_str}", headers=self.headers
             )
         except requests.RequestException as exc:
@@ -233,7 +236,7 @@ class GitHubDrive(BaseDrive):
             Exception: 当API调用失败时抛出异常
         """
         try:
-            response = requests.get(
+            response = self.session.get(
                 f"{self.base_url}/repos/{self.repo_str}/contents/{fid}",
                 headers=self.headers,
                 params={"ref": self.branch},
@@ -322,7 +325,7 @@ class GitHubDrive(BaseDrive):
                 "branch": self.branch,
             }
 
-            response = requests.delete(
+            response = self.session.delete(
                 f"{self.base_url}/repos/{self.repo_str}/contents/{fid}",
                 headers=self.headers,
                 json=data,
@@ -352,7 +355,7 @@ class GitHubDrive(BaseDrive):
         try:
             logger.info(f"正在获取文件列表: {fid}")
 
-            response = requests.get(
+            response = self.session.get(
                 f"{self.base_url}/repos/{self.repo_str}/contents/{fid}",
                 headers=self.headers,
                 params={"ref": self.branch},
@@ -399,7 +402,7 @@ class GitHubDrive(BaseDrive):
         try:
             logger.info(f"正在获取目录列表: {fid}")
 
-            response = requests.get(
+            response = self.session.get(
                 f"{self.base_url}/repos/{self.repo_str}/contents/{fid}",
                 headers=self.headers,
                 params={"ref": self.branch},
@@ -445,7 +448,7 @@ class GitHubDrive(BaseDrive):
         try:
             logger.info(f"正在获取文件信息: {fid}")
 
-            response = requests.get(
+            response = self.session.get(
                 f"{self.base_url}/repos/{self.repo_str}/contents/{fid}",
                 headers=self.headers,
                 params={"ref": self.branch},
@@ -497,7 +500,7 @@ class GitHubDrive(BaseDrive):
                 # 根目录
                 return DriveFile(fid="", name="root", size=0, ext={"type": "folder"})
 
-            response = requests.get(
+            response = self.session.get(
                 f"{self.base_url}/repos/{self.repo_str}/contents/{fid}",
                 headers=self.headers,
                 params={"ref": self.branch},
@@ -582,7 +585,7 @@ class GitHubDrive(BaseDrive):
                 logger.info(f"创建新文件: {github_path}")
 
             try:
-                response = requests.put(
+                response = self.session.put(
                     f"{self.base_url}/repos/{self.repo_str}/contents/{github_path}",
                     headers=self.headers,
                     json=data,
@@ -657,12 +660,12 @@ class GitHubDrive(BaseDrive):
                 return False
 
             # 确保目录存在
-            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            ensure_parent_dir(local_path)
 
             # 下载文件
             download_url = file_info.ext.get("download_url")
             if download_url:
-                response = requests.get(download_url)
+                response = self.session.get(download_url)
                 if response.status_code == 200:
                     with open(local_path, "wb") as f:
                         f.write(response.content)
@@ -680,7 +683,14 @@ class GitHubDrive(BaseDrive):
             return False
 
     # 高级功能实现
-    def search(self, keyword: str, fid: str = "", **kwargs) -> List[DriveFile]:
+    def search(
+        self,
+        keyword: str,
+        fid: str = "",
+        file_type: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> List[DriveFile]:
         """
         搜索文件
 
@@ -691,6 +701,12 @@ class GitHubDrive(BaseDrive):
         Returns:
             搜索结果列表
         """
+        if file_type is not None:
+            # 契约里有这个参数，本驱动尚未实现按类型过滤。明确告警，
+            # 而不是像以前那样被 **kwargs 静默吞掉。
+            logger.warning(
+                f"{type(self).__name__}.search 暂不支持 file_type 过滤，已忽略: {file_type!r}"
+            )
         try:
             logger.info(f"正在搜索文件: {keyword}")
 
@@ -699,7 +715,7 @@ class GitHubDrive(BaseDrive):
             if fid:
                 query += f" path:{fid}"
 
-            response = requests.get(
+            response = self.session.get(
                 f"{self.base_url}/search/code",
                 headers=self.headers,
                 params={"q": query},
@@ -729,7 +745,7 @@ class GitHubDrive(BaseDrive):
             logger.error(f"搜索失败: {e}")
             return []
 
-    def get_quota(self) -> Dict[str, Any]:
+    def get_quota(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """
         获取仓库信息（GitHub没有存储配额限制）
 
@@ -737,7 +753,7 @@ class GitHubDrive(BaseDrive):
             仓库信息
         """
         try:
-            response = requests.get(
+            response = self.session.get(
                 f"{self.base_url}/repos/{self.repo_str}", headers=self.headers
             )
 
@@ -763,6 +779,27 @@ class GitHubDrive(BaseDrive):
         except Exception as e:
             logger.error(f"获取仓库信息失败: {e}")
             return {}
+
+    def share(
+        self,
+        *fids: str,
+        password: str = "",
+        expire_days: int = 0,
+        description: str = "",
+        **kwargs: Any,
+    ) -> dict:
+        """生成分享链接（BaseDrive 契约）。
+
+        代码托管平台的仓库可见性决定链接可见性，因此 ``password`` 和
+        ``expire_days`` 不被支持——传了会明确告警，而不是静默忽略。
+        """
+        if password or expire_days:
+            logger.warning(
+                "%s 的分享链接由仓库可见性决定，不支持 password/expire_days，已忽略",
+                type(self).__name__,
+            )
+        links = [self.create_share_link(fid) for fid in fids]
+        return {"links": links, "total": len(links), "description": description}
 
     def create_share_link(self, fid: str) -> str:
         """

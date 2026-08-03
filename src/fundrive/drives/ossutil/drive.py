@@ -7,7 +7,7 @@ from funinstall.install import OSSUtilInstall
 from nltlog import getLogger
 from nltsecret import read_secret
 
-from fundrive.core import BaseDrive, DriveFile
+from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
 
 logger = getLogger("fundrive-ossutil")
 
@@ -544,7 +544,7 @@ endpoint={self._endpoint}
                 save_path = os.path.join(save_dir, filename)
 
             # 创建保存目录
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            ensure_parent_dir(save_path)
 
             # 检查文件是否已存在
             if not overwrite and os.path.exists(save_path):
@@ -831,29 +831,43 @@ endpoint={self._endpoint}
                 logger.error(f"源文件不存在: {source_fid}")
                 return False
 
-            # 构建源路径和目标路径
-            source_oss_path = f"oss://{self._bucket_name}/{source_fid.lstrip('/')}"
+            # target_fid 是目标**目录**，把源名字拼上去
             source_name = os.path.basename(source_fid.rstrip("/"))
             target_path = (
                 os.path.join(target_fid, source_name).replace("\\", "/").lstrip("/")
             )
-            target_oss_path = f"oss://{self._bucket_name}/{target_path}"
-
-            # 使用cp命令复制，-r参数用于递归复制目录
-            result = self._run_ossutil_command(
-                ["cp", source_oss_path, target_oss_path, "-r"]
-            )
-
-            if result.returncode == 0:
-                logger.success(f"复制成功: {source_fid} -> {target_path}")
-                return True
-            else:
-                logger.error(f"复制失败: {result.stderr}")
-                return False
+            return self._copy_to_path(source_fid, target_path)
 
         except Exception as e:
             logger.error(f"复制失败: {e}")
             return False
+
+    def _copy_to_path(self, source_fid: str, target_path: str) -> bool:
+        """把 source_fid 复制到 target_path（完整目标路径，不是目录）。
+
+        ``copy()`` 和 ``rename()`` 的公共底座。两者的区别正在于目标是
+        "目录" 还是 "完整路径"——历史实现让 ``rename`` 走了 ``copy``，
+        于是目标被重新拼成源路径本身，变成自拷后删除。
+        """
+        source_key = source_fid.lstrip("/")
+        target_key = target_path.lstrip("/")
+        if source_key == target_key:
+            logger.warning(f"源和目标相同，跳过复制: {source_key}")
+            return True
+
+        source_oss_path = f"oss://{self._bucket_name}/{source_key}"
+        target_oss_path = f"oss://{self._bucket_name}/{target_key}"
+
+        # 使用cp命令复制，-r参数用于递归复制目录
+        result = self._run_ossutil_command(
+            ["cp", source_oss_path, target_oss_path, "-r"]
+        )
+
+        if result.returncode == 0:
+            logger.success(f"复制成功: {source_key} -> {target_key}")
+            return True
+        logger.error(f"复制失败: {result.stderr}")
+        return False
 
     def move(
         self,
@@ -900,18 +914,40 @@ endpoint={self._endpoint}
                 logger.error(f"文件或目录不存在: {fid}")
                 return False
 
-            # 构建新路径
+            if "/" in new_name:
+                logger.error(f"new_name 只能是名字，不能包含路径分隔符: {new_name}")
+                return False
+
+            # 构建新路径：保留父目录，只替换最后一段名字
+            is_dir = fid.endswith("/")
             parent_dir = os.path.dirname(fid.rstrip("/"))
             new_path = os.path.join(parent_dir, new_name).replace("\\", "/")
+            if is_dir:
+                new_path += "/"
 
-            # 先复制到新位置，再删除原文件
-            if self.copy(fid, parent_dir):
-                # 删除原文件
-                if self.delete(fid):
-                    logger.success(f"重命名成功: {fid} -> {new_path}")
-                    return True
+            if new_path.lstrip("/") == fid.lstrip("/"):
+                logger.info(f"名字未变化，无需重命名: {fid}")
+                return True
 
-            return False
+            # 先复制到**新路径**，确认成功后再删除原对象。
+            # 注意不能走 self.copy(fid, parent_dir) —— 那会把目标重新拼成
+            # parent_dir + basename(fid)，即源路径本身，导致自拷后把文件删掉。
+            if not self._copy_to_path(fid, new_path):
+                logger.error(f"重命名失败，复制阶段未成功，原对象保持不变: {fid}")
+                return False
+
+            if not self.exist(new_path):
+                logger.error(f"重命名失败，新路径不存在，原对象保持不变: {new_path}")
+                return False
+
+            if not self.delete(fid):
+                logger.error(
+                    f"重命名的复制已完成但删除源失败，现在 {fid} 和 {new_path} 同时存在"
+                )
+                return False
+
+            logger.success(f"重命名成功: {fid} -> {new_path}")
+            return True
 
         except Exception as e:
             logger.error(f"重命名失败: {e}")

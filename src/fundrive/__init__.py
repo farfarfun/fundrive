@@ -50,14 +50,28 @@ from .core.utils import (
 )
 
 # 驱动管理函数
+#
+# 注意：这里刻意不 import AVAILABLE_DRIVES —— 那会触发对全部 22 个驱动的
+# 探测导入，把 boto3/oss2/aligo 等 SDK 全部拖进来。它通过下面的模块级
+# __getattr__ 懒加载，语义不变。
 from .drives import (
     get_drive,
     list_available_drives,
-    AVAILABLE_DRIVES,
+    list_missing_drives,
+    DRIVE_SPECS,
 )
 
-# 版本信息
-__version__ = "2.0.56"
+# 版本信息 —— 单一来源取自包元数据，避免与 pyproject.toml 漂移
+try:
+    from importlib.metadata import PackageNotFoundError, version as _pkg_version
+
+    try:
+        __version__ = _pkg_version("fundrive")
+    except PackageNotFoundError:  # 源码树中直接运行、未安装
+        __version__ = "0.0.0.dev0"
+except ImportError:  # pragma: no cover
+    __version__ = "0.0.0.dev0"
+
 __author__ = "farfarfun"
 __email__ = "farfarfun@qq.com"
 __description__ = "统一云存储接口框架"
@@ -98,8 +112,20 @@ __all__ = [
     # 驱动管理
     "get_drive",
     "list_available_drives",
+    "list_missing_drives",
     "AVAILABLE_DRIVES",
+    "DRIVE_SPECS",
 ]
+
+
+def __getattr__(name: str):
+    """懒加载 AVAILABLE_DRIVES，避免 ``import fundrive`` 触发全部 SDK 导入。"""
+    if name == "AVAILABLE_DRIVES":
+        from .drives import AVAILABLE_DRIVES
+
+        globals()["AVAILABLE_DRIVES"] = AVAILABLE_DRIVES
+        return AVAILABLE_DRIVES
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def get_version():
@@ -109,12 +135,16 @@ def get_version():
 
 def get_supported_drives():
     """
-    获取支持的驱动列表
+    获取 fundrive 支持的全部驱动类型名称
+
+    不触发任何驱动导入。需要"当前环境依赖已装好"的子集请用
+    :func:`list_available_drives`，需要缺失依赖及其安装命令请用
+    :func:`list_missing_drives`。
 
     Returns:
         list: 支持的驱动类型列表
     """
-    return list(AVAILABLE_DRIVES.keys())
+    return list(DRIVE_SPECS)
 
 
 def create_drive(drive_type: str, **kwargs):

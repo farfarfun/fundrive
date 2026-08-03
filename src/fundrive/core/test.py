@@ -275,7 +275,7 @@ class BaseDriveTest:
                             # 这里可能需要根据原始位置重新删除
                             pass  # 暂时跳过重新删除，避免影响用户数据
                         except Exception as e:
-                            logger.error("删除失败", e)
+                            logger.error(f"删除失败: {e}")
                 else:
                     logger.warning(f"⚠️ 文件恢复失败: {first_item.name}")
 

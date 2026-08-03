@@ -1,3 +1,5 @@
-from .drive import Uploader, Downloader, BaseDrive, WSSDrive
+"""文叔叔网盘驱动模块"""
 
-__all__ = ["Uploader", "Downloader", "BaseDrive", "WSSDrive"]
+from .drive import Downloader, Uploader, WSSDrive
+
+__all__ = ["Uploader", "Downloader", "WSSDrive"]

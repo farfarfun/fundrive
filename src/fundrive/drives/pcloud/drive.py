@@ -9,6 +9,7 @@ from nltlog import getLogger
 from nltsecret import read_secret
 
 from fundrive.core import BaseDrive, DriveFile
+from fundrive.core.http import new_session
 
 logger = getLogger("pcloud_drive")
 
@@ -35,10 +36,10 @@ class PCloudDrive(BaseDrive):
         super().__init__(*args, **kwargs)
         self.api_server = api_server
         self.auth_token = None
-        self.session = requests.Session()
+        self.session = new_session()
         self._root_fid = "0"  # pCloud 根目录 ID 为 0
 
-    def _normalize_fid(self, fid: str) -> str:
+    def _normalize_fid(self, fid: str) -> Optional[str]:
         """
         标准化文件夹 ID，将路径格式转换为 pCloud 文件夹 ID 格式
 
@@ -46,7 +47,12 @@ class PCloudDrive(BaseDrive):
             fid (str): 文件夹 ID 或路径
 
         Returns:
-            str: 标准化的文件夹 ID
+            Optional[str]: 标准化的文件夹 ID；无法解析时返回 ``None``。
+
+        Warning:
+            **绝不能**在解析失败时回落到根目录 ID。历史实现这么做过，导致
+            ``delete("/名字拼错了")`` 会拿着 folderid=0 去调
+            ``deletefolderrecursive``，递归删空整个账号。
         """
         # 如果是根路径，返回根目录 ID
         if fid == "/" or fid == "root":
@@ -62,7 +68,37 @@ class PCloudDrive(BaseDrive):
 
         return fid
 
-    def _get_folder_id_by_path(self, path: str) -> str:
+    def _require_folder_id(self, fid: str) -> str:
+        """解析目录 fid，失败即抛异常。
+
+        用于所有**会改动数据**的操作（删除/移动/复制/重命名/上传/分享），
+        确保解析失败时明确报错，而不是静默作用到根目录上。
+
+        Raises:
+            FileNotFoundError: fid 无法解析为一个存在的目录。
+        """
+        folder_id = self._normalize_fid(fid)
+        if folder_id is None:
+            raise FileNotFoundError(f"目录不存在或无法解析: {fid}")
+        return folder_id
+
+    def _guard_not_root(self, folder_id: str, original: str) -> None:
+        """拒绝对账号根目录执行递归删除。
+
+        ``_get_folder_id_by_path("/")`` 合法地返回根目录 ID ``"0"``，所以仅靠
+        "解析是否成功" 挡不住 ``delete("/")``——那会递归删空整个网盘。删除根目录
+        没有任何正当用途，这里直接拒绝。
+
+        Raises:
+            ValueError: 目标解析到账号根目录。
+        """
+        if str(folder_id) == str(self._root_fid):
+            raise ValueError(
+                f"拒绝递归删除账号根目录 (fid={original!r} -> folderid={folder_id!r})。"
+                f"如需清空根目录，请逐个删除其下条目。"
+            )
+
+    def _get_folder_id_by_path(self, path: str) -> Optional[str]:
         """
         通过路径获取文件夹 ID
 
@@ -70,7 +106,7 @@ class PCloudDrive(BaseDrive):
             path (str): 文件夹路径
 
         Returns:
-            str: 文件夹 ID，如果不存在则返回根目录 ID
+            Optional[str]: 文件夹 ID；路径不存在或查询失败时返回 ``None``。
         """
         if path == "/" or path == "":
             return self._root_fid
@@ -102,17 +138,15 @@ class PCloudDrive(BaseDrive):
                             break
 
                     if not found:
-                        # 如果找不到目标目录，记录警告并返回根目录 ID
                         logger.debug(f"未找到目录: {part}，路径: {path}")
-                        return self._root_fid
+                        return None
                 else:
-                    # API 调用失败，记录错误并返回根目录 ID
                     logger.error(f"获取目录内容失败，路径: {path}")
-                    return self._root_fid
+                    return None
 
             except Exception as e:
                 logger.error(f"查找目录时发生异常，路径: {path}, 错误: {e}")
-                return self._root_fid
+                return None
 
         return current_fid
 
@@ -140,8 +174,11 @@ class PCloudDrive(BaseDrive):
         try:
             # 获取父目录的文件夹 ID
             parent_fid = self._get_folder_id_by_path(dir_path)
+            if parent_fid is None:
+                logger.debug(f"父目录不存在，文件必然不存在: {dir_path}")
+                return None
             logger.debug(
-                f"分享调试: 查找文件 {filename}，父目录路径 {dir_path}，父目录ID {parent_fid}"
+                f"查找文件 {filename}，父目录路径 {dir_path}，父目录ID {parent_fid}"
             )
 
             # 在父目录中查找文件
@@ -312,6 +349,8 @@ class PCloudDrive(BaseDrive):
         """
         try:
             normalized_fid = self._normalize_fid(fid)
+            if normalized_fid is None:
+                return False
             params = (
                 {"folderid": normalized_fid}
                 if normalized_fid != "0"
@@ -346,7 +385,8 @@ class PCloudDrive(BaseDrive):
         Returns:
             str: 创建的目录 ID
         """
-        normalized_fid = self._normalize_fid(fid)
+        # 父目录必须存在，否则宁可报错也不要在根目录下建目录
+        normalized_fid = self._require_folder_id(fid)
 
         if return_if_exist:
             # 检查目录是否已存在
@@ -395,8 +435,10 @@ class PCloudDrive(BaseDrive):
                     params = {"fileid": file_id}
                     result = self._make_request("deletefile", params)
                 else:
-                    # 是目录
-                    folder_id = self._get_folder_id_by_path(fid)
+                    # 是目录 —— 必须确认解析成功，否则 folderid 会落到根目录 0
+                    # 上，deletefolderrecursive 将删空整个账号。
+                    folder_id = self._require_folder_id(fid)
+                    self._guard_not_root(folder_id, fid)
                     params = {"folderid": folder_id}
                     result = self._make_request("deletefolderrecursive", params)
             else:
@@ -408,6 +450,7 @@ class PCloudDrive(BaseDrive):
                     result = self._make_request("deletefile", params)
                 else:
                     # 是目录
+                    self._guard_not_root(fid, fid)
                     params = {"folderid": fid}
                     result = self._make_request("deletefolderrecursive", params)
 
@@ -433,6 +476,9 @@ class PCloudDrive(BaseDrive):
         """
         try:
             normalized_fid = self._normalize_fid(fid)
+            if normalized_fid is None:
+                logger.warning(f"目录不存在: {fid}")
+                return []
             params = {"folderid": normalized_fid}
             result = self._make_request("listfolder", params)
 
@@ -470,6 +516,9 @@ class PCloudDrive(BaseDrive):
         """
         try:
             normalized_fid = self._normalize_fid(fid)
+            if normalized_fid is None:
+                logger.warning(f"目录不存在: {fid}")
+                return []
             params = {"folderid": normalized_fid}
             result = self._make_request("listfolder", params)
 
@@ -653,8 +702,8 @@ class PCloudDrive(BaseDrive):
             if not file_path.exists():
                 raise Exception(f"文件 {filepath} 不存在")
 
-            # 规范化目标目录 ID
-            normalized_fid = self._normalize_fid(fid)
+            # 规范化目标目录 ID —— 解析失败必须报错，否则文件会被静默传到根目录
+            normalized_fid = self._require_folder_id(fid)
 
             # 构建上传 URL
             url = urljoin(self.api_server, "uploadfile")
@@ -774,7 +823,7 @@ class PCloudDrive(BaseDrive):
                 result = self._make_request("renamefile", params)
             else:
                 # 是目录，使用文件夹 ID
-                normalized_fid = self._normalize_fid(fid)
+                normalized_fid = self._require_folder_id(fid)
                 params = {"folderid": normalized_fid, "toname": new_name}
                 result = self._make_request("renamefolder", params)
 
@@ -849,7 +898,7 @@ class PCloudDrive(BaseDrive):
                     is_file = True
                 else:
                     # 是目录
-                    source_id = self._get_folder_id_by_path(source_fid)
+                    source_id = self._require_folder_id(source_fid)
                     is_file = False
             else:
                 # 直接使用 ID，通过 get_file_info 判断是否为文件
@@ -859,7 +908,7 @@ class PCloudDrive(BaseDrive):
 
             # 转换目标目录 ID
             if target_fid.startswith("/"):
-                target_id = self._get_folder_id_by_path(target_fid)
+                target_id = self._require_folder_id(target_fid)
             else:
                 target_id = target_fid
 
@@ -940,7 +989,11 @@ class PCloudDrive(BaseDrive):
                 if fid.startswith("/"):
                     # 对于路径格式的搜索，我们暂时使用根目录ID
                     # 在实际使用中，可能需要通过API查找路径对应的文件夹ID
-                    params["folderid"] = self._normalize_fid(fid)
+                    scope = self._normalize_fid(fid)
+                    if scope is None:
+                        logger.warning(f"搜索范围目录不存在: {fid}")
+                        return []
+                    params["folderid"] = scope
                 else:
                     params["folderid"] = fid
 
@@ -1009,7 +1062,7 @@ class PCloudDrive(BaseDrive):
                     api_method = "getfilepublink"
                 else:
                     # 是文件夹，使用 getfolderpublink
-                    folder_id = self._get_folder_id_by_path(fid)
+                    folder_id = self._require_folder_id(fid)
                     params = {"folderid": folder_id}
                     api_method = "getfolderpublink"
             else:
@@ -1114,6 +1167,9 @@ class PCloudDrive(BaseDrive):
         """
         try:
             normalized_fid = self._normalize_fid(fid)
+            if normalized_fid is None:
+                logger.error(f"恢复目标无法解析: {fid}")
+                return False
 
             # 构建请求参数
             params = {}
@@ -1130,7 +1186,7 @@ class PCloudDrive(BaseDrive):
             # 检查是否指定了恢复目标目录
             restoreto = kwargs.get("restoreto")
             if restoreto:
-                params["restoreto"] = self._normalize_fid(restoreto)
+                params["restoreto"] = self._require_folder_id(restoreto)
 
             result = self._make_request("trash_restore", params)
 
@@ -1166,6 +1222,9 @@ class PCloudDrive(BaseDrive):
             fid = kwargs.get("fid")
             if fid:
                 normalized_fid = self._normalize_fid(fid)
+                if normalized_fid is None:
+                    logger.error(f"目标无法解析: {fid}")
+                    return False
 
                 # 判断是文件还是文件夹
                 if normalized_fid.startswith("f"):

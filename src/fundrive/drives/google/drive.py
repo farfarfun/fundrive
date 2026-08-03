@@ -15,7 +15,7 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 
 # 项目内部导入
-from fundrive.core import BaseDrive, DriveFile
+from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
 
 logger = getLogger("fundrive")
 
@@ -480,7 +480,7 @@ class GoogleDrive(BaseDrive):
                 return False
 
             # 确保目录存在
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            ensure_parent_dir(save_path)
 
             # 执行下载
             request = self.service.files().get_media(fileId=fid)

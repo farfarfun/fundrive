@@ -27,7 +27,7 @@ import requests
 from nltlog import getLogger
 from nltsecret import read_secret
 
-from fundrive.core import BaseDrive, DriveFile
+from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
 
 logger = getLogger("fundrive")
 
@@ -190,7 +190,7 @@ class MediaFireDrive(BaseDrive):
 
         return signature
 
-    def login(self) -> bool:
+    def login(self, *args: Any, **kwargs: Any) -> bool:
         """
         登录MediaFire账户
 
@@ -208,7 +208,7 @@ class MediaFireDrive(BaseDrive):
                         logger.info("✅ 使用现有会话令牌登录成功")
                         return True
                 except Exception as e:
-                    logger.info("现有会话令牌无效，重新登录", e)
+                    logger.info(f"现有会话令牌无效，重新登录: {e}")
                     self.session_token = None
 
             # 检查必要的登录参数
@@ -265,7 +265,7 @@ class MediaFireDrive(BaseDrive):
                 if result is not None:
                     return True
             except Exception as e:
-                logger.error("目录检查失败", e)
+                logger.error(f"目录检查失败: {e}")
 
             # 再尝试作为文件检查
             try:
@@ -274,7 +274,7 @@ class MediaFireDrive(BaseDrive):
                 )
                 return result is not None
             except Exception as e:
-                logger.debug("", e)
+                logger.debug(f"文件检查失败: {e}")
                 return False
 
         except Exception as e:
@@ -305,14 +305,18 @@ class MediaFireDrive(BaseDrive):
         try:
             logger.info(f"正在创建目录: {name}")
 
-            # 检查目录是否已存在
-            if return_if_exist and self.exist(fid, name):
-                logger.info(f"目录 {name} 已存在")
-                # 尝试获取已存在目录的ID
+            # 检查同名子目录是否已存在。
+            #
+            # 注意不能用 self.exist(fid, name) —— exist() 的签名是
+            # exist(fid, *args, **kwargs)，name 会被 *args 吞掉丢弃，实际只检查了
+            # 父目录是否存在（几乎恒为 True）。于是流程总会进到这个分支，在子目录
+            # 里找不到 name 之后 `return fid`，把**父目录 ID** 当成新目录 ID 返回，
+            # 调用方后续 upload_file(fid=父目录) 就把文件写到了上一层。
+            if return_if_exist:
                 for dir_info in self.get_dir_list(fid):
                     if dir_info.name == name:
+                        logger.info(f"目录 {name} 已存在，ID: {dir_info.fid}")
                         return dir_info.fid
-                return fid  # 如果无法获取具体ID，返回父目录ID
 
             # 创建目录
             params = {"parent_key": fid if fid != "root" else "", "foldername": name}
@@ -355,7 +359,7 @@ class MediaFireDrive(BaseDrive):
                     logger.info("✅ 文件删除成功")
                     return True
             except Exception as e:
-                logger.error("删除失败", e)
+                logger.error(f"删除失败: {e}")
 
             # 再尝试作为目录删除
             try:
@@ -366,7 +370,7 @@ class MediaFireDrive(BaseDrive):
                     logger.info("✅ 目录删除成功")
                     return True
             except Exception as e:
-                logger.error("删除失败", e)
+                logger.error(f"删除失败: {e}")
 
             logger.error("❌ 删除失败")
             return False
@@ -681,7 +685,7 @@ class MediaFireDrive(BaseDrive):
                 return False
 
             # 确保目录存在
-            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            ensure_parent_dir(local_path)
 
             # 下载文件
             response = self.session.get(download_url, stream=True, timeout=300)
@@ -702,7 +706,14 @@ class MediaFireDrive(BaseDrive):
             return False
 
     # 高级功能实现
-    def search(self, keyword: str, fid: str = "root", **kwargs) -> List[DriveFile]:
+    def search(
+        self,
+        keyword: str,
+        fid: str = "root",
+        file_type: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> List[DriveFile]:
         """
         搜索文件
 
@@ -713,6 +724,12 @@ class MediaFireDrive(BaseDrive):
         Returns:
             搜索结果列表
         """
+        if file_type is not None:
+            # 契约里有这个参数，本驱动尚未实现按类型过滤。明确告警，
+            # 而不是像以前那样被 **kwargs 静默吞掉。
+            logger.warning(
+                f"{type(self).__name__}.search 暂不支持 file_type 过滤，已忽略: {file_type!r}"
+            )
         try:
             logger.info(f"正在搜索文件: {keyword}")
 
@@ -775,7 +792,7 @@ class MediaFireDrive(BaseDrive):
             logger.error(f"创建分享链接失败: {e}")
             return None
 
-    def get_quota(self) -> Optional[Dict[str, int]]:
+    def get_quota(self, *args: Any, **kwargs: Any) -> Optional[Dict[str, int]]:
         """
         获取存储配额信息
 

@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          # 刻意只装核心依赖，不装任何可选 SDK：
+          # 测试必须能在裸环境下抓出驱动注册表的类名拼写错误。
+          pip install -e .
+          pip install pytest ruff
+
+      - name: Lint
+        run: ruff check src tests
+
+      - name: Format check
+        run: ruff format --check src tests
+
+      - name: Test
+        run: pytest
+
+      - name: Import smoke test (bare env, read-only-ish cwd)
+        run: |
+          cd "$(mktemp -d)"
+          python -c "
+          import fundrive
+          n = len(fundrive.get_supported_drives())
+          assert n >= 25, f'注册表只剩 {n} 个驱动，可能有 spec 被漏掉'
+          print(f'OK: {n} 个驱动已注册, 本机可用 {len(fundrive.list_available_drives())} 个')
+          "
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheel & sdist
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build
+      - name: Check metadata
+        run: |
+          pip install twine
+          twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
