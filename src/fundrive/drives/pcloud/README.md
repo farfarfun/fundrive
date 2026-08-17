@@ -39,7 +39,7 @@
 ### 依赖要求
 
 ```bash
-pip install requests funutil nltsecret funget
+pip install fundrive
 ```
 
 ### 配置认证信息

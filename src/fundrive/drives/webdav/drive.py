@@ -8,7 +8,7 @@ from nltlog import getLogger
 from nltsecret import read_secret
 import requests
 from xml.etree import ElementTree as ET
-from funget import simple_download, single_upload
+from nltget import simple_download, single_upload
 from fundrive.core import BaseDrive, DriveFile
 
 logger = getLogger("fundrive")

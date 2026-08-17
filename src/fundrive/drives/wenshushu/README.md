@@ -29,7 +29,7 @@
 pip install requests
 pip install orjson
 pip install tqdm
-pip install funget
+pip install "fundrive[wenshushu]"
 pip install nltsecret
 pip install funutil
 ```

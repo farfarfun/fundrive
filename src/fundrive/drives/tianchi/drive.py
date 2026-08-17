@@ -21,7 +21,7 @@ from typing import Any, List, Optional
 
 import orjson
 import requests
-from funget import simple_download
+from nltget import simple_download
 from nltlog import getLogger
 from nltsecret import read_secret
 

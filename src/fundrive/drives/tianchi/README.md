@@ -26,7 +26,7 @@
 天池驱动需要以下Python包：
 
 ```bash
-pip install requests orjson funget nltsecret funutil
+pip install fundrive
 ```
 
 或者安装完整的FunDrive项目：

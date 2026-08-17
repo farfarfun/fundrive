@@ -30,7 +30,7 @@ import base58
 import orjson
 from Cryptodome.Cipher import DES
 from Cryptodome.Util import Padding
-from funget import simple_download
+from nltget import simple_download
 from nltlog import getLogger
 from tqdm import tqdm
 

@@ -26,7 +26,7 @@ OpenXLab是上海人工智能实验室推出的开放平台，提供数据集存
 OpenXLab驱动需要以下Python包：
 
 ```bash
-pip install requests funget nltsecret funutil
+pip install fundrive
 ```
 
 或者安装完整的FunDrive项目：

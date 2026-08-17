@@ -25,7 +25,7 @@
 ### 系统依赖
 ```bash
 pip install requests
-pip install funget
+pip install fundrive
 pip install nltsecret
 pip install funutil
 ```

@@ -3,7 +3,7 @@ import os
 from typing import Any, Dict, List, Optional
 
 import requests
-from funget import simple_download
+from nltget import simple_download
 from nltlog import getLogger
 from nltsecret import read_secret
 

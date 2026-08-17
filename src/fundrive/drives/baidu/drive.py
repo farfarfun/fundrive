@@ -4,7 +4,7 @@ from typing import Any, List, Optional
 
 # 第三方库导入
 from fundrives.baidu import BaiduPCSApi, PcsFile
-from funget import download
+from nltget import download
 from nltlog import getLogger
 from nltsecret import read_secret
 

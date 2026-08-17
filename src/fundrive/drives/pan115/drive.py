@@ -7,9 +7,9 @@ import time
 import traceback
 from typing import Any, List, Optional
 
-from funfile import file_size, file_sha1
+from nltfile import file_size, file_sha1
 from p115client import P115Client
-from funget import simple_download
+from nltget import simple_download
 from nltlog import getLogger
 from pathlib import Path
 from fundrive.core import BaseDrive, DriveFile
@@ -69,7 +69,6 @@ class Pan115Drive(BaseDrive):
         else:
             self._client = P115Client(
                 Path("~/115-cookies.txt").expanduser(),
-                check_for_relogin=True,
                 ensure_cookies=True,
                 app="qandroid",
             )
