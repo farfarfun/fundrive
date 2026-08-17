@@ -69,8 +69,6 @@ class Pan115Drive(BaseDrive):
         else:
             self._client = P115Client(
                 Path("~/115-cookies.txt").expanduser(),
-                check_for_relogin=True,
-                ensure_cookies=True,
                 app="qandroid",
             )
             self._client.login()
