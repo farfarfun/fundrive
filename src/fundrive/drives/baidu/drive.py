@@ -4,9 +4,9 @@ from typing import Any, List, Optional
 
 # 第三方库导入
 from fundrives.baidu import BaiduPCSApi, PcsFile
-from nltget import download
+from funget import download
 from nltlog import getLogger
-from nltsecret import read_secret
+from funsecret import read_secret
 
 # 项目内部导入
 from fundrive.core import BaseDrive, DriveFile

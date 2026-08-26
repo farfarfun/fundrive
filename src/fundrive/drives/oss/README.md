@@ -17,7 +17,7 @@
 ## 🚀 功能特性
 
 ### ✅ 支持的功能
-- **认证登录**：支持AccessKey认证和nltsecret配置管理
+- **认证登录**：支持AccessKey认证和funsecret配置管理
 - **文件操作**：上传、下载、删除、重命名文件
 - **目录管理**：创建、删除、列举目录
 - **批量操作**：支持批量上传下载和递归处理
@@ -49,16 +49,16 @@
 
 ### 3. 配置访问信息
 
-使用nltsecret配置管理工具设置以下信息：
+使用funsecret配置管理工具设置以下信息：
 
 ```bash
 # 设置访问密钥
-nltsecret set fundrive oss access_key "your_access_key_id"
-nltsecret set fundrive oss access_secret "your_access_key_secret"
+funsecret set fundrive oss access_key "your_access_key_id"
+funsecret set fundrive oss access_secret "your_access_key_secret"
 
 # 设置Bucket信息
-nltsecret set fundrive oss bucket_name "your_bucket_name"
-nltsecret set fundrive oss endpoint "oss-cn-hangzhou.aliyuncs.com"
+funsecret set fundrive oss bucket_name "your_bucket_name"
+funsecret set fundrive oss endpoint "oss-cn-hangzhou.aliyuncs.com"
 ```
 
 ### 4. Endpoint说明
@@ -81,7 +81,7 @@ from fundrive.drives.oss.drive import OSSDrive
 # 创建驱动实例
 drive = OSSDrive()
 
-# 登录（使用nltsecret配置）
+# 登录（使用funsecret配置）
 if drive.login():
     print("登录成功！")
 

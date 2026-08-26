@@ -3,7 +3,7 @@ from typing import Any, List, Optional
 
 import oss2
 from nltlog import getLogger
-from nltsecret import read_secret
+from funsecret import read_secret
 from tqdm import tqdm
 
 from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
@@ -39,7 +39,7 @@ class OSSDrive(BaseDrive):
     - 支持文件和目录的基本操作
     - 支持大文件上传下载进度显示
     - 支持批量操作和递归处理
-    - 集成nltsecret配置管理
+    - 集成funsecret配置管理
     """
 
     def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:

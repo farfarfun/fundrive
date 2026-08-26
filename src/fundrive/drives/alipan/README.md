@@ -30,16 +30,16 @@ pip install aligo requests
 
 ## 🔧 配置方法
 
-### 方法一：使用 nltsecret（推荐）
+### 方法一：使用 funsecret（推荐）
 
 ```bash
 # 配置 AlipanDrive (基于aligo)
-nltsecret set fundrive alipan refresh_token "your_refresh_token"
+funsecret set fundrive alipan refresh_token "your_refresh_token"
 
 # 配置 AliopenDrive (基于开放API)
-nltsecret set fundrive alipan access_token "your_access_token"
-nltsecret set fundrive alipan client_id "your_client_id"
-nltsecret set fundrive alipan client_secret "your_client_secret"
+funsecret set fundrive alipan access_token "your_access_token"
+funsecret set fundrive alipan client_id "your_client_id"
+funsecret set fundrive alipan client_secret "your_client_secret"
 ```
 
 ### 方法二：环境变量
@@ -77,7 +77,7 @@ export ALIPAN_CLIENT_SECRET="your_client_secret"
 
 3. **保存 refresh_token**:
    ```bash
-   nltsecret set fundrive alipan refresh_token "your_refresh_token"
+   funsecret set fundrive alipan refresh_token "your_refresh_token"
    ```
 
 ### AliopenDrive (access_token)
@@ -90,9 +90,9 @@ export ALIPAN_CLIENT_SECRET="your_client_secret"
 
 4. **保存凭据**:
    ```bash
-   nltsecret set fundrive alipan access_token "your_access_token"
-   nltsecret set fundrive alipan client_id "your_client_id"
-   nltsecret set fundrive alipan client_secret "your_client_secret"
+   funsecret set fundrive alipan access_token "your_access_token"
+   funsecret set fundrive alipan client_id "your_client_id"
+   funsecret set fundrive alipan client_secret "your_client_secret"
    ```
 
 ## 💻 使用示例

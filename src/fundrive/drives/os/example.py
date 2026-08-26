@@ -10,8 +10,8 @@
     python example.py --help         # 显示帮助信息
 
 配置方法:
-    # 使用nltsecret配置（推荐）
-    nltsecret set fundrive os root_path "/path/to/your/storage"
+    # 使用funsecret配置（推荐）
+    funsecret set fundrive os root_path "/path/to/your/storage"
 
     # 或者设置环境变量
     export OS_ROOT_PATH="/path/to/your/storage"

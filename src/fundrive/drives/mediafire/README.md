@@ -28,7 +28,7 @@ MediaFire是一个流行的云存储服务，提供文件存储、共享和同�
 MediaFire驱动需要以下Python包：
 
 ```bash
-pip install requests nltsecret funutil
+pip install requests funsecret funutil
 ```
 
 或者安装完整的FunDrive项目：
@@ -57,17 +57,17 @@ pip install fundrive[mediafire]
 
 ### 配置方法
 
-#### 方法1: 使用nltsecret（推荐）
+#### 方法1: 使用funsecret（推荐）
 
 ```bash
 # 设置MediaFire认证信息
-nltsecret set fundrive mediafire email "your_email@example.com"
-nltsecret set fundrive mediafire password "your_password"
-nltsecret set fundrive mediafire app_id "your_app_id"
-nltsecret set fundrive mediafire api_key "your_api_key"
+funsecret set fundrive mediafire email "your_email@example.com"
+funsecret set fundrive mediafire password "your_password"
+funsecret set fundrive mediafire app_id "your_app_id"
+funsecret set fundrive mediafire api_key "your_api_key"
 
 # 可选：保存会话令牌以避免重复登录
-nltsecret set fundrive mediafire session_token "your_session_token"
+funsecret set fundrive mediafire session_token "your_session_token"
 ```
 
 #### 方法2: 使用环境变量

@@ -318,7 +318,7 @@ def main():
   python example.py            # 默认运行快速演示
 
 配置要求:
-  需要在 nltsecret 中配置 Dropbox 访问令牌:
+  需要在 funsecret 中配置 Dropbox 访问令牌:
   - fundrive.dropbox.access_token: 您的 Dropbox API 访问令牌
   
   或者在环境变量中设置:

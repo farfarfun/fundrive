@@ -10,9 +10,9 @@ OpenXLab驱动测试和演示脚本
     python example.py --help         # 显示帮助信息
 
 配置方法:
-    # 使用nltsecret配置（推荐）
-    nltsecret set fundrive openxlab opendatalab_session "your_session_cookie"
-    nltsecret set fundrive openxlab ssouid "your_ssouid_cookie"
+    # 使用funsecret配置（推荐）
+    funsecret set fundrive openxlab opendatalab_session "your_session_cookie"
+    funsecret set fundrive openxlab ssouid "your_ssouid_cookie"
 
     # 或者设置环境变量
     export OPENXLAB_SESSION="your_session_cookie"
@@ -43,9 +43,9 @@ def create_openxlab_drive():
         logger.error(f"❌ 创建OpenXLabDrive实例失败: {e}")
         logger.info("请确保已正确配置OpenXLab认证信息:")
         logger.info(
-            "nltsecret set fundrive openxlab opendatalab_session 'your_session_cookie'"
+            "funsecret set fundrive openxlab opendatalab_session 'your_session_cookie'"
         )
-        logger.info("nltsecret set fundrive openxlab ssouid 'your_ssouid_cookie'")
+        logger.info("funsecret set fundrive openxlab ssouid 'your_ssouid_cookie'")
         return None
 
 

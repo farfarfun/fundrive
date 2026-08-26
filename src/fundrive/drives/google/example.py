@@ -40,9 +40,9 @@ def create_test_drive():
             logger.error("请确保已正确配置以下项目:")
             logger.error("1. Google Drive API凭据文件 (credentials.json)")
             logger.error("2. 完成OAuth2授权流程")
-            logger.error("3. 使用nltsecret配置凭据文件路径:")
+            logger.error("3. 使用funsecret配置凭据文件路径:")
             logger.error(
-                "   nltsecret set fundrive google_drive credentials_file '/path/to/credentials.json'"
+                "   funsecret set fundrive google_drive credentials_file '/path/to/credentials.json'"
             )
             return None
 
@@ -218,7 +218,7 @@ def main():
      - 创建OAuth2凭据并下载credentials.json
   
   2. 配置凭据文件路径:
-     nltsecret set fundrive google_drive credentials_file "/path/to/credentials.json"
+     funsecret set fundrive google_drive credentials_file "/path/to/credentials.json"
   
   3. 首次运行时会自动打开浏览器进行OAuth授权
         """,

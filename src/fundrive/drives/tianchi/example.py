@@ -10,10 +10,10 @@
     python example.py --help         # 显示帮助信息
 
 配置方法:
-    # 使用nltsecret配置（推荐）
-    nltsecret set fundrive tianchi cookies tc "your_tc_cookie"
-    nltsecret set fundrive tianchi cookies _csrf "your_csrf_cookie"
-    nltsecret set fundrive tianchi headers csrf-token "your_csrf_token"
+    # 使用funsecret配置（推荐）
+    funsecret set fundrive tianchi cookies tc "your_tc_cookie"
+    funsecret set fundrive tianchi cookies _csrf "your_csrf_cookie"
+    funsecret set fundrive tianchi headers csrf-token "your_csrf_token"
 
     # 或者设置环境变量
     export TIANCHI_TC_COOKIE="your_tc_cookie"
@@ -44,10 +44,10 @@ def create_tianchi_drive():
     except Exception as e:
         logger.error(f"❌ 创建TianChiDrive实例失败: {e}")
         logger.info("请确保已正确配置天池认证信息:")
-        logger.info("nltsecret set fundrive tianchi cookies tc 'your_tc_cookie'")
-        logger.info("nltsecret set fundrive tianchi cookies _csrf 'your_csrf_cookie'")
+        logger.info("funsecret set fundrive tianchi cookies tc 'your_tc_cookie'")
+        logger.info("funsecret set fundrive tianchi cookies _csrf 'your_csrf_cookie'")
         logger.info(
-            "nltsecret set fundrive tianchi headers csrf-token 'your_csrf_token'"
+            "funsecret set fundrive tianchi headers csrf-token 'your_csrf_token'"
         )
         return None
 

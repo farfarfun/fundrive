@@ -25,7 +25,7 @@ from urllib.parse import urljoin
 
 import requests
 from nltlog import getLogger
-from nltsecret import read_secret
+from funsecret import read_secret
 
 from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
 

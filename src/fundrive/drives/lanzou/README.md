@@ -6,7 +6,7 @@
 
 2. 将本地的文件单向同步到云端；
 
-3. 对`ylogin`和`phpdisk_info`进行简单的本地化保存，第二次无需传入，避免明文数据泄露，参考[notechats/nltsecret](https://github.com/notechats/nltsecret)；
+3. 对`ylogin`和`phpdisk_info`进行简单的本地化保存，第二次无需传入，避免明文数据泄露，参考[notechats/funsecret](https://github.com/notechats/funsecret)；
 
 
 ---

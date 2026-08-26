@@ -4,7 +4,7 @@ from typing import Any, List, Optional
 
 from aligo import Aligo
 from nltlog import getLogger
-from nltsecret import read_secret
+from funsecret import read_secret
 
 from fundrive.core import BaseDrive, DriveFile
 from fundrive.core.base import get_filepath

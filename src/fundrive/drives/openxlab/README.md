@@ -52,12 +52,12 @@ pip install fundrive[openxlab]
 
 ### 配置方法
 
-#### 方法1: 使用nltsecret（推荐）
+#### 方法1: 使用funsecret（推荐）
 
 ```bash
 # 设置OpenXLab认证信息
-nltsecret set fundrive openxlab opendatalab_session "your_session_cookie_value"
-nltsecret set fundrive openxlab ssouid "your_ssouid_cookie_value"
+funsecret set fundrive openxlab opendatalab_session "your_session_cookie_value"
+funsecret set fundrive openxlab ssouid "your_ssouid_cookie_value"
 ```
 
 #### 方法2: 使用环境变量

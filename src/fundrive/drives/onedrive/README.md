@@ -63,11 +63,11 @@ drive = OneDrive(
     refresh_token="your_refresh_token"
 )
 
-# 方法2: 使用nltsecret配置
-nltsecret set fundrive onedrive client_id "your_client_id"
-nltsecret set fundrive onedrive client_secret "your_client_secret"
-nltsecret set fundrive onedrive access_token "your_access_token"
-nltsecret set fundrive onedrive refresh_token "your_refresh_token"
+# 方法2: 使用funsecret配置
+funsecret set fundrive onedrive client_id "your_client_id"
+funsecret set fundrive onedrive client_secret "your_client_secret"
+funsecret set fundrive onedrive access_token "your_access_token"
+funsecret set fundrive onedrive refresh_token "your_refresh_token"
 
 # 方法3: 环境变量
 export ONEDRIVE_CLIENT_ID="your_client_id"
@@ -166,7 +166,7 @@ python example.py --interactive
 pip install requests
 
 # 项目依赖
-pip install nltsecret funutil
+pip install funsecret funutil
 ```
 
 ## 🔒 安全说明

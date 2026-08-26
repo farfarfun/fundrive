@@ -7,9 +7,9 @@ import time
 import traceback
 from typing import Any, List, Optional
 
-from nltfile import file_size, file_sha1
+from funfile import file_size, file_sha1
 from p115client import P115Client
-from nltget import simple_download
+from funget import simple_download
 from nltlog import getLogger
 from pathlib import Path
 from fundrive.core import BaseDrive, DriveFile

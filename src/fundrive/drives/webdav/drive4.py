@@ -2,7 +2,7 @@ import os.path
 from typing import List, Optional
 
 from nltlog import getLogger
-from nltsecret import read_secret
+from funsecret import read_secret
 from webdav4.client import Client
 
 from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir

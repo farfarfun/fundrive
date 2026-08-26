@@ -5,7 +5,7 @@ from typing import Any, List, Optional
 import dropbox
 from dropbox.exceptions import ApiError, AuthError
 from nltlog import getLogger
-from nltsecret import read_secret
+from funsecret import read_secret
 from tqdm import tqdm
 
 # 项目内部
@@ -25,7 +25,7 @@ class DropboxDrive(BaseDrive):
     - 支持文件和目录的基本操作
     - 支持大文件上传下载进度显示
     - 支持批量操作和递归处理
-    - 集成nltsecret配置管理
+    - 集成funsecret配置管理
     - 支持分享链接和协作功能
     """
 

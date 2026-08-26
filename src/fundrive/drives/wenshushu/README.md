@@ -30,7 +30,7 @@ pip install requests
 pip install orjson
 pip install tqdm
 pip install "fundrive[wenshushu]"
-pip install nltsecret
+pip install funsecret
 pip install funutil
 ```
 

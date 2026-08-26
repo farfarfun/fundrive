@@ -10,11 +10,11 @@ MediaFire驱动测试和演示脚本
     python example.py --help         # 显示帮助信息
 
 配置方法:
-    # 使用nltsecret配置（推荐）
-    nltsecret set fundrive mediafire email "your_email@example.com"
-    nltsecret set fundrive mediafire password "your_password"
-    nltsecret set fundrive mediafire app_id "your_app_id"
-    nltsecret set fundrive mediafire api_key "your_api_key"
+    # 使用funsecret配置（推荐）
+    funsecret set fundrive mediafire email "your_email@example.com"
+    funsecret set fundrive mediafire password "your_password"
+    funsecret set fundrive mediafire app_id "your_app_id"
+    funsecret set fundrive mediafire api_key "your_api_key"
 
     # 或者设置环境变量
     export MEDIAFIRE_EMAIL="your_email@example.com"
@@ -44,10 +44,10 @@ def create_mediafire_drive():
     except Exception as e:
         logger.error(f"❌ 创建MediaFireDrive实例失败: {e}")
         logger.info("请确保已正确配置MediaFire认证信息:")
-        logger.info("nltsecret set fundrive mediafire email 'your_email@example.com'")
-        logger.info("nltsecret set fundrive mediafire password 'your_password'")
-        logger.info("nltsecret set fundrive mediafire app_id 'your_app_id'")
-        logger.info("nltsecret set fundrive mediafire api_key 'your_api_key'")
+        logger.info("funsecret set fundrive mediafire email 'your_email@example.com'")
+        logger.info("funsecret set fundrive mediafire password 'your_password'")
+        logger.info("funsecret set fundrive mediafire app_id 'your_app_id'")
+        logger.info("funsecret set fundrive mediafire api_key 'your_api_key'")
         return None
 
 

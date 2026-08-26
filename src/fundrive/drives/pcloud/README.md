@@ -44,14 +44,14 @@ pip install fundrive
 
 ### 配置认证信息
 
-使用 `nltsecret` 配置管理工具设置认证信息：
+使用 `funsecret` 配置管理工具设置认证信息：
 
 ```bash
 # 设置用户名
-nltsecret set fundrive.pcloud.username "your_username"
+funsecret set fundrive.pcloud.username "your_username"
 
 # 设置密码
-nltsecret set fundrive.pcloud.password "your_password"
+funsecret set fundrive.pcloud.password "your_password"
 ```
 
 或者在代码中直接传入：
@@ -77,7 +77,7 @@ from fundrive.drives.pcloud.drive import PCloudDrive
 # 创建驱动实例
 drive = PCloudDrive()
 
-# 登录（使用 nltsecret 配置的认证信息）
+# 登录（使用 funsecret 配置的认证信息）
 if drive.login():
     print("登录成功")
 else:

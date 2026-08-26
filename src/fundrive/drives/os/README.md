@@ -20,11 +20,11 @@ pip install fundrive
 
 ## 🔧 配置方法
 
-### 方法一：使用 nltsecret（推荐）
+### 方法一：使用 funsecret（推荐）
 
 ```bash
 # 配置根目录路径
-nltsecret set fundrive os root_path "/path/to/your/storage"
+funsecret set fundrive os root_path "/path/to/your/storage"
 ```
 
 ### 方法二：环境变量

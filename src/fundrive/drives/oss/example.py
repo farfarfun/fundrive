@@ -12,7 +12,7 @@ API 版本: v2.0
 - python example.py  # 运行综合功能测试
 
 配置方法：
-请在 nltsecret 中配置以下信息：
+请在 funsecret 中配置以下信息：
 - fundrive.oss.access_key     # 阿里云访问密钥ID
 - fundrive.oss.access_secret  # 阿里云访问密钥密码
 - fundrive.oss.bucket_name    # OSS Bucket名称
@@ -76,7 +76,7 @@ def main():
 
     # 配置说明
     logger.info("\n🔧 配置说明:")
-    logger.info("请确保已通过 nltsecret 配置以下信息:")
+    logger.info("请确保已通过 funsecret 配置以下信息:")
     logger.info("- fundrive.oss.access_key     # 阿里云访问密钥ID")
     logger.info("- fundrive.oss.access_secret  # 阿里云访问密钥密码")
     logger.info("- fundrive.oss.bucket_name    # OSS Bucket名称")

@@ -5,10 +5,10 @@ from typing import Any, List, Optional
 from urllib.parse import quote, unquote, urlparse
 
 from nltlog import getLogger
-from nltsecret import read_secret
+from funsecret import read_secret
 import requests
 from xml.etree import ElementTree as ET
-from nltget import simple_download, single_upload
+from funget import simple_download, single_upload
 from fundrive.core import BaseDrive, DriveFile
 
 logger = getLogger("fundrive")

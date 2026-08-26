@@ -26,7 +26,7 @@
 ```bash
 pip install requests
 pip install fundrive
-pip install nltsecret
+pip install funsecret
 pip install funutil
 ```
 
@@ -37,13 +37,13 @@ pip install fundrive
 
 ## 配置方法
 
-### 方法1: 使用nltsecret（推荐）
+### 方法1: 使用funsecret（推荐）
 ```bash
 # 设置分享链接key
-nltsecret set fundrive.tsinghua.share_key "your_share_key"
+funsecret set fundrive.tsinghua.share_key "your_share_key"
 
 # 设置分享密码（如果有）
-nltsecret set fundrive.tsinghua.password "your_password"
+funsecret set fundrive.tsinghua.password "your_password"
 ```
 
 ### 方法2: 环境变量

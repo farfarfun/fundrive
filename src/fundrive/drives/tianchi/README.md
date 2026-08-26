@@ -56,13 +56,13 @@ pip install fundrive[tianchi]
 
 ### 配置方法
 
-#### 方法1: 使用nltsecret（推荐）
+#### 方法1: 使用funsecret（推荐）
 
 ```bash
 # 设置天池认证信息
-nltsecret set fundrive tianchi cookies tc "your_tc_cookie_value"
-nltsecret set fundrive tianchi cookies _csrf "your_csrf_cookie_value"
-nltsecret set fundrive tianchi headers csrf-token "your_csrf_token_value"
+funsecret set fundrive tianchi cookies tc "your_tc_cookie_value"
+funsecret set fundrive tianchi cookies _csrf "your_csrf_cookie_value"
+funsecret set fundrive tianchi headers csrf-token "your_csrf_token_value"
 ```
 
 #### 方法2: 使用环境变量

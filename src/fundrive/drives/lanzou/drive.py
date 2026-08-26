@@ -8,7 +8,7 @@ from typing import Any, List, Optional
 from fundrives.lanzou import LanZouCloud
 from fundrives.lanzou.utils import convert_file_size_to_int
 from nltlog import getLogger
-from nltsecret import read_secret
+from funsecret import read_secret
 from tqdm import tqdm
 
 from fundrive.core import BaseDrive, DriveFile

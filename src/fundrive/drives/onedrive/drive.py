@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 # 第三方库导入
 from nltlog import getLogger
-from nltsecret import read_secret
+from funsecret import read_secret
 
 # 项目内部导入
 from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
@@ -24,7 +24,7 @@ class OneDrive(BaseDrive):
     - 支持文件和目录的基本操作
     - 支持大文件上传下载
     - 支持搜索和分享功能
-    - 集成nltsecret配置管理
+    - 集成funsecret配置管理
     - 支持OAuth2认证流程
     """
 
