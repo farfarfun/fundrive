@@ -11,3 +11,29 @@ dist
 .venv
 logs
 uv.lock
+
+# ---- AI 编码助手 ----
+# 只忽略本地状态；团队有意共享的 agent / 命令 / 规则定义仍然版本化。
+# 必须写 `dir/*` 而不是 `dir/`：父目录被整体排除后 git 不会下探，
+# 下面的 `!` 取消规则就永远不会生效。
+.claude/*
+!.claude/agents/
+!.claude/commands/
+!.claude/skills/
+!.claude/settings.json
+.codex/*
+!.codex/prompts/
+.cursor/*
+!.cursor/agents/
+!.cursor/rules/
+
+# 其余助手：目前没有共享内容，整体忽略
+.aider*
+.gemini/
+.continue/
+.windsurf/
+.roo/
+.cline/
+.specstory/
+CLAUDE.local.md
+AGENTS.local.md
