@@ -8,7 +8,7 @@
 import os
 import tempfile
 
-from nltlog import getLogger
+from farlog import getLogger
 
 from .base import BaseDrive
 

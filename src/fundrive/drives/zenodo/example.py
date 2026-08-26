@@ -12,7 +12,7 @@ API 版本: v1.0
 - python example.py  # 运行综合功能测试
 
 配置方法：
-- 在 nltsecret 中设置: fundrive.zenodo.access_token
+- 在 funsecret 中设置: fundrive.zenodo.access_token
 - 或者直接在代码中传入 access_token 参数
 
 注意事项：
@@ -27,7 +27,7 @@ API 版本: v1.0
 
 from typing import Optional
 
-from nltlog import getLogger
+from farlog import getLogger
 
 from fundrive.core import create_drive_tester
 from fundrive.drives.zenodo import ZenodoDrive
@@ -79,7 +79,7 @@ def main():
 
     # 配置说明
     logger.info("🔧 配置说明:")
-    logger.info("请确保已通过 nltsecret 配置以下信息:")
+    logger.info("请确保已通过 funsecret 配置以下信息:")
     logger.info("- fundrive.zenodo.access_token  # Zenodo 访问令牌")
     logger.info("📚 相关文档:")
     logger.info("- API 文档: https://developers.zenodo.org/#rest-api")

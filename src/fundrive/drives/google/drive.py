@@ -3,8 +3,8 @@ import io
 import os
 from typing import Any, List, Optional
 
-from nltlog import getLogger
-from nltsecret import read_secret
+from farlog import getLogger
+from funsecret import read_secret
 
 # 第三方库导入
 from google.auth.transport.requests import Request
@@ -32,7 +32,7 @@ class GoogleDrive(BaseDrive):
     - 支持文件和目录的基本操作
     - 支持大文件上传下载
     - 支持搜索和分享功能
-    - 集成nltsecret配置管理
+    - 集成funsecret配置管理
     - 支持OAuth2认证流程
     """
 

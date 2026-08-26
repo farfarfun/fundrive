@@ -58,9 +58,9 @@ drive = GoogleDrive(
     token_file="/path/to/token.json"
 )
 
-# 方法2: 使用nltsecret配置
-nltsecret set fundrive google_drive credentials_file "/path/to/credentials.json"
-nltsecret set fundrive google_drive token_file "/path/to/token.json"
+# 方法2: 使用funsecret配置
+funsecret set fundrive google_drive credentials_file "/path/to/credentials.json"
+funsecret set fundrive google_drive token_file "/path/to/token.json"
 
 # 方法3: 环境变量
 export GOOGLE_DRIVE_CREDENTIALS_FILE="/path/to/credentials.json"
@@ -161,7 +161,7 @@ python example.py --interactive
 pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib
 
 # 项目依赖
-pip install nltsecret funutil
+pip install funsecret funutil
 ```
 
 ## 🔒 安全说明

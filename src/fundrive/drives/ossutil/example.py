@@ -3,7 +3,7 @@ import os
 import tempfile
 
 # 第三方库导入
-from nltlog import getLogger
+from farlog import getLogger
 
 # 项目内部导入
 from fundrive.drives.ossutil import OSSUtilDrive

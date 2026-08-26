@@ -11,7 +11,7 @@ import time
 from collections import OrderedDict
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from nltlog import getLogger
+from farlog import getLogger
 
 logger = getLogger("fundrive.utils")
 

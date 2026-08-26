@@ -4,9 +4,9 @@ from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
 import requests
-from nltget import download
-from nltlog import getLogger
-from nltsecret import read_secret
+from funget import download
+from farlog import getLogger
+from funsecret import read_secret
 
 from fundrive.core import BaseDrive, DriveFile
 from fundrive.core.http import new_session
@@ -664,7 +664,7 @@ class PCloudDrive(BaseDrive):
             if not download_url:
                 raise Exception(f"无法获取文件 {fid} 的下载链接")
 
-            # 使用 nltget 工具下载文件
+            # 使用 funget 工具下载文件
             download(download_url, str(save_path))
 
             return True

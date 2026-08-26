@@ -44,10 +44,10 @@ pip install fundrive
 
 ### 2. 配置认证信息
 
-使用 nltsecret 配置认证信息：
+使用 funsecret 配置认证信息：
 
 ```python
-from nltsecret import write_secret
+from funsecret import write_secret
 
 # 配置 OSS 认证信息
 write_secret("fundrive.ossutil.access_key", "your_access_key")
@@ -303,7 +303,7 @@ python -m fundrive.drives.ossutil.example interactive
 
 ### 4. 安全建议
 - 不要在代码中硬编码 AccessKey
-- 使用 nltsecret 安全存储认证信息
+- 使用 funsecret 安全存储认证信息
 - 定期轮换 AccessKey
 - 使用 HTTPS 传输
 
@@ -341,7 +341,7 @@ A: 建议：
 - [阿里云 OSS 官方文档](https://help.aliyun.com/zh/oss/)
 - [ossutil 工具文档](https://help.aliyun.com/zh/oss/developer-reference/ossutil-overview/)
 - [FunDrive 项目文档](../../docs/)
-- [nltsecret 配置管理](https://github.com/farfarfun/nltsecret)
+- [funsecret 配置管理](https://github.com/farfarfun/funsecret)
 
 ## 🤝 贡献
 

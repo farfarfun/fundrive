@@ -45,8 +45,8 @@ class DriveSpec(NamedTuple):
 
 # 驱动注册表 —— 按流行度排序。
 #
-# extra=None 表示该驱动只用到核心依赖（requests / orjson / nltget / tqdm /
-# nltlog / nltsecret），无需额外安装。注意 pyproject 里的 github/gitee/
+# extra=None 表示该驱动只用到核心依赖（requests / orjson / funget / tqdm /
+# farlog / funsecret），无需额外安装。注意 pyproject 里的 github/gitee/
 # onedrive/tsinghua extra 只包含核心依赖，属于空 extra，因此这里标 None。
 DRIVE_SPECS: Dict[str, DriveSpec] = {
     # 🌟 全球主流服务

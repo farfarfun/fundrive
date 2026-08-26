@@ -17,7 +17,7 @@ GitHub驱动示例和测试脚本
 3. 交互式演示: python example.py --interactive
 
 配置方法:
-1. 使用nltsecret: nltsecret set fundrive.github.access_token "your_token"
+1. 使用funsecret: funsecret set fundrive.github.access_token "your_token"
 2. 环境变量: export GITHUB_ACCESS_TOKEN="your_token"
 3. 代码中直接设置
 
@@ -29,7 +29,7 @@ import os
 import tempfile
 from typing import List
 
-from nltlog import getLogger
+from farlog import getLogger
 
 from fundrive.core import DriveFile
 from fundrive.drives.github import GitHubDrive
@@ -213,7 +213,7 @@ def run_quick_demo():
         logger.info("  export GITHUB_ACCESS_TOKEN='your_access_token'")
         logger.info("  export GITHUB_REPO_OWNER='your_username'")
         logger.info("  export GITHUB_REPO_NAME='your_repo_name'")
-        logger.info("或使用nltsecret配置")
+        logger.info("或使用funsecret配置")
         return
 
     # 创建驱动实例
@@ -367,10 +367,10 @@ def main():
   export GITHUB_REPO_OWNER="your_username"
   export GITHUB_REPO_NAME="your_repo_name"
   
-  # 使用nltsecret (推荐)
-  nltsecret set fundrive.github.access_token "your_access_token"
-  nltsecret set fundrive.github.repo_owner "your_username"
-  nltsecret set fundrive.github.repo_name "your_repo_name"
+  # 使用funsecret (推荐)
+  funsecret set fundrive.github.access_token "your_access_token"
+  funsecret set fundrive.github.repo_owner "your_username"
+  funsecret set fundrive.github.repo_name "your_repo_name"
         """,
     )
 

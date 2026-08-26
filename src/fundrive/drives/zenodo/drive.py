@@ -3,9 +3,9 @@ import os
 from typing import Any, Dict, List, Optional
 
 import requests
-from nltget import simple_download
-from nltlog import getLogger
-from nltsecret import read_secret
+from funget import simple_download
+from farlog import getLogger
+from funsecret import read_secret
 
 from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
 

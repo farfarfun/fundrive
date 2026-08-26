@@ -14,9 +14,9 @@
     python example.py --help         # 显示帮助信息
 
 配置方法:
-    # 使用nltsecret配置（推荐）
-    nltsecret set fundrive alipan refresh_token "your_refresh_token"
-    nltsecret set fundrive alipan access_token "your_access_token"
+    # 使用funsecret配置（推荐）
+    funsecret set fundrive alipan refresh_token "your_refresh_token"
+    funsecret set fundrive alipan access_token "your_access_token"
 
     # 或者设置环境变量
     export ALIPAN_REFRESH_TOKEN="your_refresh_token"
@@ -27,7 +27,7 @@ import argparse
 import os
 import tempfile
 
-from nltlog import getLogger
+from farlog import getLogger
 
 from fundrive.drives.alipan import AliopenDrive, AlipanDrive
 
@@ -44,7 +44,7 @@ def create_alipan_drive():
     except Exception as e:
         logger.error(f"❌ 创建AlipanDrive实例失败: {e}")
         logger.info("请确保已正确配置refresh_token:")
-        logger.info("nltsecret set fundrive alipan refresh_token 'your_refresh_token'")
+        logger.info("funsecret set fundrive alipan refresh_token 'your_refresh_token'")
         return None
 
 
@@ -58,7 +58,7 @@ def create_aliopen_drive():
     except Exception as e:
         logger.error(f"❌ 创建AliopenDrive实例失败: {e}")
         logger.info("请确保已正确配置access_token:")
-        logger.info("nltsecret set fundrive alipan access_token 'your_access_token'")
+        logger.info("funsecret set fundrive alipan access_token 'your_access_token'")
         return None
 
 

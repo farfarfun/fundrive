@@ -17,7 +17,7 @@
 3. 交互式演示: python example.py --interactive
 
 配置方法:
-1. 使用nltsecret: nltsecret set fundrive.tsinghua.share_key "your_share_key"
+1. 使用funsecret: funsecret set fundrive.tsinghua.share_key "your_share_key"
 2. 环境变量: export TSINGHUA_SHARE_KEY="your_share_key"
 3. 代码中直接设置
 
@@ -213,7 +213,7 @@ def run_quick_demo():
         print("⚠️ 未找到分享链接配置")
         print("请设置环境变量: export TSINGHUA_SHARE_KEY='your_share_key'")
         print(
-            "或使用nltsecret: nltsecret set fundrive.tsinghua.share_key 'your_share_key'"
+            "或使用funsecret: funsecret set fundrive.tsinghua.share_key 'your_share_key'"
         )
         return
 
@@ -239,7 +239,7 @@ def run_full_test():
         print("⚠️ 未找到分享链接配置")
         print("请设置环境变量: export TSINGHUA_SHARE_KEY='your_share_key'")
         print(
-            "或使用nltsecret: nltsecret set fundrive.tsinghua.share_key 'your_share_key'"
+            "或使用funsecret: funsecret set fundrive.tsinghua.share_key 'your_share_key'"
         )
         return
 
@@ -419,8 +419,8 @@ def main():
   python example.py --interactive   # 交互式演示
 
 配置方法:
-  # 使用nltsecret (推荐)
-  nltsecret set fundrive.tsinghua.share_key "your_share_key"
+  # 使用funsecret (推荐)
+  funsecret set fundrive.tsinghua.share_key "your_share_key"
   
   # 使用环境变量
   export TSINGHUA_SHARE_KEY="your_share_key"

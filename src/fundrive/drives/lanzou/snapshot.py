@@ -1,6 +1,6 @@
 import os
 
-from nltfile.compress import tarfile
+from funfile.compress import tarfile
 
 from fundrive.core import DriveSnapshot
 

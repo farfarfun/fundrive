@@ -24,16 +24,16 @@ pip install webdavclient3 requests
 
 ## 🔧 配置方法
 
-### 方法一：使用 nltsecret（推荐）
+### 方法一：使用 funsecret（推荐）
 
 ```bash
 # 配置WebDAV服务器信息
-nltsecret set fundrive webdav url "https://your-webdav-server.com/webdav"
-nltsecret set fundrive webdav username "your_username"
-nltsecret set fundrive webdav password "your_password"
+funsecret set fundrive webdav url "https://your-webdav-server.com/webdav"
+funsecret set fundrive webdav username "your_username"
+funsecret set fundrive webdav password "your_password"
 
 # 可选配置
-nltsecret set fundrive webdav timeout "30"  # 连接超时时间（秒）
+funsecret set fundrive webdav timeout "30"  # 连接超时时间（秒）
 ```
 
 ### 方法二：环境变量
@@ -65,36 +65,36 @@ drive = WebDavDrive(
 
 ```bash
 # Nextcloud WebDAV配置
-nltsecret set fundrive webdav url "https://your-nextcloud.com/remote.php/dav/files/USERNAME/"
-nltsecret set fundrive webdav username "your_username"
-nltsecret set fundrive webdav password "your_password"
+funsecret set fundrive webdav url "https://your-nextcloud.com/remote.php/dav/files/USERNAME/"
+funsecret set fundrive webdav username "your_username"
+funsecret set fundrive webdav password "your_password"
 ```
 
 ### 坚果云
 
 ```bash
 # 坚果云WebDAV配置
-nltsecret set fundrive webdav url "https://dav.jianguoyun.com/dav/"
-nltsecret set fundrive webdav username "your_email@example.com"
-nltsecret set fundrive webdav password "your_app_password"  # 注意：需要使用应用密码
+funsecret set fundrive webdav url "https://dav.jianguoyun.com/dav/"
+funsecret set fundrive webdav username "your_email@example.com"
+funsecret set fundrive webdav password "your_app_password"  # 注意：需要使用应用密码
 ```
 
 ### ownCloud
 
 ```bash
 # ownCloud WebDAV配置
-nltsecret set fundrive webdav url "https://your-owncloud.com/remote.php/webdav/"
-nltsecret set fundrive webdav username "your_username"
-nltsecret set fundrive webdav password "your_password"
+funsecret set fundrive webdav url "https://your-owncloud.com/remote.php/webdav/"
+funsecret set fundrive webdav username "your_username"
+funsecret set fundrive webdav password "your_password"
 ```
 
 ### Seafile
 
 ```bash
 # Seafile WebDAV配置
-nltsecret set fundrive webdav url "https://your-seafile.com/seafdav/"
-nltsecret set fundrive webdav username "your_username"
-nltsecret set fundrive webdav password "your_password"
+funsecret set fundrive webdav url "https://your-seafile.com/seafdav/"
+funsecret set fundrive webdav username "your_username"
+funsecret set fundrive webdav password "your_password"
 ```
 
 ## 💻 使用示例
@@ -369,7 +369,7 @@ for config in config_files:
 
 ```python
 import logging
-from nltlog import getLogger
+from farlog import getLogger
 
 # 启用调试日志
 logger = getLogger("fundrive")

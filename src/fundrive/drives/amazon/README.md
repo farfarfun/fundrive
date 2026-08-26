@@ -30,22 +30,22 @@ Amazon S3（Simple Storage Service）是亚马逊提供的对象存储服务，�
 ## 安装依赖
 
 ```bash
-pip install boto3 nltsecret funutil
+pip install boto3 funsecret funutil
 ```
 
 ## 配置方法
 
-### 方法1: 使用nltsecret（推荐）
+### 方法1: 使用funsecret（推荐）
 
 ```bash
 # 设置AWS认证信息
-nltsecret set fundrive.amazon.access_key_id "your_access_key_id"
-nltsecret set fundrive.amazon.secret_access_key "your_secret_access_key"
-nltsecret set fundrive.amazon.region_name "us-east-1"
-nltsecret set fundrive.amazon.bucket_name "your_bucket_name"
+funsecret set fundrive.amazon.access_key_id "your_access_key_id"
+funsecret set fundrive.amazon.secret_access_key "your_secret_access_key"
+funsecret set fundrive.amazon.region_name "us-east-1"
+funsecret set fundrive.amazon.bucket_name "your_bucket_name"
 
 # 可选：自定义端点（用于兼容S3的服务）
-nltsecret set fundrive.amazon.endpoint_url "https://s3.amazonaws.com"
+funsecret set fundrive.amazon.endpoint_url "https://s3.amazonaws.com"
 ```
 
 ### 方法2: 环境变量
@@ -376,7 +376,7 @@ drive = S3Drive(
 
 ## 安全注意事项
 
-1. **凭证保护**: 不要在代码中硬编码AWS凭证，使用nltsecret或环境变量
+1. **凭证保护**: 不要在代码中硬编码AWS凭证，使用funsecret或环境变量
 2. **权限最小化**: 只授予必要的S3权限，避免过度授权
 3. **传输加密**: 使用HTTPS端点确保传输安全
 4. **存储加密**: 启用S3服务器端加密保护静态数据

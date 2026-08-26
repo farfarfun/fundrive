@@ -17,7 +17,7 @@ Amazon S3驱动示例和测试脚本
 3. 交互式演示: python example.py --interactive
 
 配置方法:
-1. 使用nltsecret: nltsecret set fundrive.amazon.access_key_id "your_key"
+1. 使用funsecret: funsecret set fundrive.amazon.access_key_id "your_key"
 2. 环境变量: export AWS_ACCESS_KEY_ID="your_key"
 3. 代码中直接设置
 
@@ -29,7 +29,7 @@ import os
 import tempfile
 from typing import List
 
-from nltlog import getLogger
+from farlog import getLogger
 
 from fundrive.core import DriveFile
 from fundrive.drives.amazon import S3Drive
@@ -138,7 +138,7 @@ def run_quick_demo():
         logger.info("  export AWS_ACCESS_KEY_ID='your_access_key'")
         logger.info("  export AWS_SECRET_ACCESS_KEY='your_secret_key'")
         logger.info("  export S3_BUCKET_NAME='your_bucket_name'")
-        logger.info("或使用nltsecret配置")
+        logger.info("或使用funsecret配置")
         return
 
     # 创建驱动实例
@@ -168,10 +168,10 @@ def main():
   export AWS_SECRET_ACCESS_KEY="your_secret_key"
   export S3_BUCKET_NAME="your_bucket_name"
   
-  # 使用nltsecret (推荐)
-  nltsecret set fundrive.amazon.access_key_id "your_access_key"
-  nltsecret set fundrive.amazon.secret_access_key "your_secret_key"
-  nltsecret set fundrive.amazon.bucket_name "your_bucket_name"
+  # 使用funsecret (推荐)
+  funsecret set fundrive.amazon.access_key_id "your_access_key"
+  funsecret set fundrive.amazon.secret_access_key "your_secret_key"
+  funsecret set fundrive.amazon.bucket_name "your_bucket_name"
         """,
     )
 

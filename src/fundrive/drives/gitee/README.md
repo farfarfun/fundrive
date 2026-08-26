@@ -29,7 +29,7 @@ Gitee是中国领先的代码托管平台，本驱动将Gitee仓库作为云存�
 ## 安装依赖
 
 ```bash
-pip install requests orjson nltsecret funutil
+pip install requests orjson funsecret funutil
 ```
 
 ## 配置方法
@@ -46,13 +46,13 @@ pip install requests orjson nltsecret funutil
    - 确保有一个可以读写的Gitee仓库
    - 记录仓库所有者和仓库名称
 
-### 方法1: 使用nltsecret（推荐）
+### 方法1: 使用funsecret（推荐）
 
 ```bash
 # 设置Gitee认证信息
-nltsecret set fundrive.gitee.access_token "your_personal_access_token"
-nltsecret set fundrive.gitee.repo_owner "your_username"
-nltsecret set fundrive.gitee.repo_name "your_repository_name"
+funsecret set fundrive.gitee.access_token "your_personal_access_token"
+funsecret set fundrive.gitee.repo_owner "your_username"
+funsecret set fundrive.gitee.repo_name "your_repository_name"
 ```
 
 ### 方法2: 环境变量
@@ -329,7 +329,7 @@ drive.upload_file(
 
 ## 安全注意事项
 
-1. **Token保护**: 不要在代码中硬编码访问令牌，使用nltsecret或环境变量
+1. **Token保护**: 不要在代码中硬编码访问令牌，使用funsecret或环境变量
 2. **权限最小化**: 只授予必要的仓库权限
 3. **公开仓库**: 注意文件会公开可见
 4. **私有仓库**: 确保访问令牌有足够权限

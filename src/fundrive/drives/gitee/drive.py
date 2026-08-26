@@ -21,8 +21,8 @@ import base64
 import os
 from typing import Any, Dict, List, Optional
 
-from nltlog import getLogger
-from nltsecret import read_secret
+from farlog import getLogger
+from funsecret import read_secret
 
 from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
 from fundrive.core.http import new_session

@@ -12,7 +12,7 @@ OneDrive 网盘驱动测试和示例
 import argparse
 import sys
 
-from nltlog import getLogger
+from farlog import getLogger
 
 from fundrive.core import create_drive_tester
 from fundrive.drives.onedrive.drive import OneDrive
@@ -41,15 +41,15 @@ def create_test_drive():
             logger.error("1. Microsoft Azure应用注册")
             logger.error("2. 获取客户端ID和密钥")
             logger.error("3. 完成OAuth2授权流程")
-            logger.error("4. 使用nltsecret配置凭据:")
+            logger.error("4. 使用funsecret配置凭据:")
             logger.error(
-                "   nltsecret set fundrive onedrive client_id 'your_client_id'"
+                "   funsecret set fundrive onedrive client_id 'your_client_id'"
             )
             logger.error(
-                "   nltsecret set fundrive onedrive client_secret 'your_client_secret'"
+                "   funsecret set fundrive onedrive client_secret 'your_client_secret'"
             )
             logger.error(
-                "   nltsecret set fundrive onedrive access_token 'your_access_token'"
+                "   funsecret set fundrive onedrive access_token 'your_access_token'"
             )
             return None
 
@@ -225,8 +225,8 @@ def main():
      - 配置重定向URI和API权限
   
   2. 配置凭据:
-     nltsecret set fundrive onedrive client_id "your_client_id"
-     nltsecret set fundrive onedrive client_secret "your_client_secret"
+     funsecret set fundrive onedrive client_id "your_client_id"
+     funsecret set fundrive onedrive client_secret "your_client_secret"
   
   3. 完成OAuth2授权获取访问令牌
         """,

@@ -10,9 +10,9 @@
     python example.py --help         # 显示帮助信息
 
 配置方法:
-    # 使用nltsecret配置（推荐）
-    nltsecret set fundrive baidu access_token "your_access_token"
-    nltsecret set fundrive baidu refresh_token "your_refresh_token"
+    # 使用funsecret配置（推荐）
+    funsecret set fundrive baidu access_token "your_access_token"
+    funsecret set fundrive baidu refresh_token "your_refresh_token"
 
     # 或者设置环境变量
     export BAIDU_ACCESS_TOKEN="your_access_token"
@@ -23,7 +23,7 @@ import argparse
 import os
 import tempfile
 
-from nltlog import getLogger
+from farlog import getLogger
 
 from fundrive.drives.baidu import BaiDuDrive
 
@@ -40,8 +40,8 @@ def create_baidu_drive():
     except Exception as e:
         logger.error(f"❌ 创建BaiDuDrive实例失败: {e}")
         logger.info("请确保已正确配置access_token和refresh_token:")
-        logger.info("nltsecret set fundrive baidu access_token 'your_access_token'")
-        logger.info("nltsecret set fundrive baidu refresh_token 'your_refresh_token'")
+        logger.info("funsecret set fundrive baidu access_token 'your_access_token'")
+        logger.info("funsecret set fundrive baidu refresh_token 'your_refresh_token'")
         return None
 
 

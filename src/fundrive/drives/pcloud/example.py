@@ -12,7 +12,7 @@ API 版本: v1.0
 - python example.py  # 运行综合功能测试
 
 配置方法：
-- 在 nltsecret 中设置: fundrive.pcloud.username 和 fundrive.pcloud.password
+- 在 funsecret 中设置: fundrive.pcloud.username 和 fundrive.pcloud.password
 - 或者直接在代码中传入用户名和密码
 
 更新历史:
@@ -23,7 +23,7 @@ API 版本: v1.0
 
 from typing import Optional
 
-from nltlog import getLogger
+from farlog import getLogger
 
 from fundrive.core import create_drive_tester
 from fundrive.drives.pcloud import PCloudDrive
@@ -73,7 +73,7 @@ def main():
 
     # 配置说明
     logger.info("🔧 配置说明:")
-    logger.info("请确保已通过 nltsecret 配置以下信息:")
+    logger.info("请确保已通过 funsecret 配置以下信息:")
     logger.info("- fundrive.pcloud.username  # pCloud 用户名")
     logger.info("- fundrive.pcloud.password  # pCloud 密码")
     logger.info("📚 相关文档:")

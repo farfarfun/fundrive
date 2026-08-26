@@ -4,8 +4,8 @@ import tempfile
 from typing import Any, List, Optional
 
 from funinstall.install import OSSUtilInstall
-from nltlog import getLogger
-from nltsecret import read_secret
+from farlog import getLogger
+from funsecret import read_secret
 
 from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
 
@@ -24,7 +24,7 @@ class OSSUtilDrive(BaseDrive):
     - 支持大文件上传下载进度显示
     - 支持批量操作和递归处理
     - 自动下载和配置ossutil工具
-    - 集成nltsecret配置管理
+    - 集成funsecret配置管理
     """
 
     def __init__(self, *args, **kwargs):

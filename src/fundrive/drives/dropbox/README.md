@@ -14,7 +14,7 @@ Dropbox 是全球领先的云存储服务提供商，为个人和企业用户提
 - ✅ **便捷分享**: 创建公开分享链接，支持过期时间设置
 - ✅ **空间管理**: 实时查询存储空间使用情况
 - ✅ **统一接口**: 遵循 fundrive BaseDrive 规范
-- ✅ **配置管理**: 集成 nltsecret，支持多种配置方式
+- ✅ **配置管理**: 集成 funsecret，支持多种配置方式
 - ✅ **错误处理**: 完善的异常处理和中文日志记录
 
 ### 功能对比
@@ -40,7 +40,7 @@ Dropbox 是全球领先的云存储服务提供商，为个人和企业用户提
 ### 依赖要求
 
 ```bash
-pip install dropbox nltsecret funutil tqdm
+pip install dropbox funsecret funutil tqdm
 ```
 
 ### API 配置
@@ -55,10 +55,10 @@ pip install dropbox nltsecret funutil tqdm
 
 #### 2. 配置访问令牌
 
-**方式一：使用 nltsecret（推荐）**
+**方式一：使用 funsecret（推荐）**
 
 ```python
-from nltsecret import write_secret
+from funsecret import write_secret
 
 # 配置 Dropbox 访问令牌
 write_secret("dropbox", "access_token", "your_access_token_here")
@@ -336,7 +336,7 @@ drive = DropboxDrive()
 
 - 📦 [fundrive 项目主页](https://github.com/farfarfun/fundrive)
 - 📚 [Dropbox API 文档](https://www.dropbox.com/developers/documentation)
-- 🔧 [nltsecret 配置管理](https://github.com/farfarfun/nltsecret)
+- 🔧 [funsecret 配置管理](https://github.com/farfarfun/funsecret)
 - 🛠️ [开发规范文档](../../DEVELOPMENT_GUIDE.md)
 
 **版本**: 1.0.0  

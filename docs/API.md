@@ -271,7 +271,7 @@ print(f"可用驱动: {list(available_drives.keys())}")
 ### 日志记录工具
 
 ```python
-from nltlog import getLogger
+from farlog import getLogger
 
 logger = getLogger("fundrive")
 logger.info("操作开始")
