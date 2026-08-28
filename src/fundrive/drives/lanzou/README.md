@@ -1,19 +1,19 @@
 # 使用说明
 
-[fundrive.lanzou](https://github.com/notechats/fundrive/tree/master/fundrive/lanzou) 是对 [zaxtyson/LanZouCloud-API](https://github.com/zaxtyson/LanZouCloud-API) 一些简单的封装，主要做了以下功能
+[fundrive.lanzou](https://github.com/farfarfun/fundrive/tree/master/fundrive/lanzou) 是对 [zaxtyson/LanZouCloud-API](https://github.com/zaxtyson/LanZouCloud-API) 一些简单的封装，主要做了以下功能
 
 1. 支持上传和下载的进度条，参考[tqdm/tqdm](https://github.com/tqdm/tqdm)；
 
 2. 将本地的文件单向同步到云端；
 
-3. 对`ylogin`和`phpdisk_info`进行简单的本地化保存，第二次无需传入，避免明文数据泄露，参考[notechats/funsecret](https://github.com/notechats/funsecret)；
+3. 对`ylogin`和`phpdisk_info`进行简单的本地化保存，第二次无需传入，避免明文数据泄露，参考[farfarfun/funsecret](https://github.com/farfarfun/funsecret)；
 
 
 ---
 
 # 使用实例
 
-[python实例](https://github.com/notechats/fundrive/blob/master/example/lanzou_example.py)
+[python实例](https://github.com/farfarfun/fundrive/blob/master/example/lanzou_example.py)
 
 ## 登录
 ```python
