@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 FunDrive 集成示例代码
 
@@ -9,27 +8,18 @@ FunDrive 集成示例代码
 
 import os
 import json
-import logging
-from typing import List, Dict, Optional, Any
-from pathlib import Path
+from typing import Any
+
+from farlog import getLogger
 
 from fundrive import (
     get_drive,
-    list_available_drives,
     BaseDrive,
     DriveFile,
-    AuthenticationError,
-    NetworkError,
-    UploadError,
-    DownloadError,
     format_size,
 )
 
-# 配置日志
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
+logger = getLogger("fundrive.example.integration")
 
 
 class CloudStorageManager:
@@ -43,17 +33,17 @@ class CloudStorageManager:
             config_file: 配置文件路径
         """
         self.config_file = config_file
-        self.drives: Dict[str, BaseDrive] = {}
+        self.drives: dict[str, BaseDrive] = {}
         self.config = self._load_config()
 
-    def _load_config(self) -> Dict[str, Any]:
+    def _load_config(self) -> dict[str, Any]:
         """加载配置文件"""
         if not os.path.exists(self.config_file):
             logger.warning(f"配置文件不存在: {self.config_file}")
             return {}
 
         try:
-            with open(self.config_file, "r", encoding="utf-8") as f:
+            with open(self.config_file, encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
             logger.error(f"加载配置文件失败: {e}")
@@ -92,11 +82,11 @@ class CloudStorageManager:
             logger.error(f"添加驱动失败 {name}: {e}")
             return False
 
-    def get_drive(self, name: str) -> Optional[BaseDrive]:
+    def get_drive(self, name: str) -> BaseDrive | None:
         """获取指定的驱动实例"""
         return self.drives.get(name)
 
-    def list_drives(self) -> List[str]:
+    def list_drives(self) -> list[str]:
         """列出所有已添加的驱动"""
         return list(self.drives.keys())
 
@@ -174,8 +164,8 @@ class FileBackupService:
         self,
         local_path: str,
         drive_name: str,
-        remote_path: str = None,
-        exclude_patterns: List[str] = None,
+        remote_path: str | None = None,
+        exclude_patterns: list[str] | None = None,
     ) -> bool:
         """
         备份本地目录到云存储
@@ -216,7 +206,7 @@ class FileBackupService:
         drive: BaseDrive,
         local_path: str,
         remote_dir_id: str,
-        exclude_patterns: List[str] = None,
+        exclude_patterns: list[str] | None = None,
     ) -> bool:
         """递归备份目录"""
         exclude_patterns = exclude_patterns or []
@@ -262,8 +252,8 @@ class CloudFileSearcher:
         self.storage_manager = storage_manager
 
     def search_across_drives(
-        self, keyword: str, file_type: str = None
-    ) -> Dict[str, List[DriveFile]]:
+        self, keyword: str, file_type: str | None = None
+    ) -> dict[str, list[DriveFile]]:
         """
         跨多个云存储搜索文件
 
@@ -272,7 +262,7 @@ class CloudFileSearcher:
             file_type: 文件类型过滤
 
         Returns:
-            Dict[str, List[DriveFile]]: 按驱动名称分组的搜索结果
+            dict[str, list[DriveFile]]: 按驱动名称分组的搜索结果
         """
         results = {}
 
@@ -291,12 +281,12 @@ class CloudFileSearcher:
 
         return results
 
-    def find_duplicates(self) -> Dict[str, List[tuple]]:
+    def find_duplicates(self) -> dict[str, list[tuple]]:
         """
         查找跨云存储的重复文件
 
         Returns:
-            Dict[str, List[tuple]]: 重复文件列表，格式为 {filename: [(drive_name, file_info), ...]}
+            dict[str, list[tuple]]: 重复文件列表，格式为 {filename: [(drive_name, file_info), ...]}
         """
         all_files = {}
         duplicates = {}
@@ -334,7 +324,7 @@ class CloudFileSearcher:
 
     def _get_all_files_recursive(
         self, drive: BaseDrive, dir_id: str
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """递归获取目录下的所有文件"""
         all_files = []
 
