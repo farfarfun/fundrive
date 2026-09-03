@@ -9,7 +9,7 @@ from .drive import LanZouDrive
 
 class LanZouSnapshot(DriveSnapshot):
     def __init__(self, fid=None, url=None, pwd="", *args, **kwargs):
-        super(LanZouSnapshot, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.drive = LanZouDrive()
         self.fid = fid
         self.url = url

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 天池云存储驱动实现
@@ -17,7 +16,7 @@
 """
 
 import os
-from typing import Any, List, Optional
+from typing import Any
 
 import orjson
 import requests
@@ -40,9 +39,9 @@ class TianChiDrive(BaseDrive):
 
     def __init__(
         self,
-        tc_cookie: Optional[str] = None,
-        csrf_cookie: Optional[str] = None,
-        csrf_token: Optional[str] = None,
+        tc_cookie: str | None = None,
+        csrf_cookie: str | None = None,
+        csrf_token: str | None = None,
         **kwargs,
     ):
         """
@@ -79,9 +78,9 @@ class TianChiDrive(BaseDrive):
 
     def login(
         self,
-        tc_cookie: Optional[str] = None,
-        csrf_cookie: Optional[str] = None,
-        csrf_token: Optional[str] = None,
+        tc_cookie: str | None = None,
+        csrf_cookie: str | None = None,
+        csrf_token: str | None = None,
         **kwargs,
     ) -> bool:
         """
@@ -205,7 +204,7 @@ class TianChiDrive(BaseDrive):
         logger.warning("天池是只读平台，不支持删除操作")
         return False
 
-    def get_file_list(self, fid: str = "root", *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid: str = "root", *args, **kwargs) -> list[DriveFile]:
         """
         获取数据集文件列表
 
@@ -266,7 +265,7 @@ class TianChiDrive(BaseDrive):
             logger.error(f"获取文件列表失败: {e}")
             return []
 
-    def get_dir_list(self, fid: str = "root", *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid: str = "root", *args, **kwargs) -> list[DriveFile]:
         """
         获取数据集目录列表
 
@@ -312,7 +311,7 @@ class TianChiDrive(BaseDrive):
             logger.error(f"获取目录列表失败: {e}")
             return []
 
-    def get_file_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取文件信息
 
@@ -357,7 +356,7 @@ class TianChiDrive(BaseDrive):
             logger.error(f"获取文件信息失败: {e}")
             return None
 
-    def get_dir_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取目录信息
 
@@ -408,9 +407,9 @@ class TianChiDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         callback: callable = None,
         *args,
@@ -471,7 +470,7 @@ class TianChiDrive(BaseDrive):
             logger.error(f"下载文件失败: {e}")
             return False
 
-    def _get_dataset_url(self, fid: str) -> Optional[str]:
+    def _get_dataset_url(self, fid: str) -> str | None:
         """
         获取文件下载URL（内部方法）
 
@@ -505,10 +504,10 @@ class TianChiDrive(BaseDrive):
         self,
         keyword: str,
         fid: str = "root",
-        file_type: Optional[str] = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """
         搜索数据集
 

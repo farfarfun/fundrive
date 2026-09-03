@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 阿里云 OSS 存储驱动标准化示例
 
@@ -24,7 +23,6 @@ API 版本: v2.0
 - 2024-08-01: 初始版本
 """
 
-from typing import Optional
 
 from farlog import getLogger
 
@@ -34,7 +32,7 @@ from fundrive.drives.oss import OSSDrive
 logger = getLogger("fundrive.oss.example")
 
 
-def create_drive() -> Optional[OSSDrive]:
+def create_drive() -> OSSDrive | None:
     """创建阿里云 OSS 驱动实例"""
     try:
         drive = OSSDrive()

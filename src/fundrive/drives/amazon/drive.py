@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 Amazon S3驱动实现
@@ -20,7 +19,7 @@ Amazon S3是亚马逊提供的对象存储服务，提供高可用性、可扩�
 # 标准库导入
 import mimetypes
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # 第三方库导入
 import boto3
@@ -44,11 +43,11 @@ class S3Drive(BaseDrive):
 
     def __init__(
         self,
-        access_key_id: Optional[str] = None,
-        secret_access_key: Optional[str] = None,
-        region_name: Optional[str] = None,
-        bucket_name: Optional[str] = None,
-        endpoint_url: Optional[str] = None,
+        access_key_id: str | None = None,
+        secret_access_key: str | None = None,
+        region_name: str | None = None,
+        bucket_name: str | None = None,
+        endpoint_url: str | None = None,
         **kwargs,
     ):
         """
@@ -98,10 +97,10 @@ class S3Drive(BaseDrive):
 
     def login(
         self,
-        access_key_id: Optional[str] = None,
-        secret_access_key: Optional[str] = None,
-        region_name: Optional[str] = None,
-        bucket_name: Optional[str] = None,
+        access_key_id: str | None = None,
+        secret_access_key: str | None = None,
+        region_name: str | None = None,
+        bucket_name: str | None = None,
         **kwargs,
     ) -> bool:
         """
@@ -327,7 +326,7 @@ class S3Drive(BaseDrive):
         S3 的 ``delete_objects`` 每次最多接受 1000 个 key，因此必须分批；
         同时按页删除，避免把整个 bucket 的 key 列表先攒在内存里。
         """
-        batch: List[dict] = []
+        batch: list[dict] = []
         deleted = 0
         paginator = self.s3_client.get_paginator("list_objects_v2")
 
@@ -351,7 +350,7 @@ class S3Drive(BaseDrive):
         deleted += flush()
         return deleted
 
-    def get_file_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid: str = "", *args, **kwargs) -> list[DriveFile]:
         """
         获取文件列表
 
@@ -409,7 +408,7 @@ class S3Drive(BaseDrive):
             logger.error(f"获取文件列表失败: {e}")
             return []
 
-    def get_dir_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid: str = "", *args, **kwargs) -> list[DriveFile]:
         """
         获取目录列表
 
@@ -453,7 +452,7 @@ class S3Drive(BaseDrive):
             logger.error(f"获取目录列表失败: {e}")
             return []
 
-    def get_file_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取文件信息
 
@@ -497,7 +496,7 @@ class S3Drive(BaseDrive):
             logger.error(f"获取文件信息失败: {e}")
             return None
 
-    def get_dir_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取目录信息
 
@@ -618,9 +617,9 @@ class S3Drive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         callback: callable = None,
         *args,
@@ -778,10 +777,10 @@ class S3Drive(BaseDrive):
         self,
         keyword: str,
         fid: str = "",
-        file_type: Optional[str] = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """
         搜索文件
 
@@ -842,7 +841,7 @@ class S3Drive(BaseDrive):
             logger.error(f"搜索失败: {e}")
             return []
 
-    def get_quota(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+    def get_quota(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """
         获取存储配额信息（S3没有配额限制，返回存储桶统计）
 

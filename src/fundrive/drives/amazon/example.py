@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 Amazon S3驱动示例和测试脚本
@@ -27,7 +26,6 @@ Amazon S3驱动示例和测试脚本
 import argparse
 import os
 import tempfile
-from typing import List
 
 from farlog import getLogger
 
@@ -45,7 +43,7 @@ def log_separator(title: str = ""):
         logger.info("=" * 60)
 
 
-def log_files(files: List[DriveFile], title: str = "文件列表"):
+def log_files(files: list[DriveFile], title: str = "文件列表"):
     """记录文件列表"""
     logger.info(f"📁 {title} (共 {len(files)} 个):")
     if not files:

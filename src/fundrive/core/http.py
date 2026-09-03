@@ -15,7 +15,7 @@
 timeout 也是安全的**——这比依赖每个调用点的自觉要可靠得多。
 """
 
-from typing import Any, Optional
+from typing import Any
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -55,7 +55,7 @@ def new_session(
     retries: int = DEFAULT_MAX_RETRIES,
     backoff_factor: float = DEFAULT_RETRY_DELAY,
     pool_size: int = DEFAULT_POOL_SIZE,
-    headers: Optional[dict] = None,
+    headers: dict | None = None,
 ) -> TimeoutSession:
     """构造一个带默认超时、自动重试和连接池的会话。
 

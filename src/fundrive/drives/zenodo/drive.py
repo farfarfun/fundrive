@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import requests
 from funget import simple_download
@@ -113,7 +113,7 @@ class ZenodoClient:
         self.session.params = {"access_token": self.access_token}
 
     def _make_request(
-        self, method: str, endpoint: str, params: Optional[Dict] = None, **kwargs
+        self, method: str, endpoint: str, params: dict | None = None, **kwargs
     ) -> requests.Response:
         """
         发起 API 请求
@@ -181,13 +181,13 @@ class ZenodoClient:
 
     def list_depositions(
         self,
-        q: Optional[str] = None,
-        status: Optional[str] = None,
-        sort: Optional[str] = None,
-        page: Optional[int] = None,
-        size: Optional[int] = None,
-        all_versions: Optional[bool] = None,
-    ) -> tuple[bool, Dict[str, Any]]:
+        q: str | None = None,
+        status: str | None = None,
+        sort: str | None = None,
+        page: int | None = None,
+        size: int | None = None,
+        all_versions: bool | None = None,
+    ) -> tuple[bool, dict[str, Any]]:
         """
         获取存储库列表
 
@@ -226,8 +226,8 @@ class ZenodoClient:
             return False, {}
 
     def create_deposition(
-        self, metadata: Optional[Dict[str, Any]] = None
-    ) -> tuple[bool, Dict[str, Any]]:
+        self, metadata: dict[str, Any] | None = None
+    ) -> tuple[bool, dict[str, Any]]:
         """
         创建新的存储库
 
@@ -251,7 +251,7 @@ class ZenodoClient:
             logger.error("解析响应 JSON 失败")
             return False, {}
 
-    def get_deposition(self, deposition_id: str) -> tuple[bool, Dict[str, Any]]:
+    def get_deposition(self, deposition_id: str) -> tuple[bool, dict[str, Any]]:
         """
         获取指定存储库信息
 
@@ -279,8 +279,8 @@ class ZenodoClient:
         title: str,
         description: str,
         upload_type: str = "dataset",
-        creators: Optional[List[Dict[str, str]]] = None,
-    ) -> tuple[bool, Dict[str, Any]]:
+        creators: list[dict[str, str]] | None = None,
+    ) -> tuple[bool, dict[str, Any]]:
         """
         更新存储库元数据
 
@@ -326,7 +326,7 @@ class ZenodoClient:
             logger.error("解析响应 JSON 失败")
             return False, {}
 
-    def delete_deposition(self, deposition_id: str) -> tuple[bool, Dict[str, Any]]:
+    def delete_deposition(self, deposition_id: str) -> tuple[bool, dict[str, Any]]:
         """
         删除存储库
 
@@ -349,7 +349,7 @@ class ZenodoClient:
 
     def list_deposition_files(
         self, deposition_id: str
-    ) -> tuple[bool, List[Dict[str, Any]]]:
+    ) -> tuple[bool, list[dict[str, Any]]]:
         """
         获取存储库文件列表
 
@@ -374,8 +374,8 @@ class ZenodoClient:
             return False, []
 
     def upload_file_to_deposition(
-        self, deposition_id: str, file_path: str, filename: Optional[str] = None
-    ) -> tuple[bool, Dict[str, Any]]:
+        self, deposition_id: str, file_path: str, filename: str | None = None
+    ) -> tuple[bool, dict[str, Any]]:
         """
         上传文件到存储库
 
@@ -427,7 +427,7 @@ class ZenodoClient:
 
     def delete_deposition_file(
         self, deposition_id: str, file_id: str
-    ) -> tuple[bool, Dict[str, Any]]:
+    ) -> tuple[bool, dict[str, Any]]:
         """
         删除存储库中的文件
 
@@ -453,7 +453,7 @@ class ZenodoClient:
         except ValueError:
             return success, {}
 
-    def publish_deposition(self, deposition_id: str) -> tuple[bool, Dict[str, Any]]:
+    def publish_deposition(self, deposition_id: str) -> tuple[bool, dict[str, Any]]:
         """
         发布存储库
 
@@ -477,7 +477,7 @@ class ZenodoClient:
             logger.error("解析响应 JSON 失败")
             return False, {}
 
-    def create_new_version(self, deposition_id: str) -> tuple[bool, Dict[str, Any]]:
+    def create_new_version(self, deposition_id: str) -> tuple[bool, dict[str, Any]]:
         """
         为存储库创建新版本
 
@@ -503,16 +503,16 @@ class ZenodoClient:
 
     def search_records(
         self,
-        q: Optional[str] = None,
-        status: Optional[str] = None,
-        sort: Optional[str] = None,
-        page: Optional[int] = None,
-        size: Optional[int] = None,
-        all_versions: Optional[bool] = None,
-        communities: Optional[str] = None,
-        type_filter: Optional[str] = None,
-        subtype: Optional[str] = None,
-    ) -> tuple[bool, Dict[str, Any]]:
+        q: str | None = None,
+        status: str | None = None,
+        sort: str | None = None,
+        page: int | None = None,
+        size: int | None = None,
+        all_versions: bool | None = None,
+        communities: str | None = None,
+        type_filter: str | None = None,
+        subtype: str | None = None,
+    ) -> tuple[bool, dict[str, Any]]:
         """
         搜索已发布的记录
 
@@ -559,7 +559,7 @@ class ZenodoClient:
             logger.error("解析响应 JSON 失败")
             return False, {}
 
-    def get_record(self, record_id: str) -> tuple[bool, Dict[str, Any]]:
+    def get_record(self, record_id: str) -> tuple[bool, dict[str, Any]]:
         """
         获取已发布记录的详细信息
 
@@ -581,7 +581,7 @@ class ZenodoClient:
             logger.error("解析响应 JSON 失败")
             return False, {}
 
-    def get_file_download_url(self, record_id: str, filename: str) -> Optional[str]:
+    def get_file_download_url(self, record_id: str, filename: str) -> str | None:
         """
         获取文件下载链接
 
@@ -629,9 +629,9 @@ class ZenodoDrive(BaseDrive):
             **kwargs: 关键字参数
         """
         super().__init__(*args, **kwargs)
-        self.access_token: Optional[str] = None
+        self.access_token: str | None = None
         self.sandbox = sandbox
-        self.client: Optional[ZenodoClient] = None
+        self.client: ZenodoClient | None = None
         self._root_fid = "root"  # Zenodo 没有传统的目录结构，使用虚拟根目录
 
     def _ensure_client(self) -> bool:
@@ -647,7 +647,7 @@ class ZenodoDrive(BaseDrive):
         return True
 
     def login(
-        self, access_token: Optional[str] = None, *args: Any, **kwargs: Any
+        self, access_token: str | None = None, *args: Any, **kwargs: Any
     ) -> bool:
         """
         登录 Zenodo
@@ -690,11 +690,11 @@ class ZenodoDrive(BaseDrive):
     def search(
         self,
         keyword: str,
-        fid: Optional[str] = None,
-        file_type: Optional[str] = None,
+        fid: str | None = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """
         搜索文件或记录
 
@@ -750,7 +750,7 @@ class ZenodoDrive(BaseDrive):
             logger.error(f"搜索失败: {e}")
             return []
 
-    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """
         获取目录下的子目录列表
 
@@ -800,7 +800,7 @@ class ZenodoDrive(BaseDrive):
             logger.error(f"获取存储库列表失败: {e}")
             return []
 
-    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
         """
         获取文件详细信息
 
@@ -860,7 +860,7 @@ class ZenodoDrive(BaseDrive):
             logger.error(f"获取文件信息失败: {e}")
             return None
 
-    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """
         获取目录下的文件列表
 
@@ -935,9 +935,9 @@ class ZenodoDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args: Any,
         **kwargs: Any,
@@ -1050,7 +1050,7 @@ class ZenodoDrive(BaseDrive):
         self,
         filepath: str,
         fid: str,
-        filename: Optional[str] = None,
+        filename: str | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> bool:
@@ -1245,8 +1245,8 @@ class ZenodoDrive(BaseDrive):
     def publish_deposition(
         self,
         deposition_id: str,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
+        title: str | None = None,
+        description: str | None = None,
     ) -> bool:
         """
         发布存储库
@@ -1343,11 +1343,11 @@ class ZenodoDrive(BaseDrive):
         logger.warning("Zenodo 不支持预签名上传URL")
         return ""
 
-    def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
         """获取目录信息（等同于获取存储库信息）"""
         return self.get_file_info(fid, *args, **kwargs)
 
-    def get_recycle_list(self, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_recycle_list(self, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """Zenodo 不支持回收站功能"""
         logger.warning("Zenodo 不支持回收站功能")
         return []
@@ -1363,7 +1363,7 @@ class ZenodoDrive(BaseDrive):
         return False
 
     def save_shared(
-        self, shared_url: str, fid: str, password: Optional[str] = None
+        self, shared_url: str, fid: str, password: str | None = None
     ) -> bool:
         """Zenodo 不支持保存分享内容功能"""
         logger.warning("Zenodo 不支持保存分享内容功能")

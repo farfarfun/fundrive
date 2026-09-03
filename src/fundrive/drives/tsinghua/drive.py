@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 清华云盘驱动实现
@@ -17,7 +16,7 @@
 """
 
 import os
-from typing import Any, List, Optional
+from typing import Any
 from urllib.parse import quote
 
 import requests
@@ -39,7 +38,7 @@ class TSingHuaDrive(BaseDrive):
     """
 
     def __init__(
-        self, share_key: Optional[str] = None, password: Optional[str] = None, **kwargs
+        self, share_key: str | None = None, password: str | None = None, **kwargs
     ):
         """
         初始化清华云盘驱动
@@ -70,7 +69,7 @@ class TSingHuaDrive(BaseDrive):
         self.session.headers.update({"User-Agent": "FunDrive Tsinghua Client/1.0"})
 
     def login(
-        self, share_key: Optional[str] = None, password: Optional[str] = None, **kwargs
+        self, share_key: str | None = None, password: str | None = None, **kwargs
     ) -> bool:
         """
         登录清华云盘（设置分享链接信息）
@@ -170,7 +169,7 @@ class TSingHuaDrive(BaseDrive):
         logger.warning("清华云盘分享链接是只读的，不支持删除操作")
         return False
 
-    def get_file_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid: str = "", *args, **kwargs) -> list[DriveFile]:
         """
         获取文件列表
 
@@ -221,7 +220,7 @@ class TSingHuaDrive(BaseDrive):
             logger.error(f"获取文件列表失败: {e}")
             return []
 
-    def get_dir_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid: str = "", *args, **kwargs) -> list[DriveFile]:
         """
         获取目录列表
 
@@ -272,7 +271,7 @@ class TSingHuaDrive(BaseDrive):
             logger.error(f"获取目录列表失败: {e}")
             return []
 
-    def get_file_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取文件信息
 
@@ -301,7 +300,7 @@ class TSingHuaDrive(BaseDrive):
             logger.error(f"获取文件信息失败: {e}")
             return None
 
-    def get_dir_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取目录信息
 
@@ -369,9 +368,9 @@ class TSingHuaDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         callback: callable = None,
         *args,
@@ -438,10 +437,10 @@ class TSingHuaDrive(BaseDrive):
         self,
         keyword: str,
         fid: str = "",
-        file_type: Optional[str] = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """
         搜索文件
 

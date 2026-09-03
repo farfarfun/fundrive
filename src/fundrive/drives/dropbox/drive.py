@@ -1,6 +1,6 @@
 # 标准库
 import os
-from typing import Any, List, Optional
+from typing import Any
 
 import dropbox
 from dropbox.exceptions import ApiError, AuthError
@@ -37,16 +37,16 @@ class DropboxDrive(BaseDrive):
             *args: 可变位置参数
             **kwargs: 可变关键字参数
         """
-        super(DropboxDrive, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.client: dropbox.Dropbox = None
         self.logger = getLogger("dropbox_drive")
         self._account_info = None
 
     def login(
         self,
-        access_token: Optional[str] = None,
-        app_key: Optional[str] = None,
-        app_secret: Optional[str] = None,
+        access_token: str | None = None,
+        app_key: str | None = None,
+        app_secret: str | None = None,
         *args,
         **kwargs,
     ) -> bool:
@@ -225,7 +225,7 @@ class DropboxDrive(BaseDrive):
             self.logger.error(f"删除失败: {e}")
             return False
 
-    def get_file_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取文件信息
 
@@ -274,7 +274,7 @@ class DropboxDrive(BaseDrive):
             self.logger.error(f"获取文件信息失败: {e}")
             return None
 
-    def get_dir_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取目录信息
 
@@ -319,7 +319,7 @@ class DropboxDrive(BaseDrive):
             self.logger.error(f"获取目录信息失败: {e}")
             return None
 
-    def get_file_list(self, fid: str, *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid: str, *args, **kwargs) -> list[DriveFile]:
         """
         获取目录下的文件列表
 
@@ -367,7 +367,7 @@ class DropboxDrive(BaseDrive):
             self.logger.error(f"获取文件列表失败: {e}")
             return []
 
-    def get_dir_list(self, fid: str, *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid: str, *args, **kwargs) -> list[DriveFile]:
         """
         获取目录下的子目录列表
 
@@ -414,9 +414,9 @@ class DropboxDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args,
         **kwargs,
@@ -584,7 +584,7 @@ class DropboxDrive(BaseDrive):
                             chunk = f.read(chunk_size)
                             if not chunk:
                                 # 文件在上传过程中被截断
-                                raise IOError(
+                                raise OSError(
                                     f"读到意外的 EOF: 已读 {f.tell()}/{file_size} 字节"
                                 )
                             if f.tell() >= file_size:
@@ -616,11 +616,11 @@ class DropboxDrive(BaseDrive):
     def search(
         self,
         keyword: str,
-        fid: Optional[str] = None,
-        file_type: Optional[str] = None,
+        fid: str | None = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """
         搜索文件或目录
 
@@ -943,7 +943,7 @@ class DropboxDrive(BaseDrive):
 
     # ========== 以下是不支持功能的警告实现 ==========
 
-    def get_recycle_list(self, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_recycle_list(self, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """
         获取回收站文件列表
 
@@ -993,7 +993,7 @@ class DropboxDrive(BaseDrive):
         self,
         shared_url: str,
         fid: str = "/",
-        password: Optional[str] = None,
+        password: str | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> bool:

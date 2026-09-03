@@ -9,7 +9,8 @@ import hashlib
 import threading
 import time
 from collections import OrderedDict
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any
+from collections.abc import Callable
 
 from farlog import getLogger
 
@@ -23,7 +24,7 @@ class LRUCache:
     用于缓存API响应、文件信息等数据，提高性能
     """
 
-    def __init__(self, max_size: int = 1000, ttl: Optional[int] = None):
+    def __init__(self, max_size: int = 1000, ttl: int | None = None):
         """
         初始化LRU缓存
 
@@ -99,7 +100,7 @@ class LRUCache:
         with self._lock:
             return len(self._cache)
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """获取缓存统计信息"""
         with self._lock:
             expired_count = 0
@@ -120,7 +121,7 @@ class LRUCache:
 
 
 def cache_result(
-    max_size: int = 100, ttl: Optional[int] = 300, key_func: Optional[Callable] = None
+    max_size: int = 100, ttl: int | None = 300, key_func: Callable | None = None
 ) -> Callable:
     """
     结果缓存装饰器
@@ -251,7 +252,7 @@ class ConnectionPool:
             self._created_count = 0
             logger.info("所有连接已关闭")
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """获取连接池统计信息"""
         with self._lock:
             return {
@@ -282,7 +283,7 @@ class RateLimiter:
         self._calls = []
         self._lock = threading.RLock()
 
-    def acquire(self, timeout: Optional[float] = None) -> bool:
+    def acquire(self, timeout: float | None = None) -> bool:
         """
         获取调用许可
 
@@ -317,7 +318,7 @@ class RateLimiter:
             # 等待一小段时间后重试
             time.sleep(0.1)
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """获取速率限制器统计信息"""
         with self._lock:
             current_time = time.time()
@@ -367,7 +368,7 @@ def rate_limit(max_calls: int, time_window: float = 60.0) -> Callable:
     return decorator
 
 
-def format_size(size_bytes: Union[int, float]) -> str:
+def format_size(size_bytes: int | float) -> str:
     """
     格式化文件大小
 
@@ -562,7 +563,7 @@ class ProgressTracker:
         return time.time() - self.start_time
 
     @property
-    def estimated_remaining(self) -> Optional[float]:
+    def estimated_remaining(self) -> float | None:
         """估算剩余时间（秒）"""
         if self.current == 0:
             return None
@@ -582,8 +583,8 @@ class ProgressTracker:
 def handle_drive_errors(
     default_return=None,
     log_error: bool = True,
-    error_message: Optional[str] = None,
-    reraise_exceptions: Optional[tuple] = None,
+    error_message: str | None = None,
+    reraise_exceptions: tuple | None = None,
 ) -> Callable:
     """
     通用驱动错误处理装饰器
@@ -810,10 +811,10 @@ def log_storage_info(used_space: str, free_space: str, total_space: str) -> None
 def format_docstring_template(
     description: str,
     detailed_description: str = "",
-    args: Dict[str, str] = None,
+    args: dict[str, str] = None,
     returns: str = "",
-    raises: Dict[str, str] = None,
-    examples: List[str] = None,
+    raises: dict[str, str] = None,
+    examples: list[str] = None,
 ) -> str:
     """
     生成标准化的文档字符串模板

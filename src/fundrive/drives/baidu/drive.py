@@ -1,6 +1,6 @@
 # 标准库导入
 import os
-from typing import Any, List, Optional
+from typing import Any
 
 # 第三方库导入
 from fundrives.baidu import BaiduPCSApi, PcsFile
@@ -36,7 +36,7 @@ class BaiDuDrive(BaseDrive):
         :param args: 位置参数
         :param kwargs: 关键字参数
         """
-        super(BaiDuDrive, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.drive: BaiduPCSApi = None
 
     def login(
@@ -74,7 +74,7 @@ class BaiDuDrive(BaseDrive):
         :param kwargs: 关键字参数
         :return: 创建的目录ID
         """
-        dir_map = dict([(file.name, file.fid) for file in self.get_dir_list(fid=fid)])
+        dir_map = {file.name: file.fid for file in self.get_dir_list(fid=fid)}
         if name in dir_map:
             logger.info(f"name={name} exists, return fid={fid}")
             return dir_map[name]
@@ -148,7 +148,7 @@ class BaiDuDrive(BaseDrive):
         """
         return convert(self.drive.meta(fid)[0]) if self.drive.is_dir(fid) else None
 
-    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """
         获取目录下的文件列表
         :param fid: 目录ID
@@ -158,7 +158,7 @@ class BaiDuDrive(BaseDrive):
         """
         return [convert(file) for file in self.drive.list(fid) if file.is_file]
 
-    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """
         获取目录下的子目录列表
         :param fid: 目录ID
@@ -171,9 +171,9 @@ class BaiDuDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args: Any,
         **kwargs: Any,
@@ -224,7 +224,7 @@ class BaiDuDrive(BaseDrive):
         """
         self.drive.share(*fids, password=password, period=expire_days)
 
-    def save_shared(self, shared_url: str, fid: str, password: Optional[str] = None):
+    def save_shared(self, shared_url: str, fid: str, password: str | None = None):
         """
         保存他人的分享内容到自己的网盘
         :param shared_url: 分享链接

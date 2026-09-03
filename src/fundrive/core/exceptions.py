@@ -6,7 +6,7 @@ FunDrive 统一异常处理模块
 
 import functools
 import time
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from farlog import getLogger
 
@@ -19,8 +19,8 @@ class FunDriveError(Exception):
     def __init__(
         self,
         message: str,
-        error_code: Optional[str] = None,
-        details: Optional[dict] = None,
+        error_code: str | None = None,
+        details: dict | None = None,
     ):
         """
         初始化异常
@@ -68,7 +68,7 @@ class RateLimitError(FunDriveError):
     def __init__(
         self,
         message: str = "API调用频率超限",
-        retry_after: Optional[int] = None,
+        retry_after: int | None = None,
         **kwargs,
     ):
         super().__init__(message, error_code="RATE_LIMITED", **kwargs)
@@ -79,7 +79,7 @@ class FileNotFoundError(FunDriveError):
     """文件未找到异常"""
 
     def __init__(
-        self, message: str = "文件不存在", file_path: Optional[str] = None, **kwargs
+        self, message: str = "文件不存在", file_path: str | None = None, **kwargs
     ):
         super().__init__(message, error_code="FILE_NOT_FOUND", **kwargs)
         self.file_path = file_path
@@ -89,7 +89,7 @@ class FileExistsError(FunDriveError):
     """文件已存在异常"""
 
     def __init__(
-        self, message: str = "文件已存在", file_path: Optional[str] = None, **kwargs
+        self, message: str = "文件已存在", file_path: str | None = None, **kwargs
     ):
         super().__init__(message, error_code="FILE_EXISTS", **kwargs)
         self.file_path = file_path
@@ -106,7 +106,7 @@ class InvalidParameterError(FunDriveError):
     """参数无效异常"""
 
     def __init__(
-        self, message: str = "参数无效", parameter: Optional[str] = None, **kwargs
+        self, message: str = "参数无效", parameter: str | None = None, **kwargs
     ):
         super().__init__(message, error_code="INVALID_PARAMETER", **kwargs)
         self.parameter = parameter
@@ -116,7 +116,7 @@ class OperationNotSupportedError(FunDriveError):
     """操作不支持异常"""
 
     def __init__(
-        self, message: str = "操作不支持", operation: Optional[str] = None, **kwargs
+        self, message: str = "操作不支持", operation: str | None = None, **kwargs
     ):
         super().__init__(message, error_code="OPERATION_NOT_SUPPORTED", **kwargs)
         self.operation = operation

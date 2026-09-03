@@ -11,7 +11,8 @@
 
 import os
 import shutil
-from typing import Any, Callable, List, Optional
+from typing import Any
+from collections.abc import Callable
 
 from farlog import getLogger
 
@@ -26,8 +27,8 @@ def _to_drive_file(path: str) -> DriveFile:
     abspath = os.path.abspath(path)
     try:
         stat = os.stat(abspath)
-        size: Optional[int] = stat.st_size if os.path.isfile(abspath) else None
-        mtime: Optional[str] = str(int(stat.st_mtime))
+        size: int | None = stat.st_size if os.path.isfile(abspath) else None
+        mtime: str | None = str(int(stat.st_mtime))
     except OSError:
         size, mtime = None, None
     return DriveFile(
@@ -49,7 +50,7 @@ class OSDrive(BaseDrive):
     """
 
     def __init__(
-        self, root_path: Optional[str] = None, *args: Any, **kwargs: Any
+        self, root_path: str | None = None, *args: Any, **kwargs: Any
     ) -> None:
         super().__init__(*args, **kwargs)
         self.root_path = os.path.abspath(root_path) if root_path else None
@@ -138,7 +139,7 @@ class OSDrive(BaseDrive):
         logger.info(f"已删除: {path}")
         return True
 
-    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         path = self._resolve(fid)
         if not os.path.isdir(path):
             return []
@@ -148,7 +149,7 @@ class OSDrive(BaseDrive):
             if os.path.isfile(os.path.join(path, entry))
         ]
 
-    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         path = self._resolve(fid)
         if not os.path.isdir(path):
             return []
@@ -158,13 +159,13 @@ class OSDrive(BaseDrive):
             if os.path.isdir(os.path.join(path, entry))
         ]
 
-    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
         path = self._resolve(fid)
         if not os.path.isfile(path):
             return None
         return _to_drive_file(path)
 
-    def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
         path = self._resolve(fid)
         if not os.path.isdir(path):
             return None
@@ -213,9 +214,9 @@ class OSDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args: Any,
         **kwargs: Any,
@@ -255,7 +256,7 @@ class OSDrive(BaseDrive):
         save_dir: str,
         recursion: bool = True,
         overwrite: bool = False,
-        ignore_filter: Optional[Callable[[str], bool]] = None,
+        ignore_filter: Callable[[str], bool] | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> bool:
@@ -323,13 +324,13 @@ class OSDrive(BaseDrive):
     def search(
         self,
         keyword: str,
-        fid: Optional[str] = None,
-        file_type: Optional[str] = None,
+        fid: str | None = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         root = self._resolve(fid) if fid else self._root_fid
-        matched: List[DriveFile] = []
+        matched: list[DriveFile] = []
         for dirpath, dirnames, filenames in os.walk(root):
             names = (
                 filenames if file_type == "file" else list(dirnames) + list(filenames)

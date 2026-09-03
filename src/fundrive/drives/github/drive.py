@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 GitHub驱动实现
@@ -21,7 +20,7 @@ GitHub是全球最大的代码托管平台，本驱动将GitHub仓库作为云�
 import base64
 import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # 第三方库导入
 import requests
@@ -54,9 +53,9 @@ class GitHubDrive(BaseDrive):
 
     def __init__(
         self,
-        access_token: Optional[str] = None,
-        repo_owner: Optional[str] = None,
-        repo_name: Optional[str] = None,
+        access_token: str | None = None,
+        repo_owner: str | None = None,
+        repo_name: str | None = None,
         branch: str = "main",
         **kwargs,
     ):
@@ -160,10 +159,10 @@ class GitHubDrive(BaseDrive):
 
     def login(
         self,
-        access_token: Optional[str] = None,
-        repo_owner: Optional[str] = None,
-        repo_name: Optional[str] = None,
-        branch: Optional[str] = None,
+        access_token: str | None = None,
+        repo_owner: str | None = None,
+        repo_name: str | None = None,
+        branch: str | None = None,
         **kwargs,
     ) -> bool:
         """
@@ -342,7 +341,7 @@ class GitHubDrive(BaseDrive):
             logger.error(f"删除文件失败: {e}")
             return False
 
-    def get_file_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid: str = "", *args, **kwargs) -> list[DriveFile]:
         """
         获取文件列表
 
@@ -389,7 +388,7 @@ class GitHubDrive(BaseDrive):
             logger.error(f"获取文件列表失败: {e}")
             return []
 
-    def get_dir_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid: str = "", *args, **kwargs) -> list[DriveFile]:
         """
         获取目录列表
 
@@ -435,7 +434,7 @@ class GitHubDrive(BaseDrive):
             logger.error(f"获取目录列表失败: {e}")
             return []
 
-    def get_file_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取文件信息
 
@@ -483,7 +482,7 @@ class GitHubDrive(BaseDrive):
             logger.error(f"获取文件信息失败: {e}")
             return None
 
-    def get_dir_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取目录信息
 
@@ -613,9 +612,9 @@ class GitHubDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         callback: callable = None,
         *args,
@@ -687,10 +686,10 @@ class GitHubDrive(BaseDrive):
         self,
         keyword: str,
         fid: str = "",
-        file_type: Optional[str] = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """
         搜索文件
 
@@ -745,7 +744,7 @@ class GitHubDrive(BaseDrive):
             logger.error(f"搜索失败: {e}")
             return []
 
-    def get_quota(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+    def get_quota(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """
         获取仓库信息（GitHub没有存储配额限制）
 

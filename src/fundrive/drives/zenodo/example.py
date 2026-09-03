@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Zenodo 学术数据存储驱动标准化示例
 
@@ -25,7 +24,6 @@ API 版本: v1.0
 - 2024-09-01: 初始版本
 """
 
-from typing import Optional
 
 from farlog import getLogger
 
@@ -35,7 +33,7 @@ from fundrive.drives.zenodo import ZenodoDrive
 logger = getLogger("fundrive.zenodo.example")
 
 
-def create_drive() -> Optional[ZenodoDrive]:
+def create_drive() -> ZenodoDrive | None:
     """创建 Zenodo 驱动实例"""
     try:
         # 使用沙盒环境进行测试

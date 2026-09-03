@@ -3,7 +3,7 @@
 """
 
 import os
-from typing import Any, List, Optional
+from typing import Any
 
 from fundrives.lanzou import LanZouCloud
 from fundrives.lanzou.utils import convert_file_size_to_int
@@ -67,7 +67,7 @@ class LanZouDrive(BaseDrive):
 
     def __init__(self, *args, **kwargs):
         """初始化蓝奏云网盘"""
-        super(LanZouDrive, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.allow_big_file = False
         self.drive = None
 
@@ -123,7 +123,7 @@ class LanZouDrive(BaseDrive):
     def delete(self, fid=None, *args, **kwargs) -> bool:
         return self.drive.delete(fid, *args, **kwargs) == 0
 
-    def get_dir_list(self, fid, url=None, pwd=None, *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid, url=None, pwd=None, *args, **kwargs) -> list[DriveFile]:
         result = []
         for item in self.drive.get_dir_list(folder_id=fid)[0]:
             result.append(DriveFile(fid=item.id, name=item.name, desc=item.desc))
@@ -131,7 +131,7 @@ class LanZouDrive(BaseDrive):
 
     def get_file_list(
         self, fid, url=None, pwd=None, *args, **kwargs
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         result = []
         if fid is not None:
             for item in self.drive.get_file_list(folder_id=fid):
@@ -196,9 +196,9 @@ class LanZouDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args,
         **kwargs,

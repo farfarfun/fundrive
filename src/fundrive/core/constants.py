@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 FunDrive项目常量定义模块
@@ -15,7 +14,7 @@ FunDrive项目常量定义模块
 """
 
 # 标准库导入
-from typing import Dict, Any
+from typing import Any
 
 # 通用配置常量
 DEFAULT_TIMEOUT = 30  # 默认请求超时时间（秒）
@@ -174,7 +173,7 @@ API_ENDPOINTS = {
 }
 
 # 默认配置模板
-DEFAULT_CONFIG: Dict[str, Any] = {
+DEFAULT_CONFIG: dict[str, Any] = {
     "timeout": DEFAULT_TIMEOUT,
     "chunk_size": DEFAULT_CHUNK_SIZE,
     "max_retries": DEFAULT_MAX_RETRIES,

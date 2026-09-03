@@ -1,7 +1,7 @@
 import os
 import subprocess
 import tempfile
-from typing import Any, List, Optional
+from typing import Any
 
 from funinstall.install import OSSUtilInstall
 from farlog import getLogger
@@ -34,7 +34,7 @@ class OSSUtilDrive(BaseDrive):
             *args: 可变位置参数
             **kwargs: 可变关键字参数
         """
-        super(OSSUtilDrive, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._ossutil_path = None
         self._config_file = None
@@ -77,7 +77,7 @@ endpoint={self._endpoint}
             return False
 
     def _run_ossutil_command(
-        self, command: List[str], capture_output: bool = True
+        self, command: list[str], capture_output: bool = True
     ) -> subprocess.CompletedProcess:
         """执行ossutil命令
 
@@ -112,10 +112,10 @@ endpoint={self._endpoint}
 
     def login(
         self,
-        access_key: Optional[str] = None,
-        access_secret: Optional[str] = None,
-        bucket_name: Optional[str] = None,
-        endpoint: Optional[str] = None,
+        access_key: str | None = None,
+        access_secret: str | None = None,
+        bucket_name: str | None = None,
+        endpoint: str | None = None,
         *args,
         **kwargs,
     ) -> bool:
@@ -183,7 +183,7 @@ endpoint={self._endpoint}
             logger.error(f"OSS登录失败: {e}")
             return False
 
-    def _parse_ls_output(self, output: str, prefix: str = "") -> List[DriveFile]:
+    def _parse_ls_output(self, output: str, prefix: str = "") -> list[DriveFile]:
         """解析ls命令输出
 
         Args:
@@ -353,7 +353,7 @@ endpoint={self._endpoint}
             logger.error(f"删除失败: {e}")
             return False
 
-    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """获取目录下的文件列表
 
         Args:
@@ -386,7 +386,7 @@ endpoint={self._endpoint}
             logger.error(f"获取文件列表失败: {e}")
             return []
 
-    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """获取目录下的子目录列表
 
         Args:
@@ -419,7 +419,7 @@ endpoint={self._endpoint}
             logger.error(f"获取目录列表失败: {e}")
             return []
 
-    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
         """获取文件信息
 
         Args:
@@ -474,7 +474,7 @@ endpoint={self._endpoint}
             logger.error(f"获取文件信息失败: {e}")
             return None
 
-    def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
         """获取目录信息
 
         Args:
@@ -509,9 +509,9 @@ endpoint={self._endpoint}
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args: Any,
         **kwargs: Any,
@@ -611,11 +611,11 @@ endpoint={self._endpoint}
     def search(
         self,
         keyword: str,
-        fid: Optional[str] = None,
-        file_type: Optional[str] = None,
+        fid: str | None = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """搜索文件或目录
 
         Args:
@@ -959,7 +959,7 @@ endpoint={self._endpoint}
         self,
         shared_url: str,
         fid: str,
-        password: Optional[str] = None,
+        password: str | None = None,
     ) -> bool:
         """保存他人的分享内容到自己的网盘
 
@@ -976,7 +976,7 @@ endpoint={self._endpoint}
         logger.warning("ossutil不支持保存分享内容功能")
         return False
 
-    def get_recycle_list(self, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_recycle_list(self, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """获取回收站文件列表
 
         ossutil不支持回收站功能

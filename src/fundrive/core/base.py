@@ -1,7 +1,8 @@
 import os
 from abc import abstractmethod
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Dict, TypeVar, Generic
+from typing import Any, TypeVar, Generic
+from collections.abc import Callable
 
 T = TypeVar("T")
 
@@ -27,10 +28,10 @@ class DriveFile(dict, Generic[T]):
         self,
         fid: str,
         name: str,
-        size: Optional[int] = None,
-        ext: Optional[Dict[str, Any]] = None,
-        sha: Optional[str] = None,
-        time: Optional[str] = None,
+        size: int | None = None,
+        ext: dict[str, Any] | None = None,
+        sha: str | None = None,
+        time: str | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -103,7 +104,7 @@ class DriveFile(dict, Generic[T]):
         return self["name"]
 
     @property
-    def size(self) -> Optional[int]:
+    def size(self) -> int | None:
         """文件大小(字节)"""
         return self.get("size")
 
@@ -132,9 +133,9 @@ class DriveFile(dict, Generic[T]):
 
 
 def get_filepath(
-    filedir: Optional[str] = None,
-    filename: Optional[str] = None,
-    filepath: Optional[str] = None,
+    filedir: str | None = None,
+    filename: str | None = None,
+    filepath: str | None = None,
 ) -> str:
     """
     获取文件完整路径
@@ -205,7 +206,7 @@ class BaseDrive:
         return self._is_logged_in
 
     @property
-    def root_fid(self) -> Optional[str]:
+    def root_fid(self) -> str | None:
         """根目录ID"""
         return self._root_fid
 
@@ -295,7 +296,7 @@ class BaseDrive:
             raise ValueError("fid must not be empty")
         raise NotImplementedError()
 
-    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """
         获取目录下的文件列表
 
@@ -315,7 +316,7 @@ class BaseDrive:
             raise ValueError("fid must not be empty")
         raise NotImplementedError()
 
-    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """
         获取目录下的子目录列表
 
@@ -335,7 +336,7 @@ class BaseDrive:
             raise ValueError("fid must not be empty")
         raise NotImplementedError()
 
-    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
         """
         获取文件详细信息
 
@@ -378,9 +379,9 @@ class BaseDrive:
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args: Any,
         **kwargs: Any,
@@ -407,7 +408,7 @@ class BaseDrive:
         save_dir: str,
         recursion: bool = True,
         overwrite: bool = False,
-        ignore_filter: Optional[Callable[[str], bool]] = None,
+        ignore_filter: Callable[[str], bool] | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> bool:
@@ -487,7 +488,7 @@ class BaseDrive:
         :param kwargs: 关键字参数
         :return: 上传是否成功
         """
-        dir_map = dict([(file.name, file.fid) for file in self.get_dir_list(fid=fid)])
+        dir_map = {file.name: file.fid for file in self.get_dir_list(fid=fid)}
         for file in os.listdir(filedir):
             filepath = os.path.join(filedir, file)
             if os.path.isfile(filepath):
@@ -530,7 +531,7 @@ class BaseDrive:
         self,
         shared_url: str,
         fid: str,
-        password: Optional[str] = None,
+        password: str | None = None,
     ) -> bool:
         """
         保存他人的分享内容到自己的网盘
@@ -548,11 +549,11 @@ class BaseDrive:
     def search(
         self,
         keyword: str,
-        fid: Optional[str] = None,
-        file_type: Optional[str] = None,
+        fid: str | None = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """
         搜索文件或目录
 
@@ -641,7 +642,7 @@ class BaseDrive:
         self,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """
         获取回收站文件列表
 

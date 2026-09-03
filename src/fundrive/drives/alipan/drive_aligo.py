@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Any, List, Optional
+from typing import Any
 
 from aligo import Aligo
 from farlog import getLogger
@@ -19,14 +19,14 @@ class AlipanDrive(BaseDrive):
         :param args: 位置参数
         :param kwargs: 关键字参数
         """
-        super(AlipanDrive, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.drive: Aligo = None
 
     def login(
         self,
-        server_url: Optional[str] = None,
-        refresh_token: Optional[str] = None,
+        server_url: str | None = None,
+        refresh_token: str | None = None,
         is_resource: bool = False,
         *args,
         **kwargs,
@@ -58,7 +58,7 @@ class AlipanDrive(BaseDrive):
         :param return_if_exist: 如果文件夹已存在，是否返回已存在的文件夹ID
         :return: 创建的文件夹ID
         """
-        dir_map = dict([(file.name, file.fid) for file in self.get_dir_list(fid=fid)])
+        dir_map = {file.name: file.fid for file in self.get_dir_list(fid=fid)}
         if name in dir_map:
             logger.info(f"name={name} exists, return fid={fid}")
             return dir_map[name]
@@ -81,7 +81,7 @@ class AlipanDrive(BaseDrive):
         """
         return self.drive.get_file(file_id=fid) is not None
 
-    def get_file_list(self, fid: str = "root", *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid: str = "root", *args, **kwargs) -> list[DriveFile]:
         """
         获取指定目录下的文件列表
         :param fid: 目录ID，默认为根目录
@@ -100,7 +100,7 @@ class AlipanDrive(BaseDrive):
                 )
         return result
 
-    def get_dir_list(self, fid: str = "root", *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid: str = "root", *args, **kwargs) -> list[DriveFile]:
         """
         获取指定目录下的子目录列表
         :param fid: 目录ID，默认为根目录
@@ -125,9 +125,9 @@ class AlipanDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args: Any,
         **kwargs: Any,
@@ -189,7 +189,7 @@ class AlipanDrive(BaseDrive):
         )
 
     def save_shared(
-        self, shared_url: str, fid: str, password: Optional[str] = None
+        self, shared_url: str, fid: str, password: str | None = None
     ) -> None:
         """
         保存他人分享的文件到自己的网盘

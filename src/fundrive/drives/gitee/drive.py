@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 Gitee驱动实现
@@ -19,7 +18,7 @@ Gitee是中国领先的代码托管平台，本驱动将Gitee仓库作为云存�
 
 import base64
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from farlog import getLogger
 from funsecret import read_secret
@@ -40,9 +39,9 @@ class GiteeDrive(BaseDrive):
 
     def __init__(
         self,
-        access_token: Optional[str] = None,
-        repo_owner: Optional[str] = None,
-        repo_name: Optional[str] = None,
+        access_token: str | None = None,
+        repo_owner: str | None = None,
+        repo_name: str | None = None,
         branch: str = "master",
         **kwargs,
     ):
@@ -84,10 +83,10 @@ class GiteeDrive(BaseDrive):
 
     def login(
         self,
-        access_token: Optional[str] = None,
-        repo_owner: Optional[str] = None,
-        repo_name: Optional[str] = None,
-        branch: Optional[str] = None,
+        access_token: str | None = None,
+        repo_owner: str | None = None,
+        repo_name: str | None = None,
+        branch: str | None = None,
         **kwargs,
     ) -> bool:
         """
@@ -264,7 +263,7 @@ class GiteeDrive(BaseDrive):
             logger.error(f"删除文件失败: {e}")
             return False
 
-    def get_file_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid: str = "", *args, **kwargs) -> list[DriveFile]:
         """
         获取文件列表
 
@@ -309,7 +308,7 @@ class GiteeDrive(BaseDrive):
             logger.error(f"获取文件列表失败: {e}")
             return []
 
-    def get_dir_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid: str = "", *args, **kwargs) -> list[DriveFile]:
         """
         获取目录列表
 
@@ -353,7 +352,7 @@ class GiteeDrive(BaseDrive):
             logger.error(f"获取目录列表失败: {e}")
             return []
 
-    def get_file_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取文件信息
 
@@ -399,7 +398,7 @@ class GiteeDrive(BaseDrive):
             logger.error(f"获取文件信息失败: {e}")
             return None
 
-    def get_dir_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取目录信息
 
@@ -526,9 +525,9 @@ class GiteeDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         callback: callable = None,
         *args,
@@ -600,10 +599,10 @@ class GiteeDrive(BaseDrive):
         self,
         keyword: str,
         fid: str = "",
-        file_type: Optional[str] = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """
         搜索文件（基于文件名匹配）
 
@@ -648,7 +647,7 @@ class GiteeDrive(BaseDrive):
             logger.error(f"搜索失败: {e}")
             return []
 
-    def get_quota(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+    def get_quota(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """
         获取仓库信息
 

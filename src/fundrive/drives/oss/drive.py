@@ -1,5 +1,5 @@
 import os
-from typing import Any, List, Optional
+from typing import Any
 
 import oss2
 from farlog import getLogger
@@ -74,7 +74,7 @@ class OSSDrive(BaseDrive):
             *args: 可变位置参数
             **kwargs: 可变关键字参数
         """
-        super(OSSDrive, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.bucket: oss2.Bucket = None
         self.logger = getLogger("oss_drive")
         self._bucket_name = None
@@ -149,7 +149,7 @@ class OSSDrive(BaseDrive):
             self.logger.error(f"OSS登录失败: {e}")
             return False
 
-    def __get_file_list(self, oss_path: str) -> List[DriveFile]:
+    def __get_file_list(self, oss_path: str) -> list[DriveFile]:
         """获取指定路径下的文件列表
 
         Args:
@@ -298,7 +298,7 @@ class OSSDrive(BaseDrive):
             self.logger.error(f"判断目录失败: {e}")
             return False
 
-    def get_file_info(self, fid, *args, **kwargs) -> Optional[DriveFile]:
+    def get_file_info(self, fid, *args, **kwargs) -> DriveFile | None:
         """获取文件信息
 
         Args:
@@ -331,7 +331,7 @@ class OSSDrive(BaseDrive):
             self.logger.error(f"获取文件信息失败: {e}")
             return None
 
-    def get_dir_info(self, fid, *args, **kwargs) -> Optional[DriveFile]:
+    def get_dir_info(self, fid, *args, **kwargs) -> DriveFile | None:
         """获取目录信息
 
         Args:
@@ -363,7 +363,7 @@ class OSSDrive(BaseDrive):
             self.logger.error(f"获取目录信息失败: {e}")
             return None
 
-    def get_file_list(self, fid, *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid, *args, **kwargs) -> list[DriveFile]:
         """获取目录下的文件列表
 
         Args:
@@ -377,7 +377,7 @@ class OSSDrive(BaseDrive):
                 result.append(file)
         return result
 
-    def get_dir_list(self, fid, *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid, *args, **kwargs) -> list[DriveFile]:
         """获取目录下的子目录列表
 
         Args:
@@ -442,9 +442,9 @@ class OSSDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args,
         **kwargs,
@@ -605,7 +605,7 @@ class OSSDrive(BaseDrive):
         self,
         shared_url: str,
         fid: str,
-        password: Optional[str] = None,
+        password: str | None = None,
     ) -> bool:
         """保存他人的分享内容到自己的网盘
 
@@ -624,11 +624,11 @@ class OSSDrive(BaseDrive):
     def search(
         self,
         keyword: str,
-        fid: Optional[str] = None,
-        file_type: Optional[str] = None,
+        fid: str | None = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """搜索文件或目录
 
         Args:
@@ -868,7 +868,7 @@ class OSSDrive(BaseDrive):
 
     # ========== 以下方法OSS不支持，提供警告实现 ==========
 
-    def get_recycle_list(self, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_recycle_list(self, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """获取回收站文件列表
 
         OSS不支持回收站功能

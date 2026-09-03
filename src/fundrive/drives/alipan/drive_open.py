@@ -1,6 +1,6 @@
 # 标准库导入
 from datetime import datetime, timedelta, timezone
-from typing import Any, List, Optional
+from typing import Any
 
 # 第三方库导入
 from fundrives.aliopen import AliOpenManage
@@ -21,15 +21,15 @@ class AliopenDrive(BaseDrive):
         :param args: 位置参数
         :param kwargs: 关键字参数
         """
-        super(AliopenDrive, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.drive: AliOpenManage = AliOpenManage()
 
     def login(
         self,
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
-        refresh_token: Optional[str] = None,
+        client_id: str | None = None,
+        client_secret: str | None = None,
+        refresh_token: str | None = None,
         is_resource: bool = False,
         *args,
         **kwargs,
@@ -68,7 +68,7 @@ class AliopenDrive(BaseDrive):
         :param return_if_exist: 如果文件夹已存在，是否返回已存在的文件夹ID
         :return: 创建的文件夹ID
         """
-        dir_map = dict([(file.name, file.fid) for file in self.get_dir_list(fid=fid)])
+        dir_map = {file.name: file.fid for file in self.get_dir_list(fid=fid)}
         if name in dir_map:
             logger.info(f"name={name} exists, return fid={fid}")
             return dir_map[name]
@@ -93,7 +93,7 @@ class AliopenDrive(BaseDrive):
         """
         return "file_id" in self.drive.get_file_details(file_id=fid)
 
-    def get_file_list(self, fid: str = "root", *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid: str = "root", *args, **kwargs) -> list[DriveFile]:
         """
         获取指定目录下的文件列表
         :param fid: 目录ID，默认为根目录
@@ -112,7 +112,7 @@ class AliopenDrive(BaseDrive):
                 )
         return result
 
-    def get_dir_list(self, fid: str = "root", *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid: str = "root", *args, **kwargs) -> list[DriveFile]:
         """
         获取指定目录下的子目录列表
         :param fid: 目录ID，默认为根目录
@@ -144,9 +144,9 @@ class AliopenDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args: Any,
         **kwargs: Any,

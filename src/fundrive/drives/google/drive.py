@@ -1,7 +1,7 @@
 # 标准库导入
 import io
 import os
-from typing import Any, List, Optional
+from typing import Any
 
 from farlog import getLogger
 from funsecret import read_secret
@@ -41,8 +41,8 @@ class GoogleDrive(BaseDrive):
 
     def __init__(
         self,
-        credentials_file: Optional[str] = None,
-        token_file: Optional[str] = None,
+        credentials_file: str | None = None,
+        token_file: str | None = None,
         *args,
         **kwargs,
     ):
@@ -221,7 +221,7 @@ class GoogleDrive(BaseDrive):
             logger.error(f"删除文件失败: {e}")
             return False
 
-    def get_file_list(self, fid: str, *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid: str, *args, **kwargs) -> list[DriveFile]:
         """
         获取目录下的文件列表
 
@@ -265,7 +265,7 @@ class GoogleDrive(BaseDrive):
             logger.error(f"获取文件列表失败: {e}")
             return []
 
-    def get_dir_list(self, fid: str, *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid: str, *args, **kwargs) -> list[DriveFile]:
         """
         获取目录下的子目录列表
 
@@ -309,7 +309,7 @@ class GoogleDrive(BaseDrive):
             logger.error(f"获取目录列表失败: {e}")
             return []
 
-    def get_file_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取文件详细信息
 
@@ -436,9 +436,9 @@ class GoogleDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args,
         **kwargs,
@@ -509,11 +509,11 @@ class GoogleDrive(BaseDrive):
     def search(
         self,
         keyword: str,
-        fid: Optional[str] = None,
-        file_type: Optional[str] = None,
+        fid: str | None = None,
+        file_type: str | None = None,
         *args,
         **kwargs,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """
         搜索文件或目录
 
@@ -597,7 +597,7 @@ class GoogleDrive(BaseDrive):
         description: str = "",
         *args,
         **kwargs,
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         创建文件分享链接
 
@@ -677,7 +677,7 @@ class GoogleDrive(BaseDrive):
         self,
         source_fid: str,
         target_fid: str,
-        new_name: Optional[str] = None,
+        new_name: str | None = None,
         *args,
         **kwargs,
     ) -> bool:
@@ -793,7 +793,7 @@ class GoogleDrive(BaseDrive):
             return False
 
     # 不支持的功能实现
-    def get_recycle_list(self, *args, **kwargs) -> List[DriveFile]:
+    def get_recycle_list(self, *args, **kwargs) -> list[DriveFile]:
         """获取回收站文件列表"""
         try:
             if not self.service:
@@ -857,7 +857,7 @@ class GoogleDrive(BaseDrive):
         return False
 
     def save_shared(
-        self, shared_url: str, fid: str, password: Optional[str] = None, *args, **kwargs
+        self, shared_url: str, fid: str, password: str | None = None, *args, **kwargs
     ) -> bool:
         """保存分享文件 - Google Drive不支持此功能"""
         logger.warning("Google Drive 不支持保存分享文件功能")

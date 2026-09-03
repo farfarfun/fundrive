@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 pCloud 网盘驱动标准化示例
 
@@ -21,7 +20,6 @@ API 版本: v1.0
 - 2024-06-01: 初始版本
 """
 
-from typing import Optional
 
 from farlog import getLogger
 
@@ -31,7 +29,7 @@ from fundrive.drives.pcloud import PCloudDrive
 logger = getLogger("fundrive")
 
 
-def create_drive() -> Optional[PCloudDrive]:
+def create_drive() -> PCloudDrive | None:
     """创建 pCloud 驱动实例"""
     try:
         drive = PCloudDrive()

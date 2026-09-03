@@ -16,7 +16,7 @@ FunDrive 统一云存储驱动模块
 """
 
 import importlib
-from typing import Any, Dict, NamedTuple, Optional, Type
+from typing import Any, NamedTuple
 
 
 class DriveSpec(NamedTuple):
@@ -28,10 +28,10 @@ class DriveSpec(NamedTuple):
     cls: str
     """模块中导出的驱动类名。"""
 
-    extra: Optional[str] = None
+    extra: str | None = None
     """安装该驱动所需的 pip extra；``None`` 表示只依赖核心依赖。"""
 
-    pip_target: Optional[str] = None
+    pip_target: str | None = None
     """``pip install`` 的目标覆写；默认是 ``fundrive[<extra>]``。"""
 
     @property
@@ -48,7 +48,7 @@ class DriveSpec(NamedTuple):
 # extra=None 表示该驱动只用到核心依赖（requests / orjson / funget / tqdm /
 # farlog / funsecret），无需额外安装。注意 pyproject 里的 github/gitee/
 # onedrive/tsinghua extra 只包含核心依赖，属于空 extra，因此这里标 None。
-DRIVE_SPECS: Dict[str, DriveSpec] = {
+DRIVE_SPECS: dict[str, DriveSpec] = {
     # 🌟 全球主流服务
     "google": DriveSpec(".google", "GoogleDrive", "google"),
     "onedrive": DriveSpec(".onedrive", "OneDrive"),
@@ -82,13 +82,13 @@ DRIVE_SPECS: Dict[str, DriveSpec] = {
 }
 
 # 类名 -> spec，供 ``from fundrive.drives import OSSDrive`` 懒加载使用。
-_CLASS_SPECS: Dict[str, DriveSpec] = {spec.cls: spec for spec in DRIVE_SPECS.values()}
+_CLASS_SPECS: dict[str, DriveSpec] = {spec.cls: spec for spec in DRIVE_SPECS.values()}
 _CLASS_SPECS["OSDrive"] = DriveSpec(".os", "OSDrive")
 
-_resolved: Dict[str, Type[Any]] = {}
+_resolved: dict[str, type[Any]] = {}
 
 
-def _load(spec: DriveSpec) -> Type[Any]:
+def _load(spec: DriveSpec) -> type[Any]:
     """导入并返回驱动类。
 
     Raises:
@@ -153,7 +153,7 @@ def get_drive(drive_type: str, *args: Any, **kwargs: Any):
     return _load(spec)(*args, **kwargs)
 
 
-def list_available_drives() -> Dict[str, Type[Any]]:
+def list_available_drives() -> dict[str, type[Any]]:
     """
     列出当前环境中依赖已装好、可以直接实例化的驱动
 
@@ -163,7 +163,7 @@ def list_available_drives() -> Dict[str, Type[Any]]:
     Returns:
         dict: 驱动类型到驱动类的映射
     """
-    result: Dict[str, Type[Any]] = {}
+    result: dict[str, type[Any]] = {}
     for key, spec in DRIVE_SPECS.items():
         try:
             result[key] = _load(spec)
@@ -176,14 +176,14 @@ def list_available_drives() -> Dict[str, Type[Any]]:
 list_installed_drives = list_available_drives
 
 
-def list_missing_drives() -> Dict[str, str]:
+def list_missing_drives() -> dict[str, str]:
     """
     列出依赖缺失的驱动及其安装命令
 
     Returns:
         dict: 驱动类型到 ``pip install`` 目标的映射
     """
-    missing: Dict[str, str] = {}
+    missing: dict[str, str] = {}
     for key, spec in DRIVE_SPECS.items():
         try:
             _load(spec)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 文叔叔网盘驱动实现
@@ -23,7 +22,7 @@ import hashlib
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # 第三方库导入
 import base58
@@ -127,7 +126,7 @@ class WSSDrive(BaseDrive):
         except Exception as e:
             logger.error(f"获取用户信息失败: {e}")
 
-    def get_storage_info(self) -> Dict[str, Any]:
+    def get_storage_info(self) -> dict[str, Any]:
         """
         获取存储空间信息
 
@@ -262,7 +261,7 @@ class WSSDrive(BaseDrive):
         logger.warning("文叔叔不支持删除已分享的文件")
         return False
 
-    def get_file_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid: str = "", *args, **kwargs) -> list[DriveFile]:
         """
         获取文件列表（文叔叔不支持文件列表，返回已上传文件）
 
@@ -294,7 +293,7 @@ class WSSDrive(BaseDrive):
             logger.error(f"获取文件列表失败: {e}")
             return []
 
-    def get_dir_list(self, fid: str = "", *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid: str = "", *args, **kwargs) -> list[DriveFile]:
         """
         获取目录列表（文叔叔不支持目录结构）
 
@@ -307,7 +306,7 @@ class WSSDrive(BaseDrive):
         logger.info("文叔叔不支持目录结构")
         return []
 
-    def get_file_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取文件信息
 
@@ -343,7 +342,7 @@ class WSSDrive(BaseDrive):
             logger.error(f"获取文件信息失败: {e}")
             return None
 
-    def _get_share_file_info(self, share_url: str) -> Optional[DriveFile]:
+    def _get_share_file_info(self, share_url: str) -> DriveFile | None:
         """从分享链接获取文件信息"""
         try:
             # 解析链接获取tid
@@ -395,7 +394,7 @@ class WSSDrive(BaseDrive):
             logger.error(f"获取分享文件信息失败: {e}")
             return None
 
-    def get_dir_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取目录信息（文叔叔不支持目录结构）
 
@@ -475,9 +474,9 @@ class WSSDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         callback: callable = None,
         *args,
@@ -573,10 +572,10 @@ class WSSDrive(BaseDrive):
         self,
         keyword: str,
         fid: str = "",
-        file_type: Optional[str] = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """
         搜索文件（在已上传文件中搜索）
 
@@ -619,7 +618,7 @@ class WSSDrive(BaseDrive):
             logger.error(f"搜索失败: {e}")
             return []
 
-    def get_quota(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+    def get_quota(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """
         获取存储配额信息
 

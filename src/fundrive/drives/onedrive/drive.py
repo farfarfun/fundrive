@@ -1,6 +1,6 @@
 # 标准库导入
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # 第三方库导入
 from farlog import getLogger
@@ -36,10 +36,10 @@ class OneDrive(BaseDrive):
 
     def __init__(
         self,
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
-        access_token: Optional[str] = None,
-        refresh_token: Optional[str] = None,
+        client_id: str | None = None,
+        client_secret: str | None = None,
+        access_token: str | None = None,
+        refresh_token: str | None = None,
         *args,
         **kwargs,
     ):
@@ -252,7 +252,7 @@ class OneDrive(BaseDrive):
             logger.error(f"删除文件/目录失败: {e}")
             return False
 
-    def get_file_list(self, fid: str = "root", *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid: str = "root", *args, **kwargs) -> list[DriveFile]:
         """获取文件列表"""
         try:
             headers = {"Authorization": f"Bearer {self.access_token}"}
@@ -291,7 +291,7 @@ class OneDrive(BaseDrive):
             logger.error(f"获取文件列表失败: {e}")
             return []
 
-    def get_dir_list(self, fid: str = "root", *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid: str = "root", *args, **kwargs) -> list[DriveFile]:
         """获取目录列表"""
         try:
             headers = {"Authorization": f"Bearer {self.access_token}"}
@@ -330,7 +330,7 @@ class OneDrive(BaseDrive):
             logger.error(f"获取目录列表失败: {e}")
             return []
 
-    def get_file_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """获取文件信息"""
         try:
             headers = {"Authorization": f"Bearer {self.access_token}"}
@@ -359,7 +359,7 @@ class OneDrive(BaseDrive):
             logger.error(f"获取文件信息失败: {e}")
             return None
 
-    def get_dir_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """获取目录信息"""
         try:
             headers = {"Authorization": f"Bearer {self.access_token}"}
@@ -392,7 +392,7 @@ class OneDrive(BaseDrive):
         self,
         filepath: str,
         fid: str,
-        filename: Optional[str] = None,
+        filename: str | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> bool:
@@ -505,9 +505,9 @@ class OneDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args,
         **kwargs,
@@ -577,10 +577,10 @@ class OneDrive(BaseDrive):
         self,
         keyword: str,
         fid: str = "root",
-        file_type: Optional[str] = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """搜索文件"""
         if file_type is not None:
             # 契约里有这个参数，本驱动尚未实现按类型过滤。明确告警，
@@ -621,7 +621,7 @@ class OneDrive(BaseDrive):
             logger.error(f"搜索文件失败: {e}")
             return []
 
-    def share(self, fid: str, **kwargs) -> Optional[str]:
+    def share(self, fid: str, **kwargs) -> str | None:
         """创建分享链接"""
         try:
             headers = {
@@ -648,7 +648,7 @@ class OneDrive(BaseDrive):
             logger.error(f"创建分享链接失败: {e}")
             return None
 
-    def get_quota(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_quota(self, *args, **kwargs) -> dict[str, Any] | None:
         """获取存储配额信息"""
         try:
             headers = {"Authorization": f"Bearer {self.access_token}"}
@@ -696,7 +696,7 @@ class OneDrive(BaseDrive):
         return False
 
     def save_shared(
-        self, shared_url, fid, password: Optional[str] = None, *args, **kwargs
+        self, shared_url, fid, password: str | None = None, *args, **kwargs
     ):
         """保存分享文件 - 需要特殊权限"""
         logger.warning("OneDrive 保存分享文件功能需要特殊权限配置")

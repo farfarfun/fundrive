@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 OpenXLab云存储驱动实现
@@ -17,7 +16,7 @@ OpenXLab是上海人工智能实验室推出的开放平台，提供数据集存
 """
 
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import requests
 from funget import simple_download
@@ -39,8 +38,8 @@ class OpenXLabDrive(BaseDrive):
 
     def __init__(
         self,
-        opendatalab_session: Optional[str] = None,
-        ssouid: Optional[str] = None,
+        opendatalab_session: str | None = None,
+        ssouid: str | None = None,
         **kwargs,
     ):
         """
@@ -71,8 +70,8 @@ class OpenXLabDrive(BaseDrive):
 
     def login(
         self,
-        opendatalab_session: Optional[str] = None,
-        ssouid: Optional[str] = None,
+        opendatalab_session: str | None = None,
+        ssouid: str | None = None,
         **kwargs,
     ) -> bool:
         """
@@ -186,7 +185,7 @@ class OpenXLabDrive(BaseDrive):
         logger.warning("OpenXLab是只读平台，不支持删除操作")
         return False
 
-    def get_file_list(self, fid: str = "root", *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid: str = "root", *args, **kwargs) -> list[DriveFile]:
         """
         获取数据集文件列表
 
@@ -244,7 +243,7 @@ class OpenXLabDrive(BaseDrive):
             logger.error(f"获取文件列表失败: {e}")
             return []
 
-    def get_dir_list(self, fid: str = "root", *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid: str = "root", *args, **kwargs) -> list[DriveFile]:
         """
         获取数据集目录列表
 
@@ -309,7 +308,7 @@ class OpenXLabDrive(BaseDrive):
             logger.error(f"获取目录列表失败: {e}")
             return []
 
-    def get_file_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取文件信息
 
@@ -360,7 +359,7 @@ class OpenXLabDrive(BaseDrive):
             logger.error(f"获取文件信息失败: {e}")
             return None
 
-    def get_dir_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取目录信息
 
@@ -411,9 +410,9 @@ class OpenXLabDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         callback: callable = None,
         *args,
@@ -497,7 +496,7 @@ class OpenXLabDrive(BaseDrive):
 
     def _get_raw_file_info(
         self, dataset_id: str, file_path: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         获取原始文件信息（内部方法）
 
@@ -538,10 +537,10 @@ class OpenXLabDrive(BaseDrive):
         self,
         keyword: str,
         fid: str = "root",
-        file_type: Optional[str] = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """
         搜索数据集
 
