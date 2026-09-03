@@ -5,7 +5,7 @@ FunDrive 是一个统一的网盘操作接口框架，旨在提供一个标准�
 ## 📚 文档导航
 
 - **[📖 API接口文档](docs/API.md)** - 完整的API接口说明，适合开发者集成使用
-- **[📋 变更日志](docs/CHANGELOG.md)** - 版本变更记录和更新说明
+- **[📋 变更日志](CHANGELOG.md)** - 版本变更记录和更新说明
 - **[🚀 快速入门指南](docs/QUICK_START.md)** - 5分钟快速上手，包含常用场景示例
 - **[🔧 开发指南](docs/DEVELOPMENT_GUIDE.md)** - 开发者贡献指南和最佳实践
 - **[📊 性能优化指南](docs/OPTIMIZATION_GUIDE.md)** - 性能优化建议和最佳实践
@@ -570,7 +570,7 @@ def quick_demo():
 #### 3. 开发规范要求
 
 - ✅ **继承 BaseDrive**: 实现所有抽象方法
-- ✅ **错误处理**: 使用 `funutil.getLogger` 记录日志
+- ✅ **错误处理**: 使用 `farlog.getLogger` 记录日志
 - ✅ **配置管理**: 集成 `funsecret` 配置管理
 - ✅ **中文注释**: 所有注释和错误信息使用中文
 - ✅ **示例文件**: 提供标准化的 `example.py`
@@ -628,7 +628,7 @@ def restore(self, fid, *args, **kwargs):
 
 ## 贡献指南
 
-我们欢迎任何形式的贡献！如果您想为 UCSI 做出贡献，请遵循以下步骤：
+我们欢迎任何形式的贡献！如果您想为 FunDrive 做出贡献，请遵循以下步骤：
 
 1. Fork 项目仓库。
 2. 创建一个新的分支 (`git checkout -b feature/your-feature-name`)。
@@ -647,17 +647,20 @@ def restore(self, fid, *args, **kwargs):
 
 
 
-#参考
-百度云盘的 python-api，[官方 API](https://openapi.baidu.com/wiki/index.php?title=docs/pcs/rest/file_data_apis_list)  
+## 参考
+
+百度云盘的 python-api，[官方 API](https://openapi.baidu.com/wiki/index.php?title=docs/pcs/rest/file_data_apis_list)
 蓝奏云的 python-api [参考](https://github.com/zaxtyson/LanZouCloud-API)
 
+---
 
+## 关于 farfarfun
 
-### [acoooder/aliyunpanshare](https://github.com/acoooder/aliyunpanshare)
+[farfarfun](https://github.com/farfarfun) 是一个专注于实用工具库的开源组织，
+涵盖云存储、数据处理、AI、多媒体与开发工具链等方向。
 
-狗狗盘搜网站：https://gogopanso.com
+- 🏠 组织主页：<https://github.com/farfarfun>
+- 📦 PyPI：<https://pypi.org/user/niuliangtao/>
+- 📧 联系：farfarfun@qq.com
 
-全量影视资源：https://link3.cc/alipan
-
-今日新增资源：https://link3.cc/zuixin
-
+本项目基于 [MIT](LICENSE) 协议开源。
