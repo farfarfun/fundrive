@@ -1,7 +1,7 @@
 import os
 import posixpath
 import re
-from typing import Any, List, Optional
+from typing import Any
 from urllib.parse import quote, unquote, urlparse
 
 from farlog import getLogger
@@ -10,17 +10,18 @@ import requests
 from xml.etree import ElementTree as ET
 from funget import simple_download, single_upload
 from fundrive.core import BaseDrive, DriveFile
+from fundrive.core.exceptions import InvalidParameterError
 
 logger = getLogger("fundrive")
 
 
 class WebDavDrive(BaseDrive):
     def __init__(self, *args, **kwargs):
-        super(WebDavDrive, self).__init__(*args, **kwargs)
-        self.server_url: Optional[str] = None
-        self.username: Optional[str] = None
-        self.password: Optional[str] = None
-        self._session: Optional[requests.Session] = None
+        super().__init__(*args, **kwargs)
+        self.server_url: str | None = None
+        self.username: str | None = None
+        self.password: str | None = None
+        self._session: requests.Session | None = None
         self._timeout: int = 30
 
     def login(
@@ -31,7 +32,10 @@ class WebDavDrive(BaseDrive):
         password = password or read_secret("fundrive", "webdav", "password")
 
         if not server_url or not username or not password:
-            raise Exception("server_url, username, password is None")
+            raise InvalidParameterError(
+                "server_url、username、password 均不能为空",
+                parameter="server_url/username/password",
+            )
 
         self.server_url = server_url.rstrip("/")
         self.username = username
@@ -88,11 +92,11 @@ class WebDavDrive(BaseDrive):
                     raise
             raise
 
-    def get_file_list(self, fid, *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid, *args, **kwargs) -> list[DriveFile]:
         children = self._list_children(fid)
         return [item for item in children if item.get("type") == "file"]
 
-    def get_dir_list(self, fid, *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid, *args, **kwargs) -> list[DriveFile]:
         children = self._list_children(fid)
         return [item for item in children if item.get("type") == "directory"]
 
@@ -111,9 +115,9 @@ class WebDavDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args,
         **kwargs,
@@ -250,7 +254,7 @@ class WebDavDrive(BaseDrive):
     ) -> str:
         return self._build_destination_url(fid)
 
-    def get_file_sha(self, fid: str, *args: Any, **kwargs: Any) -> Optional[str]:
+    def get_file_sha(self, fid: str, *args: Any, **kwargs: Any) -> str | None:
         """
         通过 WebDAV PROPFIND 读取远端文件的 checksum 属性。
 
@@ -305,7 +309,7 @@ class WebDavDrive(BaseDrive):
         norm = posixpath.normpath(fid)
         return "/" if norm == "." else norm
 
-    def _list_children(self, fid: str) -> List[DriveFile]:
+    def _list_children(self, fid: str) -> list[DriveFile]:
         target = self._normalize_fid(fid)
         response = self._request("PROPFIND", target, headers={"Depth": "1"})
         entries = self._parse_propfind(response.text)
@@ -320,10 +324,10 @@ class WebDavDrive(BaseDrive):
             raise FileNotFoundError(fid)
         return entries[0]
 
-    def _parse_propfind(self, xml_text: str) -> List[DriveFile]:
+    def _parse_propfind(self, xml_text: str) -> list[DriveFile]:
         # 解析 WebDAV 207 Multi-Status 响应，提取路径、类型、大小等基础信息
         root = ET.fromstring(xml_text)
-        results: List[DriveFile] = []
+        results: list[DriveFile] = []
         server_path_prefix = (urlparse(self.server_url or "").path or "").rstrip("/")
 
         for response in root.findall(".//{*}response"):

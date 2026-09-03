@@ -1,18 +1,18 @@
 import os.path
-from typing import List, Optional
 
 from farlog import getLogger
 from funsecret import read_secret
 from webdav4.client import Client
 
 from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
+from fundrive.core.exceptions import InvalidParameterError
 
 logger = getLogger("fundrive")
 
 
 class WebDavDrive4(BaseDrive):
     def __init__(self, *args, **kwargs):
-        super(WebDavDrive4, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.drive = None
 
     def login(
@@ -22,13 +22,16 @@ class WebDavDrive4(BaseDrive):
         username = username or read_secret("fundrive", "webdav", "username")
         password = password or read_secret("fundrive", "webdav", "password")
         if not server_url or not username or not password:
-            raise Exception("server_url, username, password is None")
+            raise InvalidParameterError(
+                "server_url、username、password 均不能为空",
+                parameter="server_url/username/password",
+            )
 
         self.drive = Client(server_url, auth=(username, password))
         return True
 
     def mkdir(self, fid, name, return_if_exist=True, *args, **kwargs) -> str:
-        dir_map = dict([(file.name, file.fid) for file in self.get_dir_list(fid=fid)])
+        dir_map = {file.name: file.fid for file in self.get_dir_list(fid=fid)}
         if name in dir_map:
             logger.info(f"name={name} exists, return fid={fid}")
             return dir_map[name]
@@ -43,7 +46,7 @@ class WebDavDrive4(BaseDrive):
     def exist(self, fid: str, *args, **kwargs) -> bool:
         return self.drive.exists(fid)
 
-    def get_file_list(self, fid, *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid, *args, **kwargs) -> list[DriveFile]:
         result = []
         for file in self.drive.ls(path=fid):
             if file["type"] == "file":
@@ -57,7 +60,7 @@ class WebDavDrive4(BaseDrive):
 
         return result
 
-    def get_dir_list(self, fid, *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid, *args, **kwargs) -> list[DriveFile]:
         result = []
         for file in self.drive.ls(path=fid):
             if file["type"] == "directory":
@@ -90,9 +93,9 @@ class WebDavDrive4(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args,
         **kwargs,

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 MediaFire云存储驱动实现
@@ -20,7 +19,7 @@ MediaFire是一个流行的云存储服务，提供文件存储、共享和同�
 import hashlib
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 from urllib.parse import urljoin
 
 import requests
@@ -28,6 +27,7 @@ from farlog import getLogger
 from funsecret import read_secret
 
 from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
+from fundrive.core.exceptions import FunDriveError, NetworkError
 
 logger = getLogger("fundrive")
 
@@ -45,11 +45,11 @@ class MediaFireDrive(BaseDrive):
 
     def __init__(
         self,
-        email: Optional[str] = None,
-        password: Optional[str] = None,
-        app_id: Optional[str] = None,
-        api_key: Optional[str] = None,
-        session_token: Optional[str] = None,
+        email: str | None = None,
+        password: str | None = None,
+        app_id: str | None = None,
+        api_key: str | None = None,
+        session_token: str | None = None,
         **kwargs,
     ):
         """
@@ -103,10 +103,10 @@ class MediaFireDrive(BaseDrive):
     def _make_request(
         self,
         endpoint: str,
-        params: Dict[str, Any] = None,
+        params: dict[str, Any] = None,
         method: str = "GET",
-        data: Dict[str, Any] = None,
-    ) -> Dict[str, Any]:
+        data: dict[str, Any] = None,
+    ) -> dict[str, Any]:
         """
         发送API请求
 
@@ -152,19 +152,27 @@ class MediaFireDrive(BaseDrive):
             # 检查API响应状态
             if result.get("response", {}).get("result") != "Success":
                 error_msg = result.get("response", {}).get("message", "未知错误")
-                logger.error(f"MediaFire API错误: {error_msg}")
-                raise Exception(f"MediaFire API错误: {error_msg}")
+                logger.error(f"MediaFire API错误: endpoint={endpoint} msg={error_msg}")
+                raise FunDriveError(
+                    f"MediaFire API错误: {error_msg}",
+                    error_code="MEDIAFIRE_API_ERROR",
+                    details={"endpoint": endpoint},
+                )
 
             return result
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"MediaFire API请求失败: {e}")
-            raise Exception(f"MediaFire API请求失败: {e}")
+            logger.error(f"MediaFire API请求失败: endpoint={endpoint}: {e}")
+            raise NetworkError(f"MediaFire API请求失败: {e}") from e
         except json.JSONDecodeError as e:
-            logger.error(f"MediaFire API响应解析失败: {e}")
-            raise Exception(f"MediaFire API响应解析失败: {e}")
+            logger.error(f"MediaFire API响应解析失败: endpoint={endpoint}: {e}")
+            raise FunDriveError(
+                f"MediaFire API响应解析失败: {e}",
+                error_code="MEDIAFIRE_RESPONSE_PARSE_ERROR",
+                details={"endpoint": endpoint},
+            ) from e
 
-    def _generate_signature(self, params: Dict[str, Any]) -> str:
+    def _generate_signature(self, params: dict[str, Any]) -> str:
         """
         生成API请求签名
 
@@ -379,7 +387,7 @@ class MediaFireDrive(BaseDrive):
             logger.error(f"删除文件/目录失败: {e}")
             return False
 
-    def get_file_list(self, fid: str = "root", *args, **kwargs) -> List[DriveFile]:
+    def get_file_list(self, fid: str = "root", *args, **kwargs) -> list[DriveFile]:
         """
         获取文件列表
 
@@ -429,7 +437,7 @@ class MediaFireDrive(BaseDrive):
             logger.error(f"获取文件列表失败: {e}")
             return []
 
-    def get_dir_list(self, fid: str = "root", *args, **kwargs) -> List[DriveFile]:
+    def get_dir_list(self, fid: str = "root", *args, **kwargs) -> list[DriveFile]:
         """
         获取目录列表
 
@@ -474,7 +482,7 @@ class MediaFireDrive(BaseDrive):
             logger.error(f"获取目录列表失败: {e}")
             return []
 
-    def get_file_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取文件信息
 
@@ -513,7 +521,7 @@ class MediaFireDrive(BaseDrive):
             logger.error(f"获取文件信息失败: {e}")
             return None
 
-    def get_dir_info(self, fid: str, *args, **kwargs) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args, **kwargs) -> DriveFile | None:
         """
         获取目录信息
 
@@ -624,9 +632,9 @@ class MediaFireDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         callback: callable = None,
         *args,
@@ -710,10 +718,10 @@ class MediaFireDrive(BaseDrive):
         self,
         keyword: str,
         fid: str = "root",
-        file_type: Optional[str] = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """
         搜索文件
 
@@ -763,7 +771,7 @@ class MediaFireDrive(BaseDrive):
             logger.error(f"搜索失败: {e}")
             return []
 
-    def share(self, fid: str, **kwargs) -> Optional[str]:
+    def share(self, fid: str, **kwargs) -> str | None:
         """
         创建分享链接
 
@@ -792,7 +800,7 @@ class MediaFireDrive(BaseDrive):
             logger.error(f"创建分享链接失败: {e}")
             return None
 
-    def get_quota(self, *args: Any, **kwargs: Any) -> Optional[Dict[str, int]]:
+    def get_quota(self, *args: Any, **kwargs: Any) -> dict[str, int] | None:
         """
         获取存储配额信息
 

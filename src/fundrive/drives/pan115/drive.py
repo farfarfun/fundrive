@@ -5,7 +5,7 @@
 import os
 import time
 import traceback
-from typing import Any, List, Optional
+from typing import Any
 
 from funfile import file_size, file_sha1
 from p115client import P115Client
@@ -19,7 +19,7 @@ logger = getLogger("fundrive")
 
 
 def _convert_info_to_file(
-    it: dict, dirname: Optional[str] = None, *args, **kwargs
+    it: dict, dirname: str | None = None, *args, **kwargs
 ) -> DriveFile:
     return DriveFile(
         fid=it["fid"],
@@ -35,7 +35,7 @@ def _convert_info_to_file(
 
 
 def _convert_info_to_dir(
-    it: dict, dirname: Optional[str] = None, *args, **kwargs
+    it: dict, dirname: str | None = None, *args, **kwargs
 ) -> DriveFile:
     return DriveFile(
         fid=it["cid"],
@@ -53,11 +53,11 @@ class Pan115Drive(BaseDrive):
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        self._client: Optional[P115Client] = None
+        self._client: P115Client | None = None
 
     def login(
         self,
-        cookies: Optional[str] = None,
+        cookies: str | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> bool:
@@ -104,9 +104,9 @@ class Pan115Drive(BaseDrive):
             logger.error(f"删除文件失败 {fid}: {e}")
             return False
 
-    def get_all_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_all_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         time.sleep(1)
-        result: List[DriveFile] = []
+        result: list[DriveFile] = []
         response = self._client.fs_files(fid)
         dirname = "/".join([i["name"] for i in response["path"][1:]])
         for it in response["data"]:
@@ -116,40 +116,40 @@ class Pan115Drive(BaseDrive):
                 result.append(_convert_info_to_file(it, dirname=dirname))
         return result
 
-    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         return [i for i in self.get_all_list(fid, *args, **kwargs) if i["isfile"]]
 
-    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         return [i for i in self.get_all_list(fid, *args, **kwargs) if not i["isfile"]]
 
-    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
         try:
             time.sleep(1)
             response = self._client.fs_file(fid)
             for it in response["data"]:
                 if it["fc"] == 1:
                     return _convert_info_to_file(it)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"查询文件信息失败 fid={fid}: {e}")
         return None
 
-    def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
         try:
             time.sleep(1)
             response = self._client.fs_file(fid)
             for it in response["data"]:
                 if it["fc"] == 0:
                     return _convert_info_to_dir(it)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"查询目录信息失败 fid={fid}: {e}")
         return None
 
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args: Any,
         **kwargs: Any,
@@ -193,11 +193,11 @@ class Pan115Drive(BaseDrive):
     def search(
         self,
         keyword: str,
-        fid: Optional[str] = None,
-        file_type: Optional[str] = None,
+        fid: str | None = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         return [it for it in self._client.fs_search(keyword)["data"]]
 
     def move(

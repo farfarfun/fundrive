@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 from urllib.parse import urljoin
 
 import requests
@@ -10,6 +10,11 @@ from funsecret import read_secret
 
 from fundrive.core import BaseDrive, DriveFile
 from fundrive.core.http import new_session
+from fundrive.core.exceptions import (
+    FunDriveError,
+    NetworkError,
+    FileNotFoundError as DriveFileNotFoundError,
+)
 
 logger = getLogger("pcloud_drive")
 
@@ -39,7 +44,7 @@ class PCloudDrive(BaseDrive):
         self.session = new_session()
         self._root_fid = "0"  # pCloud 根目录 ID 为 0
 
-    def _normalize_fid(self, fid: str) -> Optional[str]:
+    def _normalize_fid(self, fid: str) -> str | None:
         """
         标准化文件夹 ID，将路径格式转换为 pCloud 文件夹 ID 格式
 
@@ -98,7 +103,7 @@ class PCloudDrive(BaseDrive):
                 f"如需清空根目录，请逐个删除其下条目。"
             )
 
-    def _get_folder_id_by_path(self, path: str) -> Optional[str]:
+    def _get_folder_id_by_path(self, path: str) -> str | None:
         """
         通过路径获取文件夹 ID
 
@@ -150,7 +155,7 @@ class PCloudDrive(BaseDrive):
 
         return current_fid
 
-    def _get_file_id_by_path(self, path: str) -> Optional[str]:
+    def _get_file_id_by_path(self, path: str) -> str | None:
         """
         通过文件路径获取文件 ID
 
@@ -203,8 +208,8 @@ class PCloudDrive(BaseDrive):
         return None
 
     def _make_request(
-        self, method: str, params: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        self, method: str, params: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """
         发起 API 请求
 
@@ -237,20 +242,27 @@ class PCloudDrive(BaseDrive):
                 error_msg = result.get(
                     "error", f"API 错误，错误码: {result.get('result')}"
                 )
-                raise Exception(f"pCloud API 错误: {error_msg}")
+                raise FunDriveError(
+                    f"pCloud API 错误: {error_msg}",
+                    error_code="PCLOUD_API_ERROR",
+                    details={"method": method},
+                )
 
             return result
 
         except requests.RequestException as e:
-            raise Exception(f"请求失败: {e}")
+            raise NetworkError(f"pCloud 请求失败 method={method}: {e}") from e
         except json.JSONDecodeError as e:
-            raise Exception(f"响应解析失败: {e}")
+            raise FunDriveError(
+                f"pCloud 响应解析失败 method={method}: {e}",
+                error_code="PCLOUD_RESPONSE_PARSE_ERROR",
+            ) from e
 
     def login(
         self,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        auth_token: Optional[str] = None,
+        username: str | None = None,
+        password: str | None = None,
+        auth_token: str | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> bool:
@@ -303,7 +315,7 @@ class PCloudDrive(BaseDrive):
 
         return False
 
-    def _convert_metadata_to_drive_file(self, metadata: Dict[str, Any]) -> DriveFile:
+    def _convert_metadata_to_drive_file(self, metadata: dict[str, Any]) -> DriveFile:
         """
         将 pCloud 元数据转换为 DriveFile 对象
 
@@ -403,11 +415,22 @@ class PCloudDrive(BaseDrive):
                 metadata = result.get("metadata", {})
                 return str(metadata.get("folderid", ""))
             else:
-                raise Exception(f"创建目录失败: {result.get('error', '未知错误')}")
+                raise FunDriveError(
+                    f"创建目录失败: {result.get('error', '未知错误')}",
+                    error_code="PCLOUD_MKDIR_FAILED",
+                    details={"fid": fid, "name": name},
+                )
 
+        except FunDriveError as e:
+            logger.error(f"创建目录失败, fid={fid}, name={name}: {e}")
+            raise
         except Exception as e:
             logger.error(f"创建目录失败, fid={fid}, name={name}: {e}")
-            raise Exception(f"创建目录失败: {e}")
+            raise FunDriveError(
+                f"创建目录失败: {e}",
+                error_code="PCLOUD_MKDIR_FAILED",
+                details={"fid": fid, "name": name},
+            ) from e
 
     def delete(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
@@ -460,7 +483,7 @@ class PCloudDrive(BaseDrive):
             logger.error(f"删除文件/目录失败, fid={fid}: {e}")
             return False
 
-    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """
         获取目录下的文件列表
 
@@ -500,7 +523,7 @@ class PCloudDrive(BaseDrive):
             logger.error(f"获取目录列表失败, fid={fid}: {e}")
             return []
 
-    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """
         获取目录下的子目录列表
 
@@ -540,7 +563,7 @@ class PCloudDrive(BaseDrive):
             logger.error(f"获取目录列表失败, fid={fid}: {e}")
             return []
 
-    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
+    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
         """
         获取文件详细信息
 
@@ -578,7 +601,7 @@ class PCloudDrive(BaseDrive):
             logger.error(f"获取文件信息失败, fid={fid}: {e}")
             return None
 
-    def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> Optional[DriveFile]:
+    def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
         """
         获取目录详细信息
 
@@ -610,9 +633,9 @@ class PCloudDrive(BaseDrive):
     def download_file(
         self,
         fid: str,
-        save_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-        filepath: Optional[str] = None,
+        save_dir: str | None = None,
+        filename: str | None = None,
+        filepath: str | None = None,
         overwrite: bool = False,
         *args: Any,
         **kwargs: Any,
@@ -639,7 +662,7 @@ class PCloudDrive(BaseDrive):
             # 获取文件信息
             file_info = self.get_file_info(fid)
             if not file_info:
-                raise Exception(f"文件 {fid} 不存在")
+                raise DriveFileNotFoundError(f"文件 {fid} 不存在")
 
             # 确定保存路径
             if filepath:
@@ -662,7 +685,11 @@ class PCloudDrive(BaseDrive):
             # 获取下载链接
             download_url = self.get_download_url(fid)
             if not download_url:
-                raise Exception(f"无法获取文件 {fid} 的下载链接")
+                raise FunDriveError(
+                    f"无法获取文件 {fid} 的下载链接",
+                    error_code="PCLOUD_DOWNLOAD_URL_UNAVAILABLE",
+                    details={"fid": fid},
+                )
 
             # 使用 funget 工具下载文件
             download(download_url, str(save_path))
@@ -678,7 +705,7 @@ class PCloudDrive(BaseDrive):
         self,
         filepath: str,
         fid: str,
-        filename: Optional[str] = None,
+        filename: str | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> bool:
@@ -700,7 +727,7 @@ class PCloudDrive(BaseDrive):
         try:
             file_path = Path(filepath)
             if not file_path.exists():
-                raise Exception(f"文件 {filepath} 不存在")
+                raise DriveFileNotFoundError(f"文件 {filepath} 不存在")
 
             # 规范化目标目录 ID —— 解析失败必须报错，否则文件会被静默传到根目录
             normalized_fid = self._require_folder_id(fid)
@@ -742,7 +769,11 @@ class PCloudDrive(BaseDrive):
                     error_msg = result.get(
                         "error", f"上传失败，错误码: {result.get('result')}"
                     )
-                    raise Exception(f"pCloud API 错误: {error_msg}")
+                    raise FunDriveError(
+                        f"pCloud API 错误: {error_msg}",
+                        error_code="PCLOUD_UPLOAD_FAILED",
+                        details={"filepath": filepath, "fid": fid},
+                    )
 
             finally:
                 # 关闭文件
@@ -816,7 +847,7 @@ class PCloudDrive(BaseDrive):
                 if fid.startswith("/"):
                     file_id = self._get_file_id_by_path(fid)
                     if not file_id:
-                        raise Exception(f"无法找到文件, path={fid}")
+                        raise DriveFileNotFoundError(f"无法找到文件, path={fid}")
                     params = {"fileid": file_id, "toname": new_name}
                 else:
                     params = {"fileid": fid, "toname": new_name}
@@ -961,11 +992,11 @@ class PCloudDrive(BaseDrive):
     def search(
         self,
         keyword: str,
-        fid: Optional[str] = None,
-        file_type: Optional[str] = None,
+        fid: str | None = None,
+        file_type: str | None = None,
         *args: Any,
         **kwargs: Any,
-    ) -> List[DriveFile]:
+    ) -> list[DriveFile]:
         """
         搜索文件或目录
 
@@ -1097,7 +1128,7 @@ class PCloudDrive(BaseDrive):
             )
             return None
 
-    def get_recycle_list(self, *args: Any, **kwargs: Any) -> List[DriveFile]:
+    def get_recycle_list(self, *args: Any, **kwargs: Any) -> list[DriveFile]:
         """
         获取回收站文件列表
 
@@ -1273,7 +1304,7 @@ class PCloudDrive(BaseDrive):
         return ""
 
     def save_shared(
-        self, shared_url: str, fid: str, password: Optional[str] = None
+        self, shared_url: str, fid: str, password: str | None = None
     ) -> bool:
         """
         保存分享的文件到网盘
