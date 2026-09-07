@@ -1,11 +1,20 @@
 [project]
 name = "fundrive"
-version = "2.0.87"
+version = "2.0.88"
 description = "fundrive"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [ "funget>=1.1.67", "farlog>=1.1.7", "funsecret>=1.4.88", "orjson>=3.10.10", "requests>=2.32.4", "tqdm>=4.67.1", "urllib3>=2.0",]
+dependencies = [
+ "orjson>=3.10.10",
+ "requests>=2.32.4",
+ "tqdm>=4.67.1",
+ "urllib3>=2.0",
+ "funsecret>=1.4.96",
+ "farlog>=1.1.8",
+ "funget>=1.1.69",
+]
 license = "MIT"
+license-files = ["LICENSE"]
 [[project.authors]]
 name = "牛哥"
 email = "niuliangtao@qq.com"
@@ -13,7 +22,6 @@ email = "niuliangtao@qq.com"
 [[project.authors]]
 name = "farfarfun"
 email = "farfarfun@qq.com"
-
 [[project.maintainers]]
 name = "牛哥"
 email = "niuliangtao@qq.com"
@@ -21,7 +29,6 @@ email = "niuliangtao@qq.com"
 [[project.maintainers]]
 name = "farfarfun"
 email = "farfarfun@qq.com"
-
 [dependency-groups]
 dev = [ "pytest>=8.0", "ruff>=0.6",]
 all = [ "fundrive[oss]", "fundrive[alipan]", "fundrive[webdav]", "fundrive[baidu]", "fundrive[lanzou]", "fundrive[google]", "fundrive[onedrive]", "fundrive[wenshushu]", "fundrive[amazon]", "fundrive[tsinghua]", "fundrive[dropbox]", "fundrive[github]", "fundrive[gitee]", "fundrive[ossutil]", "fundrive[pan115]",]
@@ -55,7 +62,6 @@ Repository = "https://github.com/farfarfun/fundrive"
 Releases = "https://github.com/farfarfun/fundrive/releases"
 
 [tool.setuptools]
-license-files = []
 
 [build-system]
 requires = ["hatchling"]

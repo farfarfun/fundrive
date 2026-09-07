@@ -70,9 +70,7 @@ def drive():
 def test_login_requires_all_credentials(drive):
     # password=None 时 login() 会回退读取本地 funsecret 配置；测试环境不应
     # 依赖开发机上是否恰好配置了 fundrive/webdav 密钥，因此显式打桩为空。
-    with patch(
-        "fundrive.drives.webdav.drive.read_secret", return_value=None
-    ):
+    with patch("fundrive.drives.webdav.drive.read_secret", return_value=None):
         with pytest.raises(InvalidParameterError):
             drive.login(
                 server_url="https://dav.example.com", username="u", password=None

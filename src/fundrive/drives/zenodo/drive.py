@@ -646,9 +646,7 @@ class ZenodoDrive(BaseDrive):
             return False
         return True
 
-    def login(
-        self, access_token: str | None = None, *args: Any, **kwargs: Any
-    ) -> bool:
+    def login(self, access_token: str | None = None, *args: Any, **kwargs: Any) -> bool:
         """
         登录 Zenodo
 

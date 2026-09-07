@@ -49,9 +49,7 @@ class OSDrive(BaseDrive):
             不做任何限制。
     """
 
-    def __init__(
-        self, root_path: str | None = None, *args: Any, **kwargs: Any
-    ) -> None:
+    def __init__(self, root_path: str | None = None, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.root_path = os.path.abspath(root_path) if root_path else None
         self._root_fid = self.root_path or os.path.abspath(os.curdir)
