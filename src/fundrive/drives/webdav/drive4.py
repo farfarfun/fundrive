@@ -1,4 +1,5 @@
 import os.path
+from typing import Any
 
 from farlog import getLogger
 from funsecret import read_secret
@@ -11,13 +12,22 @@ logger = getLogger("fundrive")
 
 
 class WebDavDrive4(BaseDrive):
-    def __init__(self, *args, **kwargs):
+    """基于 webdav4 的 WebDAV 网盘驱动。"""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """初始化 WebDAV 驱动。"""
         super().__init__(*args, **kwargs)
         self.drive = None
 
     def login(
-        self, server_url=None, username=None, password=None, *args, **kwargs
+        self,
+        server_url: str | None = None,
+        username: str | None = None,
+        password: str | None = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
+        """使用服务器地址、用户名和密码登录。"""
         server_url = server_url or read_secret("fundrive", "webdav", "server_url")
         username = username or read_secret("fundrive", "webdav", "username")
         password = password or read_secret("fundrive", "webdav", "password")
@@ -30,7 +40,15 @@ class WebDavDrive4(BaseDrive):
         self.drive = Client(server_url, auth=(username, password))
         return True
 
-    def mkdir(self, fid, name, return_if_exist=True, *args, **kwargs) -> str:
+    def mkdir(
+        self,
+        fid: str,
+        name: str,
+        return_if_exist: bool = True,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str:
+        """在远程目录中创建子目录并返回其路径。"""
         dir_map = {file.name: file.fid for file in self.get_dir_list(fid=fid)}
         if name in dir_map:
             logger.info(f"name={name} exists, return fid={fid}")
@@ -39,14 +57,17 @@ class WebDavDrive4(BaseDrive):
         self.drive.mkdir(path=path)
         return path
 
-    def delete(self, fid, *args, **kwargs) -> bool:
+    def delete(self, fid: str, *args: Any, **kwargs: Any) -> bool:
+        """删除远程文件或目录。"""
         self.drive.remove(path=fid)
         return True
 
-    def exist(self, fid: str, *args, **kwargs) -> bool:
+    def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
+        """检查远程路径是否存在。"""
         return self.drive.exists(fid)
 
-    def get_file_list(self, fid, *args, **kwargs) -> list[DriveFile]:
+    def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
+        """返回目录中的文件列表。"""
         result = []
         for file in self.drive.ls(path=fid):
             if file["type"] == "file":
@@ -60,7 +81,8 @@ class WebDavDrive4(BaseDrive):
 
         return result
 
-    def get_dir_list(self, fid, *args, **kwargs) -> list[DriveFile]:
+    def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
+        """返回目录中的子目录列表。"""
         result = []
         for file in self.drive.ls(path=fid):
             if file["type"] == "directory":
@@ -74,7 +96,8 @@ class WebDavDrive4(BaseDrive):
 
         return result
 
-    def get_file_info(self, fid, *args, **kwargs) -> DriveFile:
+    def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile:
+        """返回远程文件信息。"""
         res = self.drive.info(fid)
         return DriveFile(
             fid=res["name"],
@@ -82,7 +105,8 @@ class WebDavDrive4(BaseDrive):
             size=res["content_length"],
         )
 
-    def get_dir_info(self, fid, *args, **kwargs) -> DriveFile:
+    def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile:
+        """返回远程目录信息。"""
         res = self.drive.info(fid)
         return DriveFile(
             fid=res["name"],
@@ -139,8 +163,15 @@ class WebDavDrive4(BaseDrive):
         return True
 
     def upload_file(
-        self, filepath: str, fid: str, recursion=True, overwrite=False, *args, **kwargs
+        self,
+        filepath: str,
+        fid: str,
+        recursion: bool = True,
+        overwrite: bool = False,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool:
+        """将本地文件上传到远程目录。"""
         if self.exist(fid) and not overwrite:
             logger.warning(f"File {fid} already exists, skipping upload")
             return False

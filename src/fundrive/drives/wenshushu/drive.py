@@ -36,6 +36,7 @@ from tqdm import tqdm
 # 项目内部导入
 from fundrive.core import BaseDrive, DriveFile
 from fundrive.core.http import new_session
+from fundrive.core.exceptions import DownloadError, RateLimitError
 from fundrive.core.utils import handle_drive_errors, log_storage_info, validate_fid
 
 logger = getLogger("fundrive")
@@ -787,7 +788,10 @@ class Uploader:
         )
         rsp = r.json()
         if rsp["code"] == 1021:
-            raise Exception(f"操作太快啦！请{rsp['message']}秒后重试")
+            retry_after = int(rsp["message"])
+            raise RateLimitError(
+                f"操作太快啦！请{retry_after}秒后重试", retry_after=retry_after
+            )
 
         data = rsp["data"]
         logger.info(f"data: {data}")
@@ -971,7 +975,7 @@ class Downloader:
             json={"consumeCode": 0, "type": 1, "ufileid": fid},
         )
         if r.json()["data"]["url"] == "" and r.json()["data"]["ttNeed"] != 0:
-            raise Exception("对方的分享流量不足")
+            raise DownloadError("对方的分享流量不足")
         return r.json()["data"]["url"]
 
     def download(self):
@@ -982,7 +986,7 @@ class Downloader:
         elif len(url.split("/")[-1]) == 11:
             tid = url.split("/")[-1]
         else:
-            raise Exception("链接错误")
+            raise DownloadError("链接错误")
         bid, pid = self.mgrtask(tid)
         r = self.session.post(
             url="https://www.wenshushu.cn/ap/ufile/list",

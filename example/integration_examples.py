@@ -366,10 +366,10 @@ def main():
     logger.info(f"可用驱动: {manager.list_drives()}")
 
     # 4. 创建备份服务
-    backup_service = FileBackupService(manager)
+    FileBackupService(manager)
 
     # 5. 创建搜索服务
-    searcher = CloudFileSearcher(manager)
+    CloudFileSearcher(manager)
 
     # 6. 演示功能
     if "local" in manager.list_drives():

@@ -183,7 +183,6 @@ src/fundrive/drives/{drive_name}/
 #### 基础驱动类模板
 
 ```python
-from typing import List, Optional, Any
 from fundrive.core import BaseDrive, DriveFile
 from farlog import getLogger
 from funsecret import read_secret
@@ -198,7 +197,7 @@ class YourDrive(BaseDrive):
     官方文档: https://api.yourcloud.com/docs
     """
     
-    def __init__(self, api_key: Optional[str] = None, *args, **kwargs):
+    def __init__(self, api_key: str | None = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
         # 配置管理 - 优先使用传入参数，然后尝试从配置读取
@@ -565,11 +564,8 @@ class YourDrive(BaseDrive):
 
 **启用详细日志**:
 ```python
-import logging
 from farlog import getLogger
 
-# 设置日志级别
-logging.basicConfig(level=logging.DEBUG)
 logger = getLogger("fundrive.your_drive")
 logger.setLevel(logging.DEBUG)
 
@@ -755,8 +751,8 @@ class YourDrive(BaseDrive):
         # 多层级配置读取
         self.api_key = (
             api_key or  # 1. 直接传参
-            read_secret("fundrive.your_drive.api_key", namespace="fundrive") or  # 2. funsecret
-            os.getenv("YOUR_DRIVE_API_KEY") or  # 3. 环境变量
+            os.getenv("YOUR_DRIVE_API_KEY") or  # 2. 环境变量
+            read_secret("fundrive.your_drive.api_key", namespace="fundrive") or  # 3. funsecret
             None
         )
         

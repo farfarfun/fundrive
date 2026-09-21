@@ -106,6 +106,13 @@ def _load(spec: DriveSpec) -> type[Any]:
             f"驱动 {spec.cls} 的依赖 {missing!r} 未安装，"
             f"请运行: pip install {spec.install_hint}"
         ) from exc
+    except Exception as exc:
+        if spec.extra:
+            raise ImportError(
+                f"驱动 {spec.cls} 的可选依赖加载失败，请检查: "
+                f"pip install {spec.install_hint}"
+            ) from exc
+        raise
 
     try:
         drive_cls = getattr(module, spec.cls)

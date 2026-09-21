@@ -146,7 +146,7 @@ pip install fundrive[alipan]
 ### 从源码安装
 
 ```bash
-python install git+https://github.com/farfarfun/fundrive.git
+pip install git+https://github.com/farfarfun/fundrive.git
 ```
 
 
