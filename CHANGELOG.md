@@ -9,8 +9,9 @@
 
 - `fundrive.core.utils` 新增 `sanitize_url()` / `redact_secrets()`：写日志前统一
   把 URL 与异常信息里的 `access_token`、`password`、`signature` 等值打码。
-- 新增三组测试：凭据脱敏（`tests/test_credential_logging.py`）、`login()` 失败语义
-  （`tests/test_login_contract.py`）、115 驱动错误传播（`tests/test_pan115_drive.py`）。
+- 新增四组测试：凭据脱敏（`tests/test_credential_logging.py`）、`login()` 失败语义
+  （`tests/test_login_contract.py`）、115 驱动错误传播（`tests/test_pan115_drive.py`）、
+  ossutil 凭据文件权限（`tests/test_ossutil_config_permissions.py`）。
 
 ### 修复
 
