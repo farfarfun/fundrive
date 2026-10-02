@@ -84,44 +84,44 @@ class OpenXLabDrive(BaseDrive):
         Returns:
             登录是否成功
         """
+        logger.info("正在登录OpenXLab...")
+
+        # 更新认证信息
+        if opendatalab_session:
+            self.opendatalab_session = opendatalab_session
+        if ssouid:
+            self.ssouid = ssouid
+
+        # 设置Cookie（只写入已配置的值，避免 None 进入 Cookie）
+        if self.opendatalab_session:
+            self.cookies["opendatalab_session"] = self.opendatalab_session
+        if self.ssouid:
+            self.cookies["ssouid"] = self.ssouid
+
+        # 验证登录状态：探测失败（非 200 或请求异常）一律视为登录失败，
+        # 不能把"无法验证"当成成功返回（SPEC §8.2 不得吞掉失败并返回成功）
+        verify_url = f"{self.host}/datasets/api/v2/datasets"
         try:
-            logger.info("正在登录OpenXLab...")
-
-            # 更新认证信息
-            if opendatalab_session:
-                self.opendatalab_session = opendatalab_session
-            if ssouid:
-                self.ssouid = ssouid
-
-            # 设置Cookie
-            self.cookies.update(
-                {
-                    "opendatalab_session": self.opendatalab_session,
-                    "ssouid": self.ssouid,
-                }
+            test_response = requests.get(
+                verify_url,
+                headers=self.headers,
+                cookies=self.cookies,
+                timeout=10,
             )
-
-            # 验证登录状态（尝试访问API）
-            try:
-                test_response = requests.get(
-                    f"{self.host}/datasets/api/v2/datasets",
-                    headers=self.headers,
-                    cookies=self.cookies,
-                    timeout=10,
-                )
-                if test_response.status_code == 200:
-                    logger.info("✅ OpenXLab登录成功")
-                    return True
-                else:
-                    logger.warning("⚠️ OpenXLab登录状态未知，将尝试继续")
-                    return True
-            except Exception as e:
-                logger.warning(f"⚠️ 无法验证OpenXLab登录状态，将尝试继续: {e}")
-                return True
-
-        except Exception as e:
-            logger.error(f"❌ OpenXLab登录失败: {e}")
+        except requests.RequestException as e:
+            logger.error(
+                f"OpenXLab登录失败：无法验证登录状态 - URL: {verify_url} - 错误: {e}"
+            )
             return False
+
+        if test_response.status_code == 200:
+            logger.info("OpenXLab登录成功")
+            return True
+
+        logger.error(
+            f"OpenXLab登录失败 - URL: {verify_url} - 状态码: {test_response.status_code}"
+        )
+        return False
 
     def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """

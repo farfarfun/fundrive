@@ -64,12 +64,12 @@ new_dir_id = drive.mkdir("root", "新文件夹")
 success = drive.delete("file_id_to_delete")
 ```
 
-##### get_file_list(fid: str, *args, **kwargs) -> List[DriveFile]
+##### get_file_list(fid: str, *args, **kwargs) -> list[DriveFile]
 **功能**: 获取指定目录下的文件列表
 **参数**:
 - `fid`: str - 目录ID
 - `*args, **kwargs`: 扩展参数
-**返回值**: List[DriveFile] - 文件列表
+**返回值**: list[DriveFile] - 文件列表
 **示例**:
 ```python
 files = drive.get_file_list("root")
@@ -77,12 +77,12 @@ for file in files:
     print(f"文件名: {file.name}, 大小: {file.size}")
 ```
 
-##### get_dir_list(fid: str, *args, **kwargs) -> List[DriveFile]
+##### get_dir_list(fid: str, *args, **kwargs) -> list[DriveFile]
 **功能**: 获取指定目录下的子目录列表
 **参数**:
 - `fid`: str - 目录ID
 - `*args, **kwargs`: 扩展参数
-**返回值**: List[DriveFile] - 目录列表
+**返回值**: list[DriveFile] - 目录列表
 **示例**:
 ```python
 dirs = drive.get_dir_list("root")
@@ -90,12 +90,12 @@ for dir in dirs:
     print(f"目录名: {dir.name}")
 ```
 
-##### get_file_info(fid: str, *args, **kwargs) -> Optional[DriveFile]
+##### get_file_info(fid: str, *args, **kwargs) -> DriveFile | None
 **功能**: 获取文件详细信息
 **参数**:
 - `fid`: str - 文件ID
 - `*args, **kwargs`: 扩展参数
-**返回值**: Optional[DriveFile] - 文件信息对象
+**返回值**: DriveFile | None - 文件信息对象
 **示例**:
 ```python
 file_info = drive.get_file_info("file_id")
@@ -127,13 +127,13 @@ print(f"目录名: {dir_info.name}")
 success = drive.upload_file("/local/path/file.txt", "root", filename="新文件名.txt")
 ```
 
-##### download_file(fid: str, save_dir: Optional[str] = None, filename: Optional[str] = None, filepath: Optional[str] = None, overwrite: bool = False, *args, **kwargs) -> bool
+##### download_file(fid: str, save_dir: str | None = None, filename: str | None = None, filepath: str | None = None, overwrite: bool = False, *args, **kwargs) -> bool
 **功能**: 从云存储下载文件
 **参数**:
 - `fid`: str - 文件ID
-- `save_dir`: Optional[str] - 保存目录
-- `filename`: Optional[str] - 保存文件名
-- `filepath`: Optional[str] - 完整保存路径
+- `save_dir`: str | None - 保存目录
+- `filename`: str | None - 保存文件名
+- `filepath`: str | None - 完整保存路径
 - `overwrite`: bool - 是否覆盖已存在文件
 - `*args, **kwargs`: 扩展参数
 **返回值**: bool - 下载是否成功
@@ -144,23 +144,23 @@ success = drive.download_file("file_id", save_dir="./downloads", filename="下�
 
 #### 高级功能方法
 
-##### search(keyword: str, *args, **kwargs) -> List[DriveFile]
+##### search(keyword: str, *args, **kwargs) -> list[DriveFile]
 **功能**: 搜索文件
 **参数**:
 - `keyword`: str - 搜索关键词
 - `*args, **kwargs`: 扩展参数
-**返回值**: List[DriveFile] - 搜索结果列表
+**返回值**: list[DriveFile] - 搜索结果列表
 
-##### share(fid: str, *args, **kwargs) -> Optional[str]
+##### share(fid: str, *args, **kwargs) -> str | None
 **功能**: 创建文件分享链接
 **参数**:
 - `fid`: str - 文件ID
 - `*args, **kwargs`: 扩展参数
-**返回值**: Optional[str] - 分享链接
+**返回值**: str | None - 分享链接
 
-##### get_quota(*args, **kwargs) -> Dict[str, Any]
+##### get_quota(*args, **kwargs) -> dict[str, Any]
 **功能**: 获取存储配额信息
-**返回值**: Dict[str, Any] - 配额信息字典
+**返回值**: dict[str, Any] - 配额信息字典
 
 ### DriveFile 文件信息类
 
@@ -172,9 +172,9 @@ success = drive.download_file("file_id", save_dir="./downloads", filename="下�
 - `name`: str - 文件/目录名称
 - `size`: int - 文件大小（字节）
 - `is_dir`: bool - 是否为目录
-- `created_time`: Optional[datetime] - 创建时间
-- `modified_time`: Optional[datetime] - 修改时间
-- `ext`: Dict[str, Any] - 扩展信息字典
+- `created_time`: datetime | None - 创建时间
+- `modified_time`: datetime | None - 修改时间
+- `ext`: dict[str, Any] - 扩展信息字典
 
 #### 使用示例
 

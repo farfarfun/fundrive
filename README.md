@@ -137,16 +137,36 @@ FunDrive 是一个统一的网盘操作接口框架，旨在提供一个标准�
 
 ## 安装
 
-### 使用 pip 安装
+> 要求 Python >= 3.12（基础依赖 `funget` 的下限）。
+
+### 加入你的项目（推荐，uv）
 
 ```bash
-pip install fundrive[alipan]
+uv add "fundrive[alipan]"
+```
+
+### 直接装进当前环境
+
+```bash
+uv pip install "fundrive[alipan]"
+# 或者：pip install "fundrive[alipan]"
 ```
 
 ### 从源码安装
 
 ```bash
-pip install git+https://github.com/farfarfun/fundrive.git
+uv pip install "git+https://github.com/farfarfun/fundrive.git"
+```
+
+### 参与开发
+
+```bash
+git clone https://github.com/farfarfun/fundrive.git
+cd fundrive
+uv sync --locked --group dev     # 按 uv.lock 还原依赖，只装核心依赖
+uv run pytest                    # 跑测试
+uv run ruff check src tests      # lint
+uv run ruff format src tests     # 格式化
 ```
 
 
@@ -156,31 +176,31 @@ pip install git+https://github.com/farfarfun/fundrive.git
 
 ```bash
 # 安装基础包
-pip install fundrive
+uv add fundrive
 
 # 安装特定驱动（以 Dropbox 为例）
-pip install fundrive[dropbox]
+uv add "fundrive[dropbox]"
 
 # 安装 Google Drive 驱动
-pip install fundrive[google]
+uv add "fundrive[google]"
 
 # 安装 OneDrive 驱动
-pip install fundrive[onedrive]
+uv add "fundrive[onedrive]"
 
 # 安装 Amazon S3 驱动
-pip install fundrive[amazon]
+uv add "fundrive[amazon]"
 
 # 安装清华云盘驱动
-pip install fundrive[tsinghua]
+uv add "fundrive[tsinghua]"
 
 # 安装文叔叔驱动
-pip install fundrive[wenshushu]
+uv add "fundrive[wenshushu]"
 
 # 安装多个驱动
-pip install fundrive[dropbox,oss,google,onedrive,amazon,alipan,baidu,lanzou,webdav,wenshushu,tsinghua]
+uv add "fundrive[dropbox,oss,google,onedrive,amazon,alipan,baidu,lanzou,webdav,wenshushu,tsinghua]"
 
 # 安装全部驱动
-pip install fundrive[all]
+uv add "fundrive[all]"
 ```
 
 ### 基本使用
@@ -632,9 +652,18 @@ def restore(self, fid, *args, **kwargs):
 
 1. Fork 项目仓库。
 2. 创建一个新的分支 (`git checkout -b feature/your-feature-name`)。
-3. 提交您的更改 (`git commit -am 'Add some feature'`)。
-4. 推送到分支 (`git push origin feature/your-feature-name`)。
-5. 创建一个新的 Pull Request。
+3. 本地验证：`uv sync --locked --group dev && uv run ruff check src tests && uv run pytest`。
+4. 提交您的更改，提交信息用中文、格式为 `<类型>: <做了什么>`，并说明修改原因：
+
+   ```bash
+   git commit -m "feat: 新增 XX 网盘驱动，补齐登录与上传下载接口"
+   git commit -m "fix: 修复 Zenodo 驱动把访问令牌写进日志的问题"
+   git commit -m "docs: 更新驱动开发指南的凭据排查步骤"
+   ```
+
+   类型取值：`feat` / `fix` / `docs` / `chore` / `test` / `refactor`。
+5. 推送到分支 (`git push origin feature/your-feature-name`)。
+6. 创建一个新的 Pull Request。
 
 
 ## 联系我们

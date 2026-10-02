@@ -94,52 +94,48 @@ class TianChiDrive(BaseDrive):
         Returns:
             登录是否成功
         """
+        logger.info("正在登录天池平台...")
+
+        # 更新认证信息
+        if tc_cookie:
+            self.tc_cookie = tc_cookie
+        if csrf_cookie:
+            self.csrf_cookie = csrf_cookie
+        if csrf_token:
+            self.csrf_token = csrf_token
+
+        # 设置Cookie和Headers（只写入已配置的值，避免 None 进入请求头）
+        if self.tc_cookie:
+            self.cookies["tc"] = self.tc_cookie
+        if self.csrf_cookie:
+            self.cookies["_csrf"] = self.csrf_cookie
+        if self.csrf_token:
+            self.headers["csrf-token"] = self.csrf_token
+
+        # 验证登录状态：探测失败（非 200 或请求异常）一律视为登录失败，
+        # 不能把"无法验证"当成成功返回（SPEC §8.2 不得吞掉失败并返回成功）
+        verify_url = f"{self.base_url}/api/dataset/list"
         try:
-            logger.info("正在登录天池平台...")
-
-            # 更新认证信息
-            if tc_cookie:
-                self.tc_cookie = tc_cookie
-            if csrf_cookie:
-                self.csrf_cookie = csrf_cookie
-            if csrf_token:
-                self.csrf_token = csrf_token
-
-            # 设置Cookie和Headers
-            self.cookies.update(
-                {
-                    "tc": self.tc_cookie,
-                    "_csrf": self.csrf_cookie,
-                }
+            test_response = requests.get(
+                verify_url,
+                cookies=self.cookies,
+                headers=self.headers,
+                timeout=10,
             )
-
-            self.headers.update(
-                {
-                    "csrf-token": self.csrf_token,
-                }
+        except requests.RequestException as e:
+            logger.error(
+                f"天池登录失败：无法验证登录状态 - URL: {verify_url} - 错误: {e}"
             )
-
-            # 验证登录状态（尝试访问API）
-            try:
-                test_response = requests.get(
-                    f"{self.base_url}/api/dataset/list",
-                    cookies=self.cookies,
-                    headers=self.headers,
-                    timeout=10,
-                )
-                if test_response.status_code == 200:
-                    logger.info("✅ 天池登录成功")
-                    return True
-                else:
-                    logger.warning("⚠️ 天池登录状态未知，将尝试继续")
-                    return True
-            except Exception as e:
-                logger.warning(f"⚠️ 无法验证天池登录状态，将尝试继续: {e}")
-                return True
-
-        except Exception as e:
-            logger.error(f"❌ 天池登录失败: {e}")
             return False
+
+        if test_response.status_code == 200:
+            logger.info("天池登录成功")
+            return True
+
+        logger.error(
+            f"天池登录失败 - URL: {verify_url} - 状态码: {test_response.status_code}"
+        )
+        return False
 
     def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """

@@ -6,11 +6,13 @@ FunDrive 工具类模块
 
 import functools
 import hashlib
+import re
 import threading
 import time
 from collections import OrderedDict
 from typing import Any
 from collections.abc import Callable
+from urllib.parse import urlsplit, urlunsplit
 
 from farlog import getLogger
 
@@ -855,3 +857,90 @@ def format_docstring_template(
 
     lines.append('        """')
     return "\n".join(lines)
+
+
+# 日志脱敏：这些查询参数名一旦出现在 URL 里，值必须打码后再进日志。
+# 诱因是 Zenodo 驱动曾把 access_token 放进查询参数，再把 ``response.url``
+# 整条写进 error 日志（SPEC §8.1 禁止 token 进日志）。
+SENSITIVE_QUERY_KEYS = frozenset(
+    {
+        "access_token",
+        "accesstoken",
+        "api_key",
+        "apikey",
+        "authorization",
+        "code",
+        "credential",
+        "key",
+        "password",
+        "passwd",
+        "refresh_token",
+        "secret",
+        "session",
+        "sign",
+        "signature",
+        "sig",
+        "token",
+    }
+)
+
+REDACTED = "***"
+
+
+# 键名前允许是单词边界，也允许是百分号编码的 ? / &（异常信息里常见）
+_SECRET_PAIR_RE = re.compile(
+    r"(?i)(\b|%3F|%26)("
+    + "|".join(sorted(SENSITIVE_QUERY_KEYS))
+    + r")(=|%3D)([^&\s\"'<>]+)"
+)
+
+
+def redact_secrets(text: str) -> str:
+    """把任意文本里的 ``<敏感键>=<值>`` 片段打码。
+
+    用于写日志的异常信息——``requests`` 的异常消息里往往带着完整 URL，
+    URL 里又可能带着令牌（SPEC §8.1 禁止 token 进日志）。
+
+    Args:
+        text (str): 原始文本
+
+    Returns:
+        str: 打码后的文本
+
+    Examples:
+        >>> redact_secrets("GET https://a.b/c?access_token=abc failed")
+        'GET https://a.b/c?access_token=*** failed'
+    """
+    if not text:
+        return text
+    return _SECRET_PAIR_RE.sub(
+        lambda m: f"{m.group(1)}{m.group(2)}{m.group(3)}{REDACTED}", str(text)
+    )
+
+
+def sanitize_url(url: str) -> str:
+    """把 URL 查询串里的敏感参数值替换成 ``***``，用于写日志或错误信息。
+
+    路径、主机名和非敏感参数保持原样，方便定位问题；敏感参数（见
+    :data:`SENSITIVE_QUERY_KEYS`，大小写不敏感）只保留参数名。
+
+    Args:
+        url (str): 原始 URL
+
+    Returns:
+        str: 可安全写入日志的 URL
+
+    Examples:
+        >>> sanitize_url("https://zenodo.org/api/deposit?access_token=abc&page=2")
+        'https://zenodo.org/api/deposit?access_token=***&page=2'
+    """
+    if not url:
+        return url
+
+    parts = urlsplit(url)
+    if not parts.query:
+        return url
+
+    # 只替换敏感参数的值，其余部分（含原有百分号编码）原样保留：
+    # 重新 urlencode 会把 *** 也编码成 %2A%2A%2A，反而更难读。
+    return urlunsplit(parts._replace(query=redact_secrets(parts.query)))

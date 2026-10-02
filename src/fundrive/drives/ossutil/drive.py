@@ -65,9 +65,15 @@ accessKeySecret={self._access_secret}
 endpoint={self._endpoint}
 """
 
-            # 写入配置文件
-            with open(self._config_file, "w", encoding="utf-8") as f:
+            # 写入配置文件：文件里是明文 AccessKey，必须限制为仅本人可读写
+            # （SPEC §9.1 凭据不得被暴露）
+            fd = os.open(
+                self._config_file, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600
+            )
+            with open(fd, "w", encoding="utf-8") as f:
                 f.write(config_content)
+            os.chmod(self._config_file, 0o600)
+            os.chmod(config_dir, 0o700)
 
             logger.info(f"ossutil配置文件创建成功: {self._config_file}")
             return True
@@ -88,6 +94,10 @@ endpoint={self._endpoint}
         Returns:
             subprocess.CompletedProcess: 命令执行结果
         """
+        # 这里刻意保留 subprocess 的参数数组调用，不走 funshell.run_shell：
+        # 后者只接受 shell 字符串并以 shell=True 执行，还会把异常折叠成字符串
+        # 返回值。bucket 名、对象 key、本地路径都来自调用方，拼成 shell 字符串
+        # 会引入注入与引号转义问题，同时丢掉 returncode / stderr 的区分。
         if not self._ossutil_path:
             raise RuntimeError("ossutil工具未初始化")
 

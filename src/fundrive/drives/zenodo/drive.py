@@ -8,6 +8,7 @@ from farlog import getLogger
 from funsecret import read_secret
 
 from fundrive.core import BaseDrive, DriveFile, ensure_parent_dir
+from fundrive.core.utils import redact_secrets, sanitize_url
 
 logger = getLogger("fundrive")
 
@@ -110,7 +111,9 @@ class ZenodoClient:
             "https://sandbox.zenodo.org" if sandbox else "https://zenodo.org"
         )
         self.session = requests.Session()
-        self.session.params = {"access_token": self.access_token}
+        # 令牌只走 Authorization 请求头：Zenodo 官方文档把 ?access_token= 标注为
+        # "less secure"，而且放进查询参数后会被 response.url / 异常信息带进日志。
+        self.session.headers["Authorization"] = f"Bearer {self.access_token}"
 
     def _make_request(
         self, method: str, endpoint: str, params: dict | None = None, **kwargs
@@ -133,18 +136,14 @@ class ZenodoClient:
             else f"{self.base_url}/api/{endpoint.lstrip('/')}"
         )
 
-        # 合并参数
-        request_params = {"access_token": self.access_token}
-        if params:
-            request_params.update(params)
-
         try:
-            response = self.session.request(
-                method, url, params=request_params, **kwargs
-            )
+            response = self.session.request(method, url, params=params, **kwargs)
             return response
         except requests.RequestException as e:
-            logger.error(f"API 请求失败: {e}")
+            logger.error(
+                f"API 请求失败 - URL: {sanitize_url(url)} - "
+                f"错误: {redact_secrets(str(e))}"
+            )
             raise
 
     def _check_response(
@@ -175,7 +174,7 @@ class ZenodoClient:
 
         logger.error(
             f"{operation} 操作失败 - 状态码: {response.status_code} ({error_info['name']}) - "
-            f"URL: {response.url} - 错误: {error_msg}"
+            f"URL: {sanitize_url(response.url)} - 错误: {redact_secrets(str(error_msg))}"
         )
         return False
 

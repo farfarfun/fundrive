@@ -22,10 +22,10 @@
 | `exist` | `(self, fid: str, *args, **kwargs)` | `bool` |
 | `mkdir` | `(self, fid: str, name: str, return_if_exist: bool = True, *args, **kwargs)` | `str`（新创建或已存在目录的 ID） |
 | `delete` | `(self, fid: str, *args, **kwargs)` | `bool` |
-| `get_file_list` | `(self, fid: str, *args, **kwargs)` | `List[DriveFile]` |
-| `get_dir_list` | `(self, fid: str, *args, **kwargs)` | `List[DriveFile]` |
-| `get_file_info` | `(self, fid: str, *args, **kwargs)` | `Optional[DriveFile]` |
-| `get_dir_info` | `(self, fid: str, *args, **kwargs)` | `DriveFile`（基类注释为不可为 None；实现可返回 `Optional[DriveFile]`，调用方需做空检查） |
+| `get_file_list` | `(self, fid: str, *args, **kwargs)` | `list[DriveFile]` |
+| `get_dir_list` | `(self, fid: str, *args, **kwargs)` | `list[DriveFile]` |
+| `get_file_info` | `(self, fid: str, *args, **kwargs)` | `DriveFile | None` |
+| `get_dir_info` | `(self, fid: str, *args, **kwargs)` | `DriveFile`（基类注释为不可为 None；实现可返回 `DriveFile | None`，调用方需做空检查） |
 | `upload_file` | `(self, filepath: str, fid: str, *args, **kwargs)` | `bool` |
 | `download_file` | `(self, fid: str, save_dir=None, filename=None, filepath=None, overwrite=False, *args, **kwargs)` | `bool` |
 

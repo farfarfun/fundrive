@@ -162,8 +162,8 @@ src/fundrive/drives/{drive_name}/
 | `download_file()` | 下载文件 | `bool` | 🔴 必需 |
 | `mkdir()` | 创建目录 | `str` | 🔴 必需 |
 | `delete()` | 删除文件/目录 | `bool` | 🔴 必需 |
-| `get_file_list()` | 获取文件列表 | `List[DriveFile]` | 🔴 必需 |
-| `get_dir_list()` | 获取目录列表 | `List[DriveFile]` | 🔴 必需 |
+| `get_file_list()` | 获取文件列表 | `list[DriveFile]` | 🔴 必需 |
+| `get_dir_list()` | 获取目录列表 | `list[DriveFile]` | 🔴 必需 |
 | `get_file_info()` | 获取文件信息 | `DriveFile` | 🔴 必需 |
 | `get_dir_info()` | 获取目录信息 | `DriveFile` | 🔴 必需 |
 
@@ -599,14 +599,24 @@ def upload_file(self, local_path, remote_dir, filename=None):
 - API 权限不足
 
 **解决步骤**:
+
+> ⚠️ 排查过程中**不要打印凭据本身**：终端输出会进滚动缓冲、CI 日志和 shell
+> 历史。只检查"是否读到了"，不要检查"读到的是什么"。
+
 ```bash
-# 1. 检查 API 密钥
-python -c "from funsecret import read_secret; print(read_secret('fundrive.your_drive.api_key'))"
+# 1. 检查 API 密钥是否已配置（只输出布尔结果，不输出密钥）
+python -c "from funsecret import read_secret; print('configured:', bool(read_secret('fundrive.your_drive.api_key')))"
 
-# 2. 测试 API 连接
-curl -H "Authorization: Bearer YOUR_API_KEY" https://api.yourcloud.com/user
+# 2. 测试 API 连接：密钥从环境变量注入，命令行里不出现明文
+#    用前导空格（配合 HISTCONTROL=ignorespace）或 read -s 避免写进 shell 历史
+ read -rs YOUR_DRIVE_API_KEY && export YOUR_DRIVE_API_KEY
+curl -sS -H "Authorization: Bearer ${YOUR_DRIVE_API_KEY}" https://api.yourcloud.com/user
 
-# 3. 重新获取 API 密钥
+# 3. 用完清掉环境变量
+unset YOUR_DRIVE_API_KEY
+
+# 4. 如仍失败，重新获取 API 密钥并用 funsecret 写回（不要写进代码或文档）
+#    funsecret set fundrive.your_drive.api_key
 ```
 
 #### 2. 文件上传失败
@@ -769,8 +779,8 @@ class YourDrive(BaseDrive):
 # 标准库导入
 import os
 import sys
-from typing import Optional, List, Dict, Any
 from pathlib import Path
+from typing import Any  # 仅 Any 仍需从 typing 导入；其余用内置泛型
 
 # 第三方库导入
 import requests

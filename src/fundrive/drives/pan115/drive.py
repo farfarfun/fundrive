@@ -14,6 +14,7 @@ from farlog import getLogger
 from pathlib import Path
 from fundrive.core import BaseDrive, DriveFile
 from fundrive.core.base import get_filepath
+from fundrive.core.exceptions import AuthenticationError, FunDriveError
 
 logger = getLogger("fundrive")
 
@@ -85,16 +86,37 @@ class Pan115Drive(BaseDrive):
         self._client.fs_mkdir(name, fid)
         return True
 
-    def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
+    def _require_client(self) -> P115Client:
+        """返回已登录的客户端，未登录时抛出认证异常。"""
+        if self._client is None:
+            raise AuthenticationError("请先调用 Pan115Drive.login() 登录 115 网盘")
+        return self._client
+
+    def _query_entries(self, fid: str) -> list[dict]:
+        """查询 fid 对应的原始条目列表。
+
+        只有 115 明确回答"资源不存在"时才返回空列表；网络、认证、SDK 等其他
+        错误会带着 fid 上下文抛出 :class:`FunDriveError`，不再被伪装成
+        "文件不存在"（SPEC §8.2）。
+        """
+        client = self._require_client()
+        time.sleep(1)
         try:
-            if self.get_file_info(fid):
-                return True
-            elif self.get_dir_info(fid):
-                return True
-            else:
-                return False
-        except Exception:
-            return False
+            response = client.fs_file(fid)
+        except FileNotFoundError:
+            # p115client 的 P115FileNotFoundError 继承内置 FileNotFoundError，
+            # 这是 SDK 明确表示"资源不存在"的唯一信号。
+            return []
+        except Exception as e:
+            raise FunDriveError(
+                f"查询 115 条目失败 fid={fid}: {type(e).__name__}: {e}",
+                error_code="PAN115_QUERY_FAILED",
+                details={"fid": fid},
+            ) from e
+        return list(response.get("data") or [])
+
+    def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
+        return bool(self._query_entries(fid))
 
     def delete(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         try:
@@ -123,25 +145,15 @@ class Pan115Drive(BaseDrive):
         return [i for i in self.get_all_list(fid, *args, **kwargs) if not i["isfile"]]
 
     def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
-        try:
-            time.sleep(1)
-            response = self._client.fs_file(fid)
-            for it in response["data"]:
-                if it["fc"] == 1:
-                    return _convert_info_to_file(it)
-        except Exception as e:
-            logger.error(f"查询文件信息失败 fid={fid}: {e}")
+        for it in self._query_entries(fid):
+            if it["fc"] == 1:
+                return _convert_info_to_file(it)
         return None
 
     def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
-        try:
-            time.sleep(1)
-            response = self._client.fs_file(fid)
-            for it in response["data"]:
-                if it["fc"] == 0:
-                    return _convert_info_to_dir(it)
-        except Exception as e:
-            logger.error(f"查询目录信息失败 fid={fid}: {e}")
+        for it in self._query_entries(fid):
+            if it["fc"] == 0:
+                return _convert_info_to_dir(it)
         return None
 
     def download_file(

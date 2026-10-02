@@ -81,36 +81,40 @@ class TSingHuaDrive(BaseDrive):
         Returns:
             登录是否成功
         """
-        try:
-            logger.info("正在设置清华云盘分享链接...")
+        logger.info("正在设置清华云盘分享链接...")
 
-            # 更新分享信息
-            if share_key:
-                self.share_key = share_key
-            if password:
-                self.password = password
+        # 更新分享信息
+        if share_key:
+            self.share_key = share_key
+        if password:
+            self.password = password
 
-            # 验证分享链接是否有效
-            if self.share_key:
-                try:
-                    test_url = f"{self.base_url}/api/v2.1/share-links/{self.share_key}/dirents/?path="
-                    response = self.session.get(test_url, timeout=10)
-                    if response.status_code == 200:
-                        logger.info("✅ 清华云盘分享链接验证成功")
-                        return True
-                    else:
-                        logger.warning("⚠️ 分享链接可能无效，将尝试继续")
-                        return True
-                except Exception as e:
-                    logger.warning(f"⚠️ 无法验证分享链接，将尝试继续: {e}")
-                    return True
-            else:
-                logger.warning("⚠️ 未设置分享链接，某些功能可能无法使用")
-                return True
-
-        except Exception as e:
-            logger.error(f"❌ 清华云盘登录失败: {e}")
+        if not self.share_key:
+            logger.error("清华云盘登录失败：未提供 share_key，无法访问任何资源")
             return False
+
+        # 验证分享链接是否有效：探测失败一律视为登录失败，不能把"无法验证"
+        # 当成成功返回（SPEC §8.2 不得吞掉失败并返回成功）
+        test_url = (
+            f"{self.base_url}/api/v2.1/share-links/{self.share_key}/dirents/?path="
+        )
+        try:
+            response = self.session.get(test_url, timeout=10)
+        except requests.RequestException as e:
+            logger.error(
+                f"清华云盘登录失败：无法验证分享链接 - URL: {test_url} - 错误: {e}"
+            )
+            return False
+
+        if response.status_code == 200:
+            logger.info("清华云盘分享链接验证成功")
+            return True
+
+        logger.error(
+            f"清华云盘登录失败：分享链接无效 - URL: {test_url} - "
+            f"状态码: {response.status_code}"
+        )
+        return False
 
     def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
         """
