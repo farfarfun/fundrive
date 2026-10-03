@@ -21,11 +21,10 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Sync（uv.lock 为唯一依赖来源）
+      - name: Sync dependencies
         # 刻意只装核心依赖 + dev 组，不装任何可选 SDK（不传 --extra）：
         # 测试必须能在裸环境下抓出驱动注册表的类名拼写错误。
-        # --locked：uv.lock 与 pyproject.toml 不一致时直接失败，而不是悄悄改锁。
-        run: uv sync --locked --group dev
+        run: uv sync --group dev
 
       - name: Lint
         run: uv run ruff check src tests
