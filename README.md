@@ -163,7 +163,7 @@ uv pip install "git+https://github.com/farfarfun/fundrive.git"
 ```bash
 git clone https://github.com/farfarfun/fundrive.git
 cd fundrive
-uv sync --locked --group dev     # 按 uv.lock 还原依赖，只装核心依赖
+uv sync --group dev     # 根据 pyproject.toml 解析依赖，只装核心依赖
 uv run pytest                    # 跑测试
 uv run ruff check src tests      # lint
 uv run ruff format src tests     # 格式化
@@ -652,7 +652,7 @@ def restore(self, fid, *args, **kwargs):
 
 1. Fork 项目仓库。
 2. 创建一个新的分支 (`git checkout -b feature/your-feature-name`)。
-3. 本地验证：`uv sync --locked --group dev && uv run ruff check src tests && uv run pytest`。
+3. 本地验证：`uv sync --group dev && uv run ruff check src tests && uv run pytest`。
 4. 提交您的更改，提交信息用中文、格式为 `<类型>: <做了什么>`，并说明修改原因：
 
    ```bash
