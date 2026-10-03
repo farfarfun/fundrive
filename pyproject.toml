@@ -77,7 +77,12 @@ extend-exclude = [ "*.md",]
 
 [tool.ruff.lint]
 select = [ "E4", "E7", "E9", "F", "PLE", "T100", "S102",]
-ignore = [ "E501",]
+ignore = [
+    "E501",
+    # farlog（基于 loguru）的日志调用用 `{}` 占位符传参，不是 stdlib logging 的
+    # `%s` 语法；ruff 把 logger 调用当成 stdlib logging 处理，误判为参数过多。
+    "PLE1205",
+]
 
 [tool.pytest.ini_options]
 testpaths = [ "tests",]

@@ -793,7 +793,7 @@ class GitHubDrive(BaseDrive):
         ``expire_days`` 不被支持——传了会明确告警，而不是静默忽略。
         """
         if password or expire_days:
-            logger.warning(  # noqa: PLE1205 - farlog(loguru) 用 {} 占位符，ruff 的 pylint 检查误判为 stdlib logging
+            logger.warning(
                 "{} 的分享链接由仓库可见性决定，不支持 password/expire_days，已忽略",
                 type(self).__name__,
             )
