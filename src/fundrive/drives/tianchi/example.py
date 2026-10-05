@@ -147,7 +147,7 @@ def run_comprehensive_test(drive):
                 file_id = test_file.ext.get("file_id", test_file.fid)
 
                 result = drive.download_file(
-                    file_id, filedir=temp_dir, filename="test_download"
+                    file_id, save_dir=temp_dir, filename="test_download"
                 )
                 if result:
                     downloaded_file = os.path.join(temp_dir, "test_download")
@@ -302,7 +302,7 @@ def run_interactive_demo():
             if file_id:
                 try:
                     result = drive.download_file(
-                        file_id, filedir=download_dir, filename=filename
+                        file_id, save_dir=download_dir, filename=filename
                     )
                     if result:
                         logger.info(f"✅ 文件下载成功到: {download_dir}")

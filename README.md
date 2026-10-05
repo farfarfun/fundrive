@@ -210,17 +210,17 @@ uv add "fundrive[all]"
 ```python
 from fundrive.drives.dropbox import DropboxDrive
 
-# 初始化驱动
-drive = DropboxDrive(access_token="your_dropbox_token")
+# 初始化驱动（凭据在 login() 传入，构造函数不接受凭据参数）
+drive = DropboxDrive()
 
-# 登录
-drive.login()
+# 登录（不传参时自动从 funsecret 读取已保存的 access_token）
+drive.login(access_token="your_dropbox_token")
 
-# 上传文件
-drive.upload_file("/本地路径/文件.txt", "/", "上传文件.txt")
+# 上传文件（远程文件名取本地文件名）
+drive.upload_file("/本地路径/文件.txt", "/")
 
 # 下载文件
-drive.download_file("/上传文件.txt", "/本地下载路径/文件.txt")
+drive.download_file("/上传文件.txt", filepath="/本地下载路径/文件.txt")
 
 # 获取文件列表
 files = drive.get_file_list("/")
@@ -242,11 +242,11 @@ drive = GoogleDrive(
 # 登录（首次会打开浏览器进行OAuth授权）
 drive.login()
 
-# 上传文件
-drive.upload_file("/本地路径/文件.txt", "root", filename="上传文件.txt")
+# 上传文件（远程文件名取本地文件名）
+drive.upload_file("/本地路径/文件.txt", "root")
 
 # 下载文件
-drive.download_file("file_id", filedir="/本地下载路径", filename="下载文件.txt")
+drive.download_file("file_id", save_dir="/本地下载路径", filename="下载文件.txt")
 
 # 获取存储配额
 quota = drive.get_quota()
@@ -281,7 +281,7 @@ drive.login()
 drive.upload_file("/本地路径/文件.txt", "root", filename="上传文件.txt")
 
 # 下载文件
-drive.download_file("file_id", filedir="/本地下载路径", filename="下载文件.txt")
+drive.download_file("file_id", save_dir="/本地下载路径", filename="下载文件.txt")
 
 # 获取存储配额
 quota = drive.get_quota()
@@ -317,7 +317,7 @@ drive.login()
 drive.upload_file("/本地路径/文件.txt", "documents", filename="上传文件.txt")
 
 # 下载文件
-drive.download_file("documents/上传文件.txt", filedir="/本地下载路径", filename="下载文件.txt")
+drive.download_file("documents/上传文件.txt", save_dir="/本地下载路径", filename="下载文件.txt")
 
 # 获取存储桶信息
 quota = drive.get_quota()
@@ -337,12 +337,12 @@ print(f"找到 {len(results)} 个文件")
 #### 5. 清华云盘示例
 
 ```python
-from fundrive.drives.tsinghua import TsinghuaDrive
+from fundrive.drives.tsinghua import TSingHuaDrive
 
 # 初始化驱动
-drive = TsinghuaDrive(
+drive = TSingHuaDrive(
     share_key="your_share_key",
-    password="your_password"  # 可选
+    password="your_password",  # 可选
 )
 
 # 登录
@@ -354,7 +354,7 @@ for file in files:
     print(f"📄 {file.name} ({file.size} bytes)")
 
 # 下载文件
-drive.download_file("文件ID", filedir="/本地下载路径")
+drive.download_file("文件ID", save_dir="/本地下载路径")
 
 # 搜索文件
 results = drive.search("关键词")
@@ -364,10 +364,10 @@ print(f"找到 {len(results)} 个文件")
 #### 6. 文叔叔示例
 
 ```python
-from fundrive.drives.wenshushu import WenshushuDrive
+from fundrive.drives.wenshushu import WSSDrive
 
 # 初始化驱动（匿名登录）
-drive = WenshushuDrive()
+drive = WSSDrive()
 
 # 登录
 drive.login()
@@ -383,7 +383,7 @@ for file in files:
     print(f"📄 {file.name}")
 
 # 下载文件（通过分享链接）
-drive.download_file("分享链接", filedir="/本地下载路径")
+drive.download_file("分享链接", save_dir="/本地下载路径")
 
 # 获取存储配额
 quota = drive.get_quota()
@@ -393,22 +393,24 @@ print(f"上传次数: {quota.get('upload_count', 0)}")
 #### 7. 阿里云 OSS 示例
 
 ```python
-from fundrive.drives.oss import OssDrive
+from fundrive.drives.oss import OSSDrive
 
-# 初始化驱动
-drive = OssDrive(
-    access_key_id="your_access_key",
-    access_key_secret="your_secret_key",
+# 初始化驱动（凭据在 login() 传入）
+drive = OSSDrive()
+
+# 不传参时自动从 funsecret 读取已保存的凭据
+drive.login(
+    access_key="your_access_key",
+    access_secret="your_secret_key",
     bucket_name="your_bucket",
-    endpoint="oss-cn-hangzhou.aliyuncs.com"
+    endpoint="oss-cn-hangzhou.aliyuncs.com",
 )
 
-# 使用方法与其他驱动相同
-drive.login()
-drive.upload_file("/本地文件.txt", "/", "远程文件.txt")
+# upload_file(本地路径, 目标目录fid)，远程文件名取本地文件名
+drive.upload_file("/本地文件.txt", "some/dir")
 ```
 
-#### 5. 使用配置管理（推荐）
+#### 8. 使用配置管理（推荐）
 
 ```python
 # 使用 funsecret 管理配置 - Dropbox

@@ -192,7 +192,7 @@ def run_comprehensive_test(drive, drive_name):
         with tempfile.TemporaryDirectory() as temp_dir:
             result = drive.download_file(
                 test_file.fid if test_file else "unknown",
-                filedir=temp_dir,
+                save_dir=temp_dir,
                 filename="downloaded_test.txt",
             )
             if result:

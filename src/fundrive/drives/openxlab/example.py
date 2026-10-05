@@ -150,7 +150,7 @@ def run_comprehensive_test(drive):
                 file_fid = f"{dataset_id}{file_path}"
 
                 result = drive.download_file(
-                    file_fid, filedir=temp_dir, filename="test_download"
+                    file_fid, save_dir=temp_dir, filename="test_download"
                 )
                 if result:
                     downloaded_file = os.path.join(temp_dir, "test_download")
@@ -311,7 +311,7 @@ def run_interactive_demo():
                 try:
                     # 构建文件ID
                     file_fid = f"{dataset_name}{file_path}"
-                    result = drive.download_file(file_fid, filedir=download_dir)
+                    result = drive.download_file(file_fid, save_dir=download_dir)
                     if result:
                         logger.info(f"✅ 文件下载成功到: {download_dir}")
                     else:

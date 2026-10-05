@@ -171,7 +171,7 @@ def run_comprehensive_test(drive):
         with tempfile.TemporaryDirectory() as temp_dir:
             if test_file:
                 result = drive.download_file(
-                    test_file.fid, filedir=temp_dir, filename="downloaded_test.txt"
+                    test_file.fid, save_dir=temp_dir, filename="downloaded_test.txt"
                 )
                 if result:
                     downloaded_file = os.path.join(temp_dir, "downloaded_test.txt")

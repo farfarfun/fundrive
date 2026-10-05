@@ -198,23 +198,31 @@ class LanZouDrive(BaseDrive):
         url=None,
         pwd=None,
         **kwargs,
-    ) -> bool:
+    ) -> str:
         """
         在指定目录下创建子目录
 
+        按 ``BaseDrive`` 契约返回**新目录的ID**（不是布尔值）：
+        ``BaseDrive.upload_dir`` 与 ``fundrive.core.copy_data`` 都会把返回值直接当成
+        下一层的 ``fid`` 使用。蓝奏云同名目录已存在时底层接口直接返回已有目录ID。
+
         Args:
-            fid (int | str): 父目录ID
-            name (str): 新目录名
-            return_if_exist (bool): 同名目录已存在时是否视为成功（蓝奏云接口本身幂等）
+            fid (int | str): 父目录ID，``-1`` 表示根目录
+            name (str): 新目录名（蓝奏云会把空格替换成下划线并过滤非法字符）
+            return_if_exist (bool): 同名目录已存在时返回其ID，蓝奏云接口本身即如此
             *args: 可变位置参数
             url (str, optional): 预留的分享链接参数，蓝奏云建目录不使用
             pwd (str, optional): 预留的提取密码参数，蓝奏云建目录不使用
             **kwargs: 可变关键字参数
 
         Returns:
-            bool: 创建是否成功
+            str: 新目录（或已存在的同名目录）的ID；创建失败返回空字符串
         """
-        return self.drive.mkdir(fid, name, *args, **kwargs) == 0
+        folder_id = self.drive.mkdir(fid, name, *args, **kwargs)
+        if folder_id == LanZouCloud.MKDIR_ERROR:
+            logger.error("蓝奏云创建目录失败，parent_fid={} name={}", fid, name)
+            return ""
+        return str(folder_id)
 
     def delete(self, fid=None, *args, **kwargs) -> bool:
         """

@@ -192,13 +192,18 @@ class BaseDrive:
         """
         初始化网盘基类
 
+        各驱动统一用 ``*args, **kwargs`` 透传构造参数，没被子类消费的到这里即丢弃。
+        **不能**再往 ``object.__init__`` 转发：``object`` 不接受任何参数，转发会让
+        ``get_drive("dropbox", access_token="x")`` 这类调用直接抛
+        ``TypeError: object.__init__() takes exactly one argument``。
+
         Args:
-            *args: 位置参数
-            **kwargs: 关键字参数
+            *args: 子类未消费的位置参数，忽略
+            **kwargs: 子类未消费的关键字参数，忽略
         """
         self._is_logged_in = False
         self._root_fid = None
-        super().__init__(*args, **kwargs)
+        super().__init__()
 
     @property
     def is_logged_in(self) -> bool:

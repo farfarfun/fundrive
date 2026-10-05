@@ -106,7 +106,7 @@ def demo_file_operations(drive: TSingHuaDrive):
         print("\n⬇️ 下载文件到本地...")
         download_dir = "./test_downloads"
         success = drive.download_file(
-            fid=test_file.fid, filedir=download_dir, filename=f"test_{test_file.name}"
+            fid=test_file.fid, save_dir=download_dir, filename=f"test_{test_file.name}"
         )
         if success:
             print(f"✅ 文件下载成功: {download_dir}/test_{test_file.name}")
@@ -343,7 +343,7 @@ def run_interactive_demo():
                     )
 
                     success = drive.download_file(
-                        fid=file.fid, filedir=download_dir, filename=file.name
+                        fid=file.fid, save_dir=download_dir, filename=file.name
                     )
 
                     if success:

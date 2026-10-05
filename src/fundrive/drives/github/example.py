@@ -162,7 +162,7 @@ def demo_file_operations(drive: GitHubDrive):
         download_dir = tempfile.mkdtemp()
         success = drive.download_file(
             fid=f"test/{test_filename}",
-            filedir=download_dir,
+            save_dir=download_dir,
             filename="downloaded_test.md",
         )
 

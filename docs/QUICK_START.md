@@ -4,19 +4,23 @@
 
 ## 安装
 
+> 要求 Python >= 3.12。
+
 ```bash
 # 安装基础包
-pip install fundrive
+uv add fundrive
 
 # 安装特定驱动（以 Dropbox 为例）
-pip install fundrive[dropbox]
+uv add "fundrive[dropbox]"
 
 # 安装多个驱动
-pip install fundrive[dropbox,oss,google,onedrive,amazon,alipan,baidu,lanzou,webdav,wenshushu,tsinghua]
+uv add "fundrive[dropbox,oss,google,onedrive,amazon,alipan,baidu,lanzou,webdav,wenshushu,tsinghua]"
 
 # 安装全部驱动
-pip install fundrive[all]
+uv add "fundrive[all]"
 ```
+
+不用 uv 的话，把 `uv add` 换成 `pip install` 即可。
 
 支持哪些驱动、各驱动的实现完整度，见主 [README](../README.md#支持的云存储服务)。
 
@@ -27,17 +31,17 @@ pip install fundrive[all]
 ```python
 from fundrive.drives.dropbox import DropboxDrive
 
-# 初始化驱动
-drive = DropboxDrive(access_token="your_dropbox_token")
+# 初始化驱动（凭据在 login() 传入，构造函数不接受凭据参数）
+drive = DropboxDrive()
 
-# 登录
-drive.login()
+# 登录（不传参时自动从 funsecret 读取已保存的 access_token）
+drive.login(access_token="your_dropbox_token")
 
-# 上传文件
-drive.upload_file("/本地路径/文件.txt", "/", "上传文件.txt")
+# 上传文件（远程文件名取本地文件名）
+drive.upload_file("/本地路径/文件.txt", "/")
 
 # 下载文件
-drive.download_file("/上传文件.txt", "/本地下载路径/文件.txt")
+drive.download_file("/上传文件.txt", filepath="/本地下载路径/文件.txt")
 
 # 获取文件列表
 files = drive.get_file_list("/")

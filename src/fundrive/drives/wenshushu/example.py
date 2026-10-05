@@ -150,7 +150,7 @@ def demo_download_operations(drive: WSSDrive, share_url: str = None):
 
     # 下载文件
     print(f"\n⬇️ 下载文件到: {download_dir}")
-    success = drive.download_file(fid=share_url, filedir=download_dir)
+    success = drive.download_file(fid=share_url, save_dir=download_dir)
 
     if success:
         print("✅ 文件下载成功")
@@ -377,7 +377,7 @@ def run_interactive_demo():
                     or "./downloads"
                 )
 
-                success = drive.download_file(fid=share_url, filedir=download_dir)
+                success = drive.download_file(fid=share_url, save_dir=download_dir)
 
                 if success:
                     print(f"✅ 文件下载成功到: {download_dir}")
