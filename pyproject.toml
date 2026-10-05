@@ -34,6 +34,9 @@ dev = [ "pytest>=8.0", "ruff>=0.6",]
 all = [ "fundrive[oss]", "fundrive[alipan]", "fundrive[webdav]", "fundrive[baidu]", "fundrive[lanzou]", "fundrive[google]", "fundrive[onedrive]", "fundrive[wenshushu]", "fundrive[amazon]", "fundrive[tsinghua]", "fundrive[dropbox]", "fundrive[github]", "fundrive[gitee]", "fundrive[ossutil]", "fundrive[pan115]",]
 
 [project.optional-dependencies]
+# `all` 是自引用 extra（PEP 621 允许），让 `uv add "fundrive[all]"` 能一次装齐全部驱动；
+# 上面 [dependency-groups] 的同名组只对本仓库开发者生效，发布到 PyPI 的元数据里没有它。
+all = [ "fundrive[oss]", "fundrive[alipan]", "fundrive[webdav]", "fundrive[baidu]", "fundrive[lanzou]", "fundrive[google]", "fundrive[onedrive]", "fundrive[wenshushu]", "fundrive[amazon]", "fundrive[tsinghua]", "fundrive[dropbox]", "fundrive[github]", "fundrive[gitee]", "fundrive[ossutil]", "fundrive[pan115]",]
 alipan = [ "aligo>=6.2.4", "fundrive-alipan>=1.3.13",]
 oss = [ "oss2>=2.19.0",]
 webdav = [ "webdav4>=0.10.0",]
@@ -46,7 +49,6 @@ amazon = [ "boto3>=1.34.0", "botocore>=1.34.0",]
 ossutil = [ "funinstall>=1.0.58",]
 pan115 = [ "p115client>=0.0.9.6.5.1", "funfile>=1.0.39",]
 pcloud = []
-plcoud = []
 github = []
 gitee = []
 onedrive = []
@@ -60,8 +62,6 @@ tianchi = []
 Organization = "https://github.com/farfarfun"
 Repository = "https://github.com/farfarfun/fundrive"
 Releases = "https://github.com/farfarfun/fundrive/releases"
-
-[tool.setuptools]
 
 [build-system]
 requires = ["hatchling"]

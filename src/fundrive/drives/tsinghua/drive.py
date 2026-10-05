@@ -497,7 +497,6 @@ def download(
     path="/",
     is_dir=True,
     overwrite=False,
-    *args,
     **kwargs,
 ):
     """
@@ -509,23 +508,27 @@ def download(
         path: 文件或目录路径
         is_dir: 是否为目录
         overwrite: 是否覆盖已存在文件
+
+    Returns:
+        bool: 下载是否成功
     """
     drive = TSingHuaDrive(share_key=share_key)
-    drive.login()
+    if not drive.login():
+        logger.error(f"清华云盘登录失败，share_key={share_key}")
+        return False
 
+    # 注意：BaseDrive 的下载接口用的是 save_dir，不是 filedir。
     if is_dir:
         return drive.download_dir(
             fid=path,
-            filedir=dir_path,
+            save_dir=dir_path,
             overwrite=overwrite,
-            *args,
             **kwargs,
         )
     else:
         return drive.download_file(
             fid=path,
-            filedir=dir_path,
+            save_dir=dir_path,
             overwrite=overwrite,
-            *args,
             **kwargs,
         )
