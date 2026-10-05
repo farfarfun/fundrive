@@ -5,12 +5,61 @@
 
 ## [未发布]
 
+### 新增
+
+- README 补齐「从 1.x 升级到 2.x」小节：给出新旧 API 对照表（`local_dir`/`filedir`
+  → `save_dir`、`local_path` → `filepath`、三个顶层别名的新导入路径等），原来这里
+  只有一行「V2.0有大改动，升级注意」没有任何可操作内容。
+- CHANGELOG 补回缺失的 `[2.0.0]` 小节，集中记录 1.x → 2.x 的破坏性变更。
+- 新增 `tests/test_call_site_contract.py`：用 AST 守住**调用点**契约（现有
+  `test_drive_contract.py` 只比对方法定义，抓不到调用点传错参数名）。覆盖
+  `filedir=` 误用、清华云盘与蓝奏云快照的下载调用、`mkdir` 不得返回布尔字面量、
+  具名关键字不得写在 `*args` 之前、`BaseDrive` 吞掉多余 kwargs。
+- 蓝奏云补上可运行的 `example.py`（原文件 0 字节），只读演示，不做任何写操作。
+
 ### 修复
 
 - `drives/github/drive.py`、`drives/gitee/drive.py` 的分享链接告警日志误用 stdlib
   logging 的 `%s` 占位符，farlog（loguru）不支持该语法，参数被静默丢弃；改为 `{}`
-  占位符（ruff 的 `PLE1205` 对 loguru 的 `{}` + 位置参数风格有误判，已按行加
-  `# noqa: PLE1205` 说明）。
+  占位符（ruff 的 `PLE1205` 对 loguru 风格有误判，已在 `pyproject.toml` 的
+  `lint.ignore` 里统一关掉，不再逐行加 `# noqa`）。
+- `BaseDrive.__init__` 不再把子类没消费的 kwargs 转发给 `object.__init__`，
+  `get_drive("dropbox", access_token="x")` 之类调用不再抛
+  `TypeError: object.__init__() takes exactly one argument`。
+- `LanZouDrive.move_file` 漏了 `return`，`move()` 声明返回 `bool` 却恒为 `None`。
+- `LanZouDrive.mkdir` 和 `Pan115Drive.mkdir` 声明 `-> str` 却返回布尔值，
+  `upload_dir` / `copy_data` 会把 `True` 当目录ID继续用，后续上传全部落错位置。
+- `LanZouSnapshot.download()` 用了 `dir_path=` / `url=` 两个不存在的参数名、且漏传
+  必填的 `fid`，必抛 `TypeError`；同时给 `LanZouDrive.download_file` 补上
+  `url` / `pwd` 关键字参数和文件信息为空的保护。
+- 清华云盘模块级 `download()` 用 `filedir=` 调下载接口（形参是 `save_dir`）：
+  文件静默落到当前目录，目录下载直接 `TypeError`。另外 9 个驱动的 `example.py`
+  共 13 处同类误用一并改正。
+- `Pan115Drive.download_file` / `get_download_url` 写成
+  `get_file_info(fid=fid, *args, **kwargs)`，只要调用方传了位置参数就报
+  `got multiple values for argument 'fid'`；`BaseDrive.download_dir` /
+  `upload_dir` 与百度驱动的 `download()` 也是同样的混用，改为不透传 `*args`。
+- `Pan115Drive` 其余方法改走 `_require_client()`，未登录时抛 `AuthenticationError`
+  而不是 `AttributeError: 'NoneType' object has no attribute ...`。
+- `fundrive.core.copy_data` 不再把 `mkdir` 的返回值当布尔用，中转目录改用
+  `tempfile.mkdtemp()` 并在 `finally` 里清理，不再往进程当前目录写 `tmp/`。
+
+### 变更
+
+- 新增真正的 `all` extra（PEP 621 自引用），`uv add "fundrive[all]"` 才能一次装齐
+  全部驱动——此前 `all` 只存在于 `[dependency-groups]`，不会出现在 PyPI 元数据里。
+- 删除 `pyproject.toml` 里拼错的空 extra `plcoud`（正确的 `pcloud` 保留）和已失效的
+  `[tool.setuptools]` 配置段（构建后端是 hatchling）。
+- 蓝奏云 README 按真实 API 重写：原文档里的 `ignore_limits()`、`login_by_cookie()`、
+  `down_dir_by_url()`、`sync_files()` 以及 `example/lanzou_example.py` 都不存在。
+- README / `docs/QUICK_START.md` 的示例改为可运行：类名纠正为 `OSSDrive`、
+  `TSingHuaDrive`、`WSSDrive`，Dropbox 的凭据改为 `login()` 传入，上传/下载示例
+  不再把第三个位置参数当文件名用，安装命令统一为 `uv add`。
+- `drives/webdav`、`drives/os`、`drives/pan115`、`drives/lanzou` 的公开方法补齐中文
+  docstring（Args / Returns / Raises）。
+- `uv.lock` 不再纳入版本管理（见 PR #10），`.gitignore` 已忽略；CI 与文档相应改用
+  `uv sync --group dev`，2.0.89 条目里提到的 `uv sync --locked --group dev` 和
+  「恢复并重新生成 `uv.lock`」只对当时的仓库状态有效。
 
 ## [2.0.89] - 2026-10-02
 
@@ -98,6 +147,41 @@
 ### 变更
 
 - 补充 ossutil 驱动使用文档，更新 API 文档
+
+### 废弃
+
+- 无
+
+## [2.0.0] - 2025-01-09
+
+> 这是 1.x → 2.x 的分界版本，接口有破坏性变更。可操作的迁移对照表见
+> [README「从 1.x 升级到 2.x」](README.md#从-1x-升级到-2x)。
+
+### 新增
+
+- `DriveFile` 升级为带一等公民字段的结构：`fid` / `name` / `size` / `time` / `ext`
+  都有同名属性，`f.size` 与 `f["size"]` 等价；1.x 里只能从 `ext` 字典里翻大小。
+- `BaseDrive` 补齐 `move` / `copy` / `rename` / `search` / `get_quota` /
+  回收站系列 / `get_download_url` / `get_upload_url` 等高级接口。
+- 全量类型标注，错误统一收敛到 `fundrive.core.exceptions`。
+
+### 修复
+
+- 无
+
+### 变更（破坏性）
+
+- **下载接口的本地目录参数统一为 `save_dir`**：1.x 的 `download_file(fid, local_dir,
+  filedir=...)` 和 `download_dir(fid, local_dir, ...)` 里 `local_dir` / `filedir`
+  两个名字并存且语义重叠，2.x 一律叫 `save_dir`。按关键字调用的代码必须改名，按位置
+  调用的不受影响。
+- **`upload_file` 的本地路径参数由 `local_path` 改为 `filepath`**（`upload_dir`
+  对应改为 `filedir`）。
+- **`fundrive.drives` 顶层不再导出 `LanZouSnapshot`、`download_tsinghua`、
+  `OpenDataLabDrive`**，改从各自子包导入；其余驱动类名仍可从 `fundrive.drives`
+  惰性取用，并新增 `get_drive("<drive_type>")` 工厂。
+- **`get_file_info()` / `get_dir_info()` 查不到时返回 `None`**，调用方需要判空。
+- **`requires-python` 由 `>=3.8` 提升到 `>=3.12`。**
 
 ### 废弃
 

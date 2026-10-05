@@ -10,7 +10,29 @@ FunDrive 是一个统一的网盘操作接口框架，旨在提供一个标准�
 - **[🔧 开发指南](docs/DEVELOPMENT_GUIDE.md)** - 开发者贡献指南和最佳实践
 - **[📊 性能优化指南](docs/OPTIMIZATION_GUIDE.md)** - 性能优化建议和最佳实践
 
-## V2.0有大改动，升级注意
+## 从 1.x 升级到 2.x
+
+2.0 对 `BaseDrive` 的接口做了不兼容调整，1.x 的代码需要按下表改动。只用位置参数调用的
+代码大多不受影响，用关键字参数的一定要改。
+
+| 变更点 | 1.x 写法 | 2.x 写法 |
+|:---|:---|:---|
+| 本地保存目录统一叫 `save_dir` | `drive.download_file(fid, local_dir="./d")`<br>`drive.download_dir(fid, local_dir="./d")` | `drive.download_file(fid, save_dir="./d")`<br>`drive.download_dir(fid, save_dir="./d")` |
+| 上传的本地路径改名为 `filepath` | `drive.upload_file(local_path="./a.txt", fid="0")` | `drive.upload_file(filepath="./a.txt", fid="0")` |
+| 上传目录的本地路径仍叫 `filedir` | `drive.upload_dir(local_path="./d", fid="0")` | `drive.upload_dir(filedir="./d", fid="0")` |
+| 三个顶层别名不再从 `fundrive.drives` 导出 | `from fundrive.drives import LanZouSnapshot, download_tsinghua, OpenDataLabDrive` | `from fundrive.drives.lanzou import LanZouSnapshot`<br>`from fundrive.drives.tsinghua import download_tsinghua`<br>`from fundrive.drives.openxlab import OpenDataLabDrive` |
+| 新增按名取驱动的工厂 | 只能逐个 import | `from fundrive.drives import get_drive`<br>`drive = get_drive("lanzou")` |
+| `DriveFile` 字段升级 | `DriveFile(fid, name, ext={"size": 1})`，大小只能从 `ext` 里翻 | `DriveFile(fid=..., name=..., size=1, time=...)`，`f.size` 与 `f["size"]` 等价 |
+| 查不到时返回 `None` | `get_file_info()` / `get_dir_info()` 行为不统一 | 统一返回 `DriveFile \| None`，调用方必须判空 |
+| Python 版本 | `>=3.8` | `>=3.12` |
+
+其它需要注意的：
+
+- 驱动类名以各驱动包的实际导出为准，`OSSDrive`、`TSingHuaDrive`、`WSSDrive` 等保留了
+  历史大小写，照着 README 示例抄即可。
+- 异常统一收敛到 `fundrive.core.exceptions`（`FunDriveError`、`AuthenticationError`、
+  `InvalidParameterError` 等）；`login()` 失败返回 `False`，不靠抛异常传递结果。
+- 凭据统一通过 funsecret 读取，`login()` 的参数不传时会回落到本地配置。
 
 ## 支持的云存储服务
 
