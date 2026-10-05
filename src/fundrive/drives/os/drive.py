@@ -50,6 +50,15 @@ class OSDrive(BaseDrive):
     """
 
     def __init__(self, root_path: str | None = None, *args: Any, **kwargs: Any) -> None:
+        """
+        初始化本地文件系统驱动
+
+        Args:
+            root_path (str, optional): 根目录。给定后所有相对 fid 相对它解析，
+                并拒绝逃逸出该目录的路径；不给则以进程 cwd 为基准且不做限制
+            *args: 透传给 ``BaseDrive`` 的可变位置参数
+            **kwargs: 透传给 ``BaseDrive`` 的可变关键字参数
+        """
         super().__init__(*args, **kwargs)
         self.root_path = os.path.abspath(root_path) if root_path else None
         self._root_fid = self.root_path or os.path.abspath(os.curdir)
@@ -100,6 +109,17 @@ class OSDrive(BaseDrive):
         return True
 
     def exist(self, fid: str, *args: Any, **kwargs: Any) -> bool:
+        """
+        判断路径是否存在
+
+        Args:
+            fid (str): 本地路径
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            bool: 存在返回 ``True``；越出 ``root_path`` 时按"不存在"处理返回 ``False``
+        """
         try:
             return os.path.exists(self._resolve(fid))
         except ValueError:
@@ -126,6 +146,17 @@ class OSDrive(BaseDrive):
         return target
 
     def delete(self, fid: str, *args: Any, **kwargs: Any) -> bool:
+        """
+        删除文件或目录（目录递归删除）
+
+        Args:
+            fid (str): 待删除的本地路径
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            bool: 删除成功返回 ``True``；目标不存在返回 ``False``
+        """
         path = self._resolve(fid)
         if not os.path.exists(path):
             logger.warning(f"删除目标不存在: {path}")
@@ -138,6 +169,17 @@ class OSDrive(BaseDrive):
         return True
 
     def get_file_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
+        """
+        列出目录下的文件（按名称排序，不递归）
+
+        Args:
+            fid (str): 目录路径
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            list[DriveFile]: 文件列表；fid 不是目录时返回空列表
+        """
         path = self._resolve(fid)
         if not os.path.isdir(path):
             return []
@@ -148,6 +190,17 @@ class OSDrive(BaseDrive):
         ]
 
     def get_dir_list(self, fid: str, *args: Any, **kwargs: Any) -> list[DriveFile]:
+        """
+        列出目录下的子目录（按名称排序，不递归）
+
+        Args:
+            fid (str): 目录路径
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            list[DriveFile]: 子目录列表；fid 不是目录时返回空列表
+        """
         path = self._resolve(fid)
         if not os.path.isdir(path):
             return []
@@ -158,12 +211,34 @@ class OSDrive(BaseDrive):
         ]
 
     def get_file_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
+        """
+        获取文件详情
+
+        Args:
+            fid (str): 文件路径
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            DriveFile | None: 文件信息；路径不是文件时返回 ``None``
+        """
         path = self._resolve(fid)
         if not os.path.isfile(path):
             return None
         return _to_drive_file(path)
 
     def get_dir_info(self, fid: str, *args: Any, **kwargs: Any) -> DriveFile | None:
+        """
+        获取目录详情
+
+        Args:
+            fid (str): 目录路径
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            DriveFile | None: 目录信息；路径不是目录时返回 ``None``
+        """
         path = self._resolve(fid)
         if not os.path.isdir(path):
             return None
@@ -219,6 +294,21 @@ class OSDrive(BaseDrive):
         *args: Any,
         **kwargs: Any,
     ) -> bool:
+        """
+        把网盘内的文件 ``fid`` 复制到本地目标位置
+
+        Args:
+            fid (str): 源文件路径（网盘内，受 ``root_path`` 约束）
+            save_dir (str, optional): 保存目录；与 filepath 都不给时落到当前目录
+            filename (str, optional): 保存文件名，默认用源文件名
+            filepath (str, optional): 完整保存路径，给了就忽略 save_dir/filename
+            overwrite (bool): 目标已存在时是否覆盖
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            bool: 下载成功返回 ``True``；源不存在、或目标已存在且未开启覆盖返回 ``False``
+        """
         source = self._resolve(fid)
         if not os.path.isfile(source):
             logger.error(f"源文件不存在: {source}")
@@ -286,6 +376,18 @@ class OSDrive(BaseDrive):
 
     # ------------------------------------------------------------------ 高级
     def move(self, source_fid: str, target_fid: str, *args: Any, **kwargs: Any) -> bool:
+        """
+        把文件或目录移动到目标目录下
+
+        Args:
+            source_fid (str): 源路径
+            target_fid (str): 目标**父目录**（不存在会自动创建）
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            bool: 移动成功返回 ``True``；源不存在返回 ``False``
+        """
         source = self._resolve(source_fid)
         target_dir = self._resolve(target_fid)
         if not os.path.exists(source):
@@ -296,6 +398,18 @@ class OSDrive(BaseDrive):
         return True
 
     def copy(self, source_fid: str, target_fid: str, *args: Any, **kwargs: Any) -> bool:
+        """
+        把文件或目录复制到目标目录下
+
+        Args:
+            source_fid (str): 源路径
+            target_fid (str): 目标**父目录**（不存在会自动创建）
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            bool: 复制成功返回 ``True``；源不存在返回 ``False``
+        """
         source = self._resolve(source_fid)
         target_dir = self._resolve(target_fid)
         if not os.path.exists(source):
@@ -310,6 +424,18 @@ class OSDrive(BaseDrive):
         return True
 
     def rename(self, fid: str, new_name: str, *args: Any, **kwargs: Any) -> bool:
+        """
+        重命名文件或目录（保持在原父目录下）
+
+        Args:
+            fid (str): 原路径
+            new_name (str): 新名称（只是名字，不含路径）
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            bool: 重命名成功返回 ``True``；源不存在返回 ``False``
+        """
         source = self._resolve(fid)
         if not os.path.exists(source):
             logger.error(f"源不存在: {source}")
@@ -327,6 +453,19 @@ class OSDrive(BaseDrive):
         *args: Any,
         **kwargs: Any,
     ) -> list[DriveFile]:
+        """
+        按文件名关键字递归搜索（大小写不敏感）
+
+        Args:
+            keyword (str): 关键字，匹配名称子串
+            fid (str, optional): 搜索起点目录，默认为驱动根目录
+            file_type (str, optional): 传 ``"file"`` 只搜文件，否则文件和目录都搜
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            list[DriveFile]: 命中的文件/目录列表
+        """
         root = self._resolve(fid) if fid else self._root_fid
         matched: list[DriveFile] = []
         for dirpath, dirnames, filenames in os.walk(root):
@@ -339,6 +478,16 @@ class OSDrive(BaseDrive):
         return matched
 
     def get_quota(self, *args: Any, **kwargs: Any) -> dict:
+        """
+        获取根目录所在磁盘的容量信息
+
+        Args:
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            dict: 含 ``total`` / ``used`` / ``free``（字节）与 ``path`` 四个键
+        """
         usage = shutil.disk_usage(self._root_fid)
         return {
             "total": usage.total,

@@ -16,7 +16,26 @@ logger = getLogger("fundrive")
 
 
 class WebDavDrive(BaseDrive):
+    """
+    WebDAV 网盘驱动
+
+    直接用 ``requests`` 发 WebDAV 方法（PROPFIND/MKCOL/MOVE/COPY/DELETE），
+    不依赖第三方 WebDAV 客户端库。驱动内部的 ``fid`` 就是服务器上的绝对路径
+    （以 ``/`` 开头），所有入参都会先经 ``_normalize_fid`` 归一化。
+
+    个别服务端不支持 ``HEAD``，:meth:`exist` 会自动回退到 ``PROPFIND``。
+    """
+
     def __init__(self, *args, **kwargs):
+        """
+        初始化 WebDAV 驱动
+
+        这里只准备字段，真正的连接与认证在 :meth:`login` 中完成。
+
+        Args:
+            *args: 透传给 ``BaseDrive`` 的可变位置参数
+            **kwargs: 透传给 ``BaseDrive`` 的可变关键字参数
+        """
         super().__init__(*args, **kwargs)
         self.server_url: str | None = None
         self.username: str | None = None
@@ -27,6 +46,26 @@ class WebDavDrive(BaseDrive):
     def login(
         self, server_url=None, username=None, password=None, *args, **kwargs
     ) -> bool:
+        """
+        登录 WebDAV 服务器
+
+        三个参数任意一个为空时，会从 funsecret 的 ``fundrive/webdav/*`` 读取。
+        登录时会对根路径做一次 ``PROPFIND``，用来同时验证连通性和账号密码。
+
+        Args:
+            server_url (str, optional): WebDAV 服务地址，如 ``https://dav.example.com/dav``
+            username (str, optional): 用户名
+            password (str, optional): 密码或应用专用密码
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数，支持 ``timeout``（秒，默认 30）
+
+        Returns:
+            bool: 登录成功返回 ``True``
+
+        Raises:
+            InvalidParameterError: 地址、用户名或密码为空
+            requests.HTTPError: 服务端返回 4xx/5xx（如 401 认证失败）
+        """
         server_url = server_url or read_secret("fundrive", "webdav", "server_url")
         username = username or read_secret("fundrive", "webdav", "username")
         password = password or read_secret("fundrive", "webdav", "password")
@@ -49,6 +88,22 @@ class WebDavDrive(BaseDrive):
         return True
 
     def mkdir(self, fid, name, return_if_exist=True, *args, **kwargs) -> str:
+        """
+        在指定目录下创建子目录
+
+        Args:
+            fid (str): 父目录路径
+            name (str): 新目录名
+            return_if_exist (bool): 目录已存在时直接返回其路径，``False`` 则抛异常
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            str: 新目录的路径（本驱动的 fid 即路径）
+
+        Raises:
+            FileExistsError: 目录已存在且 ``return_if_exist=False``
+        """
         parent = self._normalize_fid(fid)
         target = self._normalize_fid(posixpath.join(parent, name))
         if self.exist(target):
@@ -59,6 +114,17 @@ class WebDavDrive(BaseDrive):
         return target
 
     def delete(self, fid, *args, **kwargs) -> bool:
+        """
+        删除文件或目录（目录为递归删除）
+
+        Args:
+            fid (str): 待删除的路径
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            bool: 删除成功返回 ``True``；目标本就不存在返回 ``False``
+        """
         target = self._normalize_fid(fid)
         if not self.exist(target):
             return False
@@ -66,6 +132,24 @@ class WebDavDrive(BaseDrive):
         return True
 
     def exist(self, fid: str, *args, **kwargs) -> bool:
+        """
+        判断路径是否存在
+
+        先用 ``HEAD`` 探测；服务端不支持（405/501）时回退到 ``PROPFIND``。
+        只有 404 才算"不存在"，401/403/5xx 一律抛出，避免把"没权限"和
+        "服务端故障"误报成"文件不存在"。
+
+        Args:
+            fid (str): 待检查的路径
+            *args: 兼容旧调用 ``exist(parent_fid, name)``，第一个位置参数会被拼到 fid 后
+            **kwargs: 可变关键字参数
+
+        Returns:
+            bool: 存在返回 ``True``
+
+        Raises:
+            requests.HTTPError: 非 404 的 HTTP 错误
+        """
         if args:
             # 兼容旧调用：exist(parent_fid, name)
             fid = posixpath.join(fid, str(args[0]))
@@ -93,20 +177,72 @@ class WebDavDrive(BaseDrive):
             raise
 
     def get_file_list(self, fid, *args, **kwargs) -> list[DriveFile]:
+        """
+        获取指定目录下的文件列表（不含子目录、不递归）
+
+        Args:
+            fid (str): 目录路径
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            list[DriveFile]: 文件列表
+        """
         children = self._list_children(fid)
         return [item for item in children if item.get("type") == "file"]
 
     def get_dir_list(self, fid, *args, **kwargs) -> list[DriveFile]:
+        """
+        获取指定目录下的子目录列表（不递归）
+
+        Args:
+            fid (str): 目录路径
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            list[DriveFile]: 子目录列表
+        """
         children = self._list_children(fid)
         return [item for item in children if item.get("type") == "directory"]
 
     def get_file_info(self, fid, *args, **kwargs) -> DriveFile:
+        """
+        获取文件详情
+
+        Args:
+            fid (str): 文件路径
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            DriveFile: 文件信息
+
+        Raises:
+            FileNotFoundError: 路径不存在
+            ValueError: 路径指向的是目录而非文件
+        """
         info = self._get_path_info(fid)
         if info.get("type") != "file":
             raise ValueError(f"{fid} is not a file")
         return info
 
     def get_dir_info(self, fid, *args, **kwargs) -> DriveFile:
+        """
+        获取目录详情
+
+        Args:
+            fid (str): 目录路径
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            DriveFile: 目录信息
+
+        Raises:
+            FileNotFoundError: 路径不存在
+            ValueError: 路径指向的是文件而非目录
+        """
         info = self._get_path_info(fid)
         if info.get("type") != "directory":
             raise ValueError(f"{fid} is not a directory")
@@ -195,6 +331,18 @@ class WebDavDrive(BaseDrive):
         return True
 
     def move(self, source_fid: str, target_fid: str, *args: Any, **kwargs: Any) -> bool:
+        """
+        移动（重命名）文件或目录
+
+        Args:
+            source_fid (str): 源路径
+            target_fid (str): 目标**完整路径**（不是目标父目录）
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数，支持 ``overwrite``（默认 ``False``）
+
+        Returns:
+            bool: 移动成功返回 ``True``；源不存在、或目标已存在且不允许覆盖时返回 ``False``
+        """
         source = self._normalize_fid(source_fid)
         target = self._normalize_fid(target_fid)
         if not self.exist(source):
@@ -216,6 +364,19 @@ class WebDavDrive(BaseDrive):
         return True
 
     def copy(self, source_fid: str, target_fid: str, *args: Any, **kwargs: Any) -> bool:
+        """
+        复制文件或目录
+
+        Args:
+            source_fid (str): 源路径
+            target_fid (str): 目标**完整路径**（不是目标父目录）
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数，支持 ``overwrite``（默认 ``False``）与
+                ``depth``（目录复制深度，默认 ``"infinity"``，传 ``"0"`` 只复制目录本身）
+
+        Returns:
+            bool: 复制成功返回 ``True``；源不存在、或目标已存在且不允许覆盖时返回 ``False``
+        """
         source = self._normalize_fid(source_fid)
         target = self._normalize_fid(target_fid)
         if not self.exist(source):
@@ -239,6 +400,18 @@ class WebDavDrive(BaseDrive):
         return True
 
     def rename(self, fid: str, new_name: str, *args: Any, **kwargs: Any) -> bool:
+        """
+        重命名文件或目录（保持在原父目录下，内部走 ``MOVE``）
+
+        Args:
+            fid (str): 原路径
+            new_name (str): 新名称（只是名字，不含路径）
+            *args: 透传给 :meth:`move`
+            **kwargs: 透传给 :meth:`move`，支持 ``overwrite``
+
+        Returns:
+            bool: 重命名成功返回 ``True``
+        """
         source = self._normalize_fid(fid)
         if not self.exist(source):
             return False
@@ -252,6 +425,23 @@ class WebDavDrive(BaseDrive):
         *args: Any,
         **kwargs: Any,
     ) -> str:
+        """
+        获取文件的下载地址
+
+        WebDAV 没有临时直链概念，返回的就是经过百分号编码的资源 URL，
+        访问时仍需带上 Basic 认证。
+
+        Args:
+            fid (str): 文件路径
+            *args: 可变位置参数
+            **kwargs: 可变关键字参数
+
+        Returns:
+            str: 完整的资源 URL
+
+        Raises:
+            RuntimeError: 尚未登录
+        """
         return self._build_destination_url(fid)
 
     def get_file_sha(self, fid: str, *args: Any, **kwargs: Any) -> str | None:

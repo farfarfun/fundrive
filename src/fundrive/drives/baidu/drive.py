@@ -198,13 +198,14 @@ class BaiDuDrive(BaseDrive):
         }
         try:
             filepath = get_filepath(save_dir, filename, filepath)
+            # *args 会继续往后填 download() 的位置形参，和下面的 filepath=
+            # 撞车，只要调用方传了位置参数就直接 TypeError，所以不透传。
             download(
                 link,
                 filepath=filepath
                 or os.path.join(save_dir, filename or os.path.basename(fid)),
                 headers=headers,
                 overwrite=overwrite,
-                *args,
                 **kwargs,
             )
             return True

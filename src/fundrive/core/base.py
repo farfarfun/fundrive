@@ -436,12 +436,14 @@ class BaseDrive:
             if ignore_filter and ignore_filter(file.name):
                 continue
             _drive_path = file.fid
+            # 不能把 *args 一起透传：它会去填第一个位置形参（也是 fid），
+            # 只要调用方传了任何位置参数就是
+            # TypeError: got multiple values for argument 'fid'。
             self.download_file(
                 fid=file.fid,
                 save_dir=save_dir,
                 filename=os.path.basename(file.name),
                 overwrite=overwrite,
-                *args,
                 **kwargs,
             )
         if not recursion:
@@ -454,7 +456,6 @@ class BaseDrive:
                 overwrite=overwrite,
                 recursion=recursion,
                 ignore_filter=ignore_filter,
-                *args,
                 **kwargs,
             )
         return True
@@ -506,7 +507,6 @@ class BaseDrive:
                     dir_map[file],
                     recursion=recursion,
                     overwrite=overwrite,
-                    *args,
                     **kwargs,
                 )
         return True

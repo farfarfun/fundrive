@@ -124,6 +124,66 @@ def test_lanzou_move_file_returns_bool():
     assert returns and all(r.value is not None for r in returns)
 
 
+def test_mkdir_never_returns_bool_literal():
+    """``mkdir`` 按契约返回新目录的ID（str），返回 True/False 会被调用方当成ID。
+
+    蓝奏云和115都踩过这个坑：``upload_dir`` 把 ``mkdir`` 的返回值当 fid 继续用，
+    返回 ``True`` 会让后续上传全落到错误位置且不报错。
+    """
+    offenders = {}
+    for path in _iter_python_files():
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for cls in (n for n in ast.walk(tree) if isinstance(n, ast.ClassDef)):
+            for method in cls.body:
+                if not isinstance(method, ast.FunctionDef) or method.name != "mkdir":
+                    continue
+                bad = [
+                    r.lineno
+                    for r in ast.walk(method)
+                    if isinstance(r, ast.Return)
+                    and isinstance(r.value, ast.Constant)
+                    and isinstance(r.value.value, bool)
+                ]
+                if bad:
+                    offenders[f"{path.relative_to(SRC)}::{cls.name}"] = bad
+    assert offenders == {}, f"mkdir 返回了布尔字面量（应返回目录ID）：{offenders}"
+
+
+def test_no_named_kwarg_before_star_args():
+    """``f(fid=x, *args)`` 这种写法只要 args 非空就必 TypeError。
+
+    ``*args`` 会先去填第一个位置形参，和同名的关键字实参撞车，报
+    ``got multiple values for argument``。``**kwargs`` 不受影响，所以只检查
+    **具名**关键字与 ``*args`` 同时出现的调用。
+
+    反过来 ``f(*fids, password=...)``（``*`` 写在具名关键字**之前**）是正常写法，
+    不在检查范围内，按源码位置区分。
+    """
+    offenders = {}
+    for path in _iter_python_files():
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        hits = []
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            starred = [a for a in node.args if isinstance(a, ast.Starred)]
+            named = [kw for kw in node.keywords if kw.arg is not None]
+            if not starred or not named:
+                continue
+            star_pos = min((s.lineno, s.col_offset) for s in starred)
+            kw_pos = min((k.value.lineno, k.value.col_offset) for k in named)
+            if kw_pos < star_pos:
+                name = getattr(node.func, "attr", None) or getattr(
+                    node.func, "id", None
+                )
+                hits.append((name, node.lineno))
+        # oss2.Bucket 的位置形参很多，这里只盯内部自有调用
+        hits = [h for h in hits if h[0] not in {"Bucket"}]
+        if hits:
+            offenders[str(path.relative_to(SRC))] = hits
+    assert offenders == {}, f"具名关键字与 *args 混用，args 非空必崩：{offenders}"
+
+
 @pytest.mark.parametrize("kwargs", [{}, {"access_token": "x"}, {"a": 1, "b": 2}])
 def test_base_drive_accepts_and_drops_extra_kwargs(kwargs):
     """BaseDrive 必须吞掉子类没消费的参数，不能转发给 object.__init__。"""
